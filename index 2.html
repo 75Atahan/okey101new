@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>101 Okey</title>
+<style>
+:root{--felt:#14532d;--felt2:#0f3d21;--card:#fffaf0;--gold:#f5c542}
+*{box-sizing:border-box}
+body{margin:0;background:var(--felt2);color:#fff;font:15px system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#app{max-width:720px;margin:0 auto;padding:10px}
+button,input,select{font:inherit}
+.btn{background:var(--gold);color:#222;border:0;border-radius:10px;padding:10px 14px;font-weight:600}
+.btn:disabled{opacity:.4}.btn.alt{background:#2f6f4a;color:#fff}
+.card{background:var(--felt);border-radius:14px;padding:12px;margin:8px 0}
+input,select{padding:10px;border-radius:10px;border:0;width:100%;margin:4px 0}
+input[type=checkbox]{width:auto}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.t{width:38px;height:54px;border-radius:7px;border:2px solid #d8cfb8;background:var(--card);font-size:20px;font-weight:700;padding:0;position:relative}
+.t::after{content:"";position:absolute;left:50%;bottom:6px;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:currentColor}
+.t.s{width:26px;height:36px;font-size:14px}.t.s::after{width:5px;height:5px;bottom:4px;margin-left:-2.5px}
+.t.sel{transform:translateY(-8px);border-color:var(--gold)}
+.t.joker{box-shadow:0 0 0 2px var(--gold)}
+.rack{display:flex;flex-wrap:wrap;gap:4px;padding:12px 4px 4px;min-height:74px}
+.meld,.grp{display:inline-flex;align-items:center;gap:2px;background:#0004;border-radius:8px;padding:3px;margin:2px}
+.grp.bad{outline:2px solid #e53935}
+.turn{outline:2px solid var(--gold)}
+.op{background:var(--felt);border-radius:10px;padding:6px 10px;flex:1;min-width:130px}
+#bar{height:100%;border-radius:3px;background:var(--gold);transition:width .25s linear}
+#bar.warn{background:#e53935}
+#toast{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));background:#b71c1c;border-radius:10px;padding:10px;display:none}
+.chat{overflow:auto;background:#0004;border-radius:10px;padding:6px;font-size:13px}
+small{opacity:.8}
+.tbl{display:grid;grid-template-columns:1fr 1.6fr 1fr;grid-template-areas:". top ." "left mid right";gap:6px;align-items:start}
+.seat{background:var(--felt);border-radius:12px;padding:6px;text-align:center;position:relative;min-width:0}
+.seat.top{grid-area:top}.seat.left{grid-area:left}.seat.right{grid-area:right}
+.seat.turn{outline:3px solid var(--gold);box-shadow:0 0 14px var(--gold)}
+.mid{grid-area:mid;background:#0003;border-radius:12px;padding:6px;min-height:150px;text-align:center}
+.vs{position:relative;aspect-ratio:4/3;background:#0005;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:4px}
+.vt{position:absolute;inset:0}.vt video{width:100%;height:100%;object-fit:cover}
+.bub{position:absolute;left:6px;right:6px;top:6px;z-index:3;background:#fff;color:#222;border-radius:10px;padding:4px 8px;font-size:13px;word-break:break-word}
+.sb{height:6px;border-radius:3px;background:#0005;margin:3px 0}
+.dc{min-height:38px}
+@keyframes pop{from{transform:scale(1.9) translateY(-24px);opacity:0}to{transform:none;opacity:1}}
+.new{animation:pop .45s ease-out}
+.me{display:flex;gap:8px;align-items:center;text-align:left;margin-top:8px}.me .vs{width:84px;margin:0}
+.chat{height:56px!important}
+/* Referans düzen: köşelerde atık yerleri, kenarda rozetler, iki sıralı ıstaka */
+.tbl{grid-template-columns:96px 1fr 96px!important;grid-template-areas:"tl top tr" "left mid right" "bl me br"!important}
+.seat.me{grid-area:me;margin-top:0}
+.pile{width:54px;height:66px;border:2px dashed #fff5;border-radius:8px;display:flex;align-items:center;justify-content:center;margin:auto}
+.pile.tl{grid-area:tl}.pile.tr{grid-area:tr}.pile.bl{grid-area:bl}.pile.br{grid-area:br}
+.mid{position:relative;padding-top:34px;background:#0b2a5b linear-gradient(#ffffff14 1px,transparent 1px) 0 0/22px 22px;border:2px solid #4da3ff55}
+.badge{position:absolute;top:6px;background:#17356e;border:2px solid #7db6ff;border-radius:12px;padding:2px 10px;font-weight:700}
+.badge.l{left:6px}.badge.r{right:6px}.badge small{font-weight:400}
+.rack{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:4px;padding:14px 10px 8px;background:linear-gradient(#e0a233,#b9791c);border-radius:10px;border-bottom:6px solid #8a5a12;margin-top:8px}
+.rack .t{width:100%;height:auto;aspect-ratio:38/54;font-size:clamp(14px,3.4vw,22px)}
+.t.ga{border-color:#4da3ff}.t.gb{border-color:#7ee081}.t.sel{border-color:var(--gold)!important}
+/* Yuvalı ıstaka, kompakt oyuncu plakaları, okey taşı şeklinde yığın */
+.rack{display:grid!important;grid-template-columns:repeat(14,minmax(0,1fr))!important;gap:3px!important;padding:12px 8px 8px}
+.slot{aspect-ratio:38/54;border-radius:6px;box-shadow:inset 0 0 0 1px #0003,inset 0 2px 5px #0002;position:relative}
+.rack .slot .t{width:100%;height:100%;aspect-ratio:auto;touch-action:none;font-size:clamp(13px,3vw,22px)}
+.np{display:flex;flex-direction:column;gap:3px;padding:6px 8px}
+.pl{display:flex;gap:6px;align-items:center;justify-content:center}
+.left .pl,.right .pl{flex-direction:column;gap:2px}
+.cam{display:none;width:64px;height:48px;border-radius:8px;overflow:hidden;position:relative;flex:none}
+.cam:has(video){display:block}
+.orack{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;background:linear-gradient(#e0a233,#b9791c);border-radius:6px;padding:3px;min-height:16px}
+.orack i{width:6px;height:10px;background:#fffaf0;border-radius:1px}
+.seat.me{padding:6px 10px}
+.t.heap{width:52px;height:72px;color:#444;display:inline-flex;align-items:center;justify-content:center}
+.t.heap::after{display:none}
+.t.heap span{display:flex;width:68%;aspect-ratio:1;border-radius:50%;border:2px solid #bbb;align-items:center;justify-content:center;font-size:18px}
+.t.heap:disabled{opacity:.55}
+.t.heap.go{box-shadow:0 0 12px 2px var(--gold)}
+.vt.off{display:none}
+.cam:has(video){display:none}.cam:has(.vt:not(.off) video){display:block}
+.rackwrap{display:flex;gap:6px;align-items:stretch}.rackwrap .rack{flex:1;min-width:0}
+.side{width:58px;flex:none;border:0;border-radius:10px;background:#1e4fa3;color:#fff;font-weight:700;font-size:14px;line-height:1.2}
+.side.on{outline:3px solid var(--gold)}
+.tot{background:#17356e;border:2px solid #7db6ff;border-radius:12px;padding:2px 12px;font-weight:700}.tot.ok{border-color:#7ee081;background:#1d6b35}
+.over{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:40;padding:16px}
+.over .card{max-width:440px;width:100%;margin:0;border:2px solid var(--gold)}
+.rk{display:flex;gap:10px;align-items:center;padding:6px 8px;border-radius:8px}.rk.w{background:#f5c54233}.rk .nm{flex:1;font-weight:700}
+.over-chip{position:fixed;top:8px;right:8px;z-index:40}
+/* Sahne */
+body.inGame{overflow:hidden}
+.inGame #app{max-width:none;padding:0;height:100dvh;position:relative;overflow:hidden}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:890px;margin:-445px 0 0 -640px;transform:scale(var(--sc,1));transform-origin:center center}
+.a{position:absolute}.a.flex{display:flex;gap:6px;align-items:center}
+.t::after{display:none}.t.joker{box-shadow:none}
+.t.xs{width:28.46px;height:35.6px;font-size:16px;border-width:1px;border-radius:4px}
+.t.c{width:52px;height:68px;font-size:28px}.t.m{width:62px;height:80px;font-size:34px}
+.cloth{background:#0b2a5b;border-radius:8px;overflow:hidden}
+.sq{position:absolute;top:0;width:370px;height:463px;background-image:linear-gradient(#ffffff14 1px,transparent 1px),linear-gradient(90deg,#ffffff14 1px,transparent 1px);background-size:28.46px 35.6px;border-right:2px solid #ffffff44}
+.meld-row{position:absolute;display:flex}
+.tag{background:#12304f;border:1px solid #2d5b88;border-radius:8px;text-align:center;padding:6px 0;font-weight:700;font-size:14px;margin-bottom:6px}.tag.g{background:#1d6b35}.tag.r{background:#7b1e2b}
+.stage .cam{width:80px;height:60px}.stage .top .pl{flex-direction:row}.stage .pile{margin:0}
+.stage .rack{grid-template-columns:repeat(16,minmax(0,1fr))!important;grid-template-rows:1fr 1fr;margin:0;padding:10px}
+.stage .slot{aspect-ratio:auto}.stage .rack .slot .t{font-size:34px}
+.stage .side,.stage .wide{width:100%;height:100%}.stage .btn.sm{padding:6px 10px;font-size:13px}.stage .btn{font-size:15px}
+.stage .t.heap{width:100%;height:100%}.ind{display:block;width:100%;height:100%}
+.bdg{background:#17356e;border:2px solid #7db6ff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;gap:4px}
+.tot{display:flex;align-items:center;justify-content:center;border-radius:12px;font-weight:800;font-size:20px;background:#17356e;border:2px solid #7db6ff}
+.tot.ok{background:#1d6b35;border-color:#7ee081}.tot.bad{background:#7b1e2b;border-color:#ff8a80}
+.stg{display:flex;flex-wrap:wrap;gap:4px;overflow:hidden;max-height:56px}
+.myplate .pl{justify-content:flex-start}
+.stake{position:absolute;left:50%;top:45%;z-index:5;pointer-events:none;font-size:34px;font-weight:800;background:#000b;color:#ffd54f;padding:6px 22px;border-radius:16px;white-space:nowrap;opacity:0;transform:translate(-50%,-50%);animation:stk 2.8s forwards}
+@keyframes stk{0%{opacity:0;transform:translate(-50%,-20%)}12%{opacity:1;transform:translate(-50%,-50%)}75%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0;transform:translate(-50%,-80%)}}
+/* Oyun sonucu */
+.res{width:min(560px,94vw);background:#16264f;border:2px solid #4da3ff;border-radius:16px;padding:14px 16px;box-shadow:0 0 30px #4da3ff88}
+.res-h{text-align:center;font-size:26px;font-weight:800;letter-spacing:2px}.res-c{text-align:center;margin:4px 0}.res-c b{color:#7ee081;font-size:22px}
+.res-t{text-align:center;margin:4px 0 8px;font-weight:700}
+.rw{display:flex;align-items:center;gap:12px;background:#0c1630;border-radius:10px;padding:8px 12px;margin:6px 0}
+.rw.win{background:linear-gradient(90deg,#1e6bff,#0b1e6b)}.av{position:relative;width:46px;height:46px;border-radius:50%;background:#2c3e66;border:2px solid #7db6ff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}
+.crown{position:absolute;top:-16px;left:-10px;font-style:normal;font-size:22px}.nm2{flex:1;display:flex;flex-direction:column}.kz{color:#7ee081;font-weight:800}.pt{font-size:26px;font-weight:800;min-width:64px;text-align:right}
+.rbtn{width:92px;height:92px;border-radius:50%;border:4px solid #1b3a7a;color:#fff;font-weight:800;font-size:14px;line-height:1.15}.rbtn.red{background:radial-gradient(#ff5252,#b71c1c)}.rbtn.green{background:radial-gradient(#5be26b,#1b8a2a)}
+</style></head><body>
+<div id="vg" style="display:none"></div>
+<div id="app"></div><div id="toast"></div>
+<script>
+function showErr() { document.getElementById('app').innerHTML = '<div class="card"><b>Sayfa yüklenemedi.</b><br>Dosyalar eksik olabilir (özellikle okey101.mjs). Replit\'te tüm dosyaların aynı klasörde olduğundan ve sunucunun yeniden başlatıldığından emin ol, sonra sayfayı yenile.</div>'; }
+setTimeout(() => { if (!document.getElementById('app').innerHTML.trim()) showErr(); }, 4000);
+</script>
+<script type="module" onerror="showErr()">
+import { validateMeld, checkOpen, isJoker, isPair, canAddToMeld, layoutMeld, handPenalty } from './okey101.mjs';
+let plan = null; // Yardımlı: assist.mjs yüklenemezse oyun yine açılır
+import('./assist.mjs').then((m) => { plan = m.plan; }).catch(() => {});
+// Adrese ?test eklenirse her sekme ayrı oyuncu olur (tek bilgisayarda 4 kişilik deneme için).
+const store = (location.search || '').includes('test') ? sessionStorage : localStorage;
+const $ = (s) => document.querySelector(s);
+const COLORS = ['#c98f00', '#1f6fd1', '#222', '#d32f2f'];
+const fmt = (n) => (n ?? 0).toLocaleString('tr-TR');
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const S = { hideOver: false, mode: 'auto', handKey: '', slots: null, groupOf: null, balance: null, seen: {}, fresh: {}, me: null, lobby: null, game: null, chat: [], sel: new Set(), staged: [], order: [], skew: 0, off: false };
+let ws, toastTimer;
+
+function connect() {
+  ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host);
+  ws.onopen = () => send({ t: 'hello', name: store.name, token: store.token });
+  ws.onmessage = (e) => on(JSON.parse(e.data));
+  ws.onclose = () => { S.off = true; render(); setTimeout(connect, 1500); };
+}
+const send = (o) => ws?.readyState === 1 && ws.send(JSON.stringify(o));
+const act = (action) => send({ t: 'act', action });
+function toast(m) {
+  const el = $('#toast'); el.textContent = m; el.style.display = 'block';
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.style.display = 'none'), 3000);
+}
+
+function on(m) {
+  if (m.t === 'welcome') { store.token = m.token; store.name = m.name; S.me = m.userId; S.off = false; S.balance = m.balance; const q = new URLSearchParams(location.search).get('oda'); if (q && !m.room) send({ t: 'join', code: q }); }
+  else if (m.t === 'state') {
+    const wasOver = S.game ? !!S.game.over : true;   // ilk yükleme/yeniden bağlanmada kutlama yapma
+    S.lobby = m.lobby; S.game = m.game; if (m.balance != null) S.balance = m.balance;
+    if (!m.game?.over) S.hideOver = false;
+    else if (!wasOver && m.game.over.finisher != null) celebrate();
+    if (wasOver && m.game && !m.game.over && S.balance != null) { S.stakeAt = Date.now(); setTimeout(render, 2800); }
+    if (m.game) {
+      m.game.others.forEach((o, i) => { const id = o.lastDiscard?.id; if (id !== S.seen[i]) { S.fresh[i] = true; S.seen[i] = id; } });
+      S.skew = m.game.serverNow - Date.now();
+      const ids = new Set(m.game.hand.map((t) => t.id));
+      S.sel = new Set([...S.sel].filter((id) => ids.has(id)));
+      S.staged = S.staged.map((g) => g.filter((id) => ids.has(id))).filter((g) => g.length);
+    }
+  }
+  else if (m.t === 'left') { S.balance = m.balance ?? S.balance; S.lobby = null; S.game = null; S.staged = []; S.sel.clear(); endCall(); }
+  else if (m.t === 'chat') { m.at = Date.now(); S.chat = [...S.chat, m].slice(-40); setTimeout(render, 8100); }
+  else if (m.t === 'rtc') startCall(m);
+  else if (m.t === 'callPeers') startP2P(m);
+  else if (m.t === 'sig') onSig(m);
+  else if (m.t === 'callLeft') dropPeer(m.id);
+  else if (m.t === 'timeout') toast(`${S.lobby?.names[m.seat] ?? 'Oyuncu'} süreyi aştı, taş otomatik atıldı.`);
+  else if (m.t === 'error') { toast(m.error); if (/Hatalı/.test(m.error)) { S.staged = []; S.sel.clear(); } }
+  render();
+}
+
+const okeyOf = (g) => ({ color: g.indicator.color, num: (g.indicator.num % 13) + 1 });
+const tile = (t, o = {}) => {
+  const j = o.okey && isJoker(t, o.okey);
+  const face = t.fake ? '🍀' : j ? '' : t.num; // okey boş taş, sahte okey yonca
+  const cls = ['t', o.z, o.s && 's', o.sel && 'sel', j && 'joker', o.g != null && (o.g % 2 ? 'gb' : 'ga')].filter(Boolean).join(' ');
+  return `<button class="${cls}"${o.act ? ` data-act="${o.act}" data-id="${t.id}"` : ''} style="color:${t.fake ? '#2e7d32' : COLORS[t.color]}">${face}</button>`;
+};
+function rack(hand) {
+  const by = new Map(hand.map((t) => [t.id, t]));
+  S.order = S.order.filter((id) => by.has(id));
+  hand.forEach((t) => !S.order.includes(t.id) && S.order.push(t.id));
+  return S.order.map((id) => by.get(id));
+}
+
+const views = {
+  login: () => `<div class="card"><h2>101 Okey</h2><input id="name" placeholder="Adın" maxlength="20" value="${esc(store.name)}"><button class="btn" data-act="login">Giriş</button></div>`,
+  menu: () => `<div class="card"><h3>Oda kur</h3><small>${S.balance != null ? `Jetonun: 💰 ${fmt(S.balance)} · masa 2.500 (katlamalıda 5.000)` : ''}</small>
+    <select id="mode"><option value="single">Tekli</option><option value="pairs">Eşli</option></select>
+    <label><input type="checkbox" id="kat"> Katlamalı</label>
+    <select id="sec"><option value="30">30 sn / sıra</option><option value="45" selected>45 sn / sıra</option><option value="60">60 sn / sıra</option></select>
+    <button class="btn" data-act="create">Oda kur</button></div>
+    <div class="card"><h3>Odaya katıl</h3><input id="code" placeholder="Oda kodu" maxlength="6"><button class="btn alt" data-act="join">Katıl</button></div>`,
+  room: (L) => `<div class="card"><small>Oda kodu</small><h1 style="margin:0;letter-spacing:4px">${L.code}</h1>
+    <p>${L.mode === 'pairs' ? 'Eşli' : 'Tekli'} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'} · ${L.turnSeconds} sn · masa ${fmt(L.stake)}</p>
+    ${L.seats.map((id, i) => `<div>${i + 1}. ${id ? esc(L.names[i]) + (L.online[i] ? '' : ' ⚠') : '<small>boş</small>'}</div>`).join('')}
+    <div class="row" style="margin-top:10px">${L.host === S.me ? `<button class="btn" data-act="start" ${L.seats.includes(null) ? 'disabled' : ''}>Başlat</button>` : '<small>Oda sahibi başlatacak…</small>'}
+    <button class="btn alt" data-act="invite">Davet et</button><button class="btn alt" data-act="leave">Ayrıl</button></div></div>`,
+  table() {
+    const L = S.lobby, G = S.game, me = G.you, ok = okeyOf(G), myTurn = G.turn === me && !G.over;
+    const n = L.seats.length, prev = (me + n - 1) % n, myO = G.others[me];
+    const byId = new Map(G.hand.map((t) => [t.id, t]));
+    syncSlots(G.hand);
+    const hk = G.hand.map((t) => t.id).sort((a, b) => a - b).join(',');
+    if (S.handKey !== hk) { S.handKey = hk; autoLayout(); }   // taş çekince/atınca Yardımlı kendiliğinden dizer
+    const stagedIds = new Set(S.staged.flat());
+    const rg = rackGroups(G, ok, stagedIds);                   // ıstakada gerçekten dizili perler
+    const co = S.staged.length ? checkOpen(S.staged.map((g) => g.map((id) => byId.get(id))), ok, { minMeld: G.minMeld, minPairs: G.minPairs }) : null;
+    const sum = !co ? '' : co.mode === 'meld' ? `${co.total} / ${G.minMeld}` : co.mode === 'pairs' ? `${co.total} çift / ${G.minPairs}` : 'geçersiz';
+    const canAct = myTurn && G.phase === 'discard', canDraw = myTurn && G.phase === 'draw';
+    const pairsOnTable = G.others.some((x, i) => i !== me && x.openMode === 'pairs');
+    let canS, canC;                                            // Seri aç / Çift aç: 101 ve üstü (ya da 5+ çift) bulununca açılır
+    if (!myO.opened) {
+      if (co) { canS = co.mode === 'meld' && co.canOpen; canC = co.mode === 'pairs' && co.canOpen; }
+      else { canS = rg.total >= G.minMeld; canC = rg.pc >= G.minPairs; }
+    } else { canS = myO.openMode === 'meld' && rg.series.length > 0; canC = (myO.openMode === 'pairs' || pairsOnTable) && rg.pc > 0; }
+    const enough = rg.total >= G.minMeld || rg.pc >= G.minPairs;
+    const totTxt = myO.opened ? `Kalan ${handPenalty(G.hand, ok)}` : `${rg.total}${rg.pc ? ` · ${rg.pc} çift` : ''}`;
+    const hint = G.over ? 'El bitti' : !myTurn ? `Sıra: ${esc(L.names[G.turn])}` : G.phase === 'draw' ? 'Çek: ortadaki taşa veya soldaki atığa dokun' : G.mustUse != null ? 'Aldığın atık taşı kullanmalısın' : 'Taş at: sağ alttaki atığa sürükle (son taş okeyse göstergeye/yığına)';
+    const turnBar = '<div class="sb"><div id="bar"></div></div><b id="tl"></b>';
+    const bubble = (uid) => { const b = [...S.chat].reverse().find((c) => c.userId === uid && Date.now() - c.at < 8000); return b ? `<div class="bub">${esc(b.text)}</div>` : ''; };
+    const cam = (i) => `<div class="cam" id="vs-${L.seats[i]}"></div>`; // kamera açıksa isminin yanında sabit durur
+    const rel = (k) => (me + k) % n;
+    const box = (x, y, w, h, html, cls = '') => `<div class="a ${cls}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">${html}</div>`;
+    const plate = (i, x, y, w, h, pos) => {
+      const o = G.others[i], isT = G.turn === i && !G.over;
+      return box(x, y, w, h, `${bubble(L.seats[i])}<div class="pl">${cam(i)}<div><b>${esc(L.names[i])}${L.online[i] ? '' : ' ⚠'}</b><br><small>${o.handCount} taş${o.opened ? ' · açtı' : ''}</small></div></div>${isT ? turnBar : ''}<div class="orack">${'<i></i>'.repeat(o.handCount)}</div>`, `seat np ${pos} ${isT ? 'turn' : ''}`);
+    };
+    const pile = (i, x, y, corner) => {
+      const d = G.others[i].lastDiscard, take = i === prev && canDraw && d;
+      return box(x, y, 57, 74, d ? `<span class="${S.fresh[i] ? 'new' : ''}">${tile(d, { okey: ok, z: 'c', act: take ? 'take' : '' })}</span>` : '', `pile ${corner}`);
+    };
+    // Masa: iki adet 13x13 kare; seri perler sayılarına göre hizalanır, çiftler sağdaki alana dizilir
+    const CW = 28.46, CH = 35.6, place = tablePlacement(G, ok);
+    const rows = place.filter((p) => !p.pair).map((p) => `<div class="meld-row" data-act="meld" data-owner="${p.s}" data-idx="${p.k}" style="left:${(p.row >= 13 ? 370 : 0) + (p.cols[0] - 1) * CW}px;top:${(p.row % 13) * CH}px">${p.cells.map((c) => tile(c.tile, { z: 'xs', okey: ok })).join('')}</div>`).join('');
+    const prs = place.filter((p) => p.pair).map((p) => `<div class="meld-row" data-act="meld" data-owner="${p.s}" data-idx="${p.k}" style="left:${p.col * CW}px;top:${p.row * CH}px">${p.m.map((t) => tile(t, { z: 'xs', okey: ok })).join('')}</div>`).join('');
+    const btn = (y, h, cls, a, label, on) => box(1136, y, 127, h, `<button class="btn ${cls} wide" data-act="${a}" ${on ? '' : 'disabled'}>${label}</button>`);
+    const rackHtml = S.slots.map((id, k) => {
+      const t = id != null && !stagedIds.has(id) ? byId.get(id) : null;
+      return `<div class="slot" data-s="${k}"${t ? '' : ' data-act="slot"'}>${t ? tile(t, { act: 'tile', sel: S.sel.has(id), okey: ok, g: S.groupOf?.get(id) }) : ''}</div>`;
+    }).join('');
+    const stakeOn = S.stakeAt && S.balance != null && Date.now() - S.stakeAt < 2800;
+    const stake = stakeOn ? `<div class="stake" style="animation-delay:-${((Date.now() - S.stakeAt) / 1000).toFixed(2)}s">💰 −${fmt(L.stake)}</div>` : '';
+    const stg = S.staged.map((g) => { const v = validateMeld(g.map((id) => byId.get(id)), ok); return `<span class="grp ${v.valid || g.length === 2 ? '' : 'bad'}">${g.map((id) => tile(byId.get(id), { z: 'xs', okey: ok })).join('')}</span>`; }).join('');
+    return `<div id="stage" class="stage">
+      ${box(40, 10, 430, 28, `<small>Oda ${L.code} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'}${S.balance != null ? ` · 💰 ${fmt(S.balance)} · masa ${fmt(L.stake)}` : ''}</small>`)}
+      ${box(480, 6, 420, 34, '<input id="ci" placeholder="Mesaj yaz" maxlength="300" style="flex:1"><button class="btn alt sm" data-act="chat">Gönder</button>', 'flex')}
+      ${box(910, 6, 340, 34, `<button class="btn alt sm" data-act="invite">Davet et</button>${S.call ? '<button class="btn alt sm" data-act="mic">🎤</button><button class="btn alt sm" data-act="cam">📷</button><button class="btn alt sm" data-act="endcall">✖</button>' : '<button class="btn alt sm" data-act="call">Görüntülü katıl</button>'}`, 'flex')}
+      ${plate(rel(3), 2, 150, 92, 205, 'left')}${plate(rel(1), 1136, 136, 127, 148, 'right')}${plate(rel(2), 440, 50, 400, 84, 'top')}
+      ${pile(rel(2), 28, 61, 'tl')}${pile(rel(1), 1194, 61, 'tr')}${pile(rel(3), 28, 612, 'bl')}${pile(me, 1194, 612, 'br')}
+      ${box(6, 372, 88, 32, `${G.minMeld}<small> sayı</small>`, 'bdg')}${box(1136, 288, 127, 30, `${G.minPairs}<small> çift</small>`, 'bdg')}
+      ${box(96, 140, 740, 463, `<div class="sq" style="left:0"></div><div class="sq" style="left:370px"></div>${rows}`, 'cloth')}
+      ${box(946, 140, 170, 463, `<div class="sq" style="left:0;width:170px"></div>${prs}`, 'cloth')}
+      ${box(846, 140, 90, 176, `<div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag g">Yardımlı</div><div class="tag ${L.katlamali ? 'r' : ''}">${L.katlamali ? 'Katlamalı' : 'Katlamasız'}</div><div class="tag">1 El</div>`)}
+      ${box(858, 330, 66, 86, `<span class="ind">${tile(G.indicator, { okey: ok, z: 'm' })}</span>`)}
+      ${box(858, 432, 66, 86, `<button class="t heap ${canDraw ? 'go' : ''}" data-act="pile" ${canDraw ? '' : 'disabled'}><span>${G.pileCount}</span></button>`)}
+      ${btn(323, 50, '', 'seriac', 'Seri aç', canAct && canS)}${btn(380, 50, '', 'ciftac', 'Çift aç', canAct && canC)}
+      ${btn(437, 50, 'alt', 'unstage', 'Geri topla', S.staged.length > 0)}${btn(494, 50, 'alt', 'isle', 'Taşları işle', canAct && myO.opened)}
+      ${btn(551, 44, '', 'discard', 'At', canAct)}${btn(601, 38, 'alt', 'cancel', 'Atığı geri ver', myTurn && G.mustUse != null)}
+      ${box(96, 610, 330, 92, `<div class="row" style="flex-wrap:nowrap;gap:6px"><button class="btn alt sm" data-act="stage">Per yap</button><small>${S.staged.length ? `Açılacak: ${sum}` : 'Taşları seç → Per yap'}</small></div><div class="stg">${stg}</div>`)}
+      ${box(440, 606, 400, 96, `${bubble(L.seats[me])}<div class="pl">${cam(me)}<div style="text-align:left"><b>${esc(L.names[me])}</b><br><small>${hint}</small></div></div>${myTurn ? turnBar : ''}`, `seat np myplate ${myTurn ? 'turn' : ''}`)}
+      ${box(860, 662, 150, 36, totTxt, `tot ${myO.opened ? '' : enough ? 'ok' : 'bad'}`)}
+      ${box(14, 730, 80, 130, `<button class="side ${S.mode === 'seri' ? 'on' : ''}" data-act="seri">Seri<br>diz</button>`)}
+      ${box(1186, 730, 80, 130, `<button class="side ${S.mode === 'cift' ? 'on' : ''}" data-act="cift">Çift<br>diz</button>`)}
+      ${box(102, 706, 1076, 182, rackHtml + stake, 'rack')}
+    </div>${G.over ? overHtml(G, L) : ''}`;
+  },
+};
+
+// El sonu kartı: kazanan üstte, 1-2-3-4 alt alta (eşlide kazanan takım önde)
+function overHtml(G, L) {
+  const o = G.over, n = L.seats.length;
+  if (S.hideOver) return '<button class="btn over-chip" data-act="showover">Sonucu göster</button>';
+  const win = o.finisher == null ? [] : L.mode === 'pairs' ? [o.finisher, (o.finisher + 2) % n] : [o.finisher];
+  const rank = [...o.points.keys()].sort((a, b) => (win.includes(b) - win.includes(a)) || o.points[a] - o.points[b]);
+  const title = o.finisher == null ? 'Kimse bitiremedi (bedeller iade)' : `${esc(L.names[o.finisher])} kazandı${o.withOkey ? ' · okey ile bitirdi' : ''}`;
+  const secs = L.nextAt ? Math.max(0, Math.ceil((L.nextAt - (Date.now() + S.skew)) / 1000)) : null;
+  const rows = rank.map((i) => {
+    const w = win.includes(i), bal = L.balances?.[i];
+    return `<div class="rw ${w ? 'win' : ''}"><div class="av">${esc((L.names[i] || '?')[0].toUpperCase())}${w ? '<i class="crown">👑</i>' : ''}</div><div class="nm2"><b>${esc(L.names[i])}</b>${bal != null ? `<small>💰 ${fmt(bal)}${L.lastPayout ? ` (${L.lastPayout[i] >= 0 ? '+' : ''}${fmt(L.lastPayout[i])})` : ''}</small>` : ''}</div>${w ? '<span class="kz">KAZANAN</span>' : ''}<span class="pt">${o.points[i] > 0 ? '+' : ''}${o.points[i]}</span></div>`;
+  }).join('');
+  return `<div class="over"><div class="res"><div class="res-h">OYUN SONUCU</div>
+    ${secs != null ? `<div class="res-c"><b id="cd">${secs}</b> saniye içinde yeni el başlayacak</div>` : ''}
+    <div class="res-t">🏆 ${title}${o.byPairs ? ' · çift açtı: puan ve jeton ×2' : ''}${o.withOkey && L.katlamali ? ' · okey ×2' : ''}</div>${rows}${o.teams ? `<small>Takımlar: ${o.teams.join(' / ')}</small>` : ''}
+    <div class="row" style="justify-content:space-between;margin-top:12px"><button class="rbtn red" data-act="leave">Masadan<br>ayrıl</button><button class="btn alt" data-act="hideover">Masaya göz at</button><button class="rbtn green" data-act="next">Yeni oyuna<br>başla</button></div></div></div>`;
+}
+// Sahne 1280x890 sabit oranlı; ekrana sığacak şekilde ölçeklenir
+function fit() {
+  if (typeof innerWidth === 'undefined') return;
+  S.k = Math.min(innerWidth / 1280, innerHeight / 890);
+  document.documentElement.style.setProperty('--sc', S.k);
+}
+globalThis.onresize = () => { if (S.game) fit(); };
+// Kazanan için masaya havai fişek + konfeti (kütüphanesiz, canvas)
+function celebrate() {
+  if (typeof requestAnimationFrame !== 'function') return;
+  const c = document.createElement('canvas');
+  Object.assign(c.style, { position: 'fixed', left: 0, top: 0, pointerEvents: 'none', zIndex: 60 });
+  c.width = innerWidth; c.height = innerHeight; document.body.append(c);
+  const x = c.getContext('2d'), P = [], cols = ['#f5c542', '#ff5252', '#4da3ff', '#7ee081', '#ffffff'];
+  const burst = (bx, by) => { for (let i = 0; i < 70; i++) { const a = Math.random() * 6.283, v = 2 + Math.random() * 5; P.push({ x: bx, y: by, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 0.06, life: 70 + Math.random() * 40, col: cols[i % 5], s: 3 }); } };
+  const rain = () => { for (let i = 0; i < 3; i++) P.push({ x: Math.random() * c.width, y: -10, vx: Math.random() * 2 - 1, vy: 2 + Math.random() * 3, g: 0.02, life: 220, col: cols[(Math.random() * 5) | 0], s: 6, rect: 1 }); };
+  let f = 0;
+  const tick = () => {
+    f++;
+    if (f < 150 && f % 25 === 1) burst(c.width * (0.15 + Math.random() * 0.7), c.height * (0.12 + Math.random() * 0.35));
+    if (f < 200) rain();
+    x.clearRect(0, 0, c.width, c.height);
+    for (const p of P) { p.x += p.vx; p.y += p.vy; p.vy += p.g; p.life--; x.globalAlpha = Math.max(0, Math.min(1, p.life / 40)); x.fillStyle = p.col; x.fillRect(p.x, p.y, p.s, p.rect ? p.s * 1.6 : p.s); }
+    for (let k = P.length - 1; k >= 0; k--) if (P[k].life <= 0 || P[k].y > c.height + 20) P.splice(k, 1);
+    if (f < 320 || P.length) requestAnimationFrame(tick); else c.remove();
+  };
+  tick();
+}
+
+function render() {
+  if (S.dragging) return; // sürüklerken ekran yenilenmez
+  const inGame = !!(S.me && S.lobby && S.game);
+  document.body?.classList.toggle('inGame', inGame);
+  if (inGame) fit();
+  for (const d of vt.values()) $('#vg').append(d); // yeniden çizimde videolar bozulmasın
+  const ci = $('#ci'), v = ci?.value, foc = ci && document.activeElement === ci;
+  const inRoom = S.lobby;
+  let h = S.off ? '<div class="card">Bağlantı koptu, yeniden bağlanılıyor…</div>' : '';
+  h += !S.me ? views.login() : !inRoom ? views.menu() : S.game ? views.table() : views.room(S.lobby);
+  $('#app').innerHTML = h;
+  S.fresh = {};
+  placeVideos();
+  if ($('#ci') && v != null) { $('#ci').value = v; if (foc) $('#ci').focus(); }
+  const cl = $('#cl'); if (cl) cl.scrollTop = cl.scrollHeight;
+}
+
+// Istaka: 2 sıra x 14 yuva. Taşlar istenen yuvaya konur, aralarda boşluk bırakılabilir.
+const COLS = 16, NS = 32;
+function syncSlots(hand) {
+  const ids = new Set(hand.map((t) => t.id));
+  if (!S.slots || S.slots.length !== NS) S.slots = Array(NS).fill(null);
+  S.slots = S.slots.map((id) => (ids.has(id) ? id : null));
+  const have = new Set(S.slots);
+  hand.forEach((t) => { if (!have.has(t.id)) { const f = S.slots.indexOf(null); if (f >= 0) S.slots[f] = t.id; } });
+}
+// Grupları aralarında birer boşlukla yerleştirir; sığmazsa bitişik dizer.
+function setLayout(groups, rest = []) {
+  const slots = Array(NS).fill(null);
+  let row = 0, col = 0, ok = true;
+  const put = (id) => { if (col >= COLS) { row++; col = 0; } if (row > 1) { ok = false; return; } slots[row * COLS + col++] = id; };
+  for (const g of groups) { if (col + g.length > COLS && col > 0) { row++; col = 0; } g.forEach(put); col++; }
+  rest.forEach(put);
+  if (ok) { S.slots = slots; return; }
+  const flat = [...groups.flat(), ...rest], c = Array(NS).fill(null);
+  flat.forEach((id, i) => (c[i] = id));
+  S.slots = c;
+}
+// Seri diz: renklere göre gruplar. Çift diz: aynı taşlar yan yana, tekler sonda.
+function arrange(mode) {
+  const G = S.game, ok = okeyOf(G);
+  const k = (t) => (t.fake || isJoker(t, ok) ? 999 : t.color * 20 + t.num);
+  const ts = [...G.hand].sort((a, b) => k(a) - k(b));
+  if (mode === 'seri') {
+    const groups = [0, 1, 2, 3].map((c) => ts.filter((t) => k(t) < 999 && t.color === c).map((t) => t.id)).filter((g) => g.length);
+    const j = ts.filter((t) => k(t) === 999).map((t) => t.id);
+    setLayout(j.length ? [...groups, j] : groups);
+  } else {
+    const by = {};
+    ts.forEach((t) => (by[k(t)] ||= []).push(t.id));
+    const all = Object.values(by);
+    setLayout(all.filter((g) => g.length > 1), all.filter((g) => g.length === 1).flat());
+  }
+}
+// Yardımlı sürekli açık: el değiştikçe en iyi plana göre dizer. Seri/Çift diz düğmeleri kurguyu zorlar (tekrar basınca otomatiğe döner).
+// ---- Masa yerleşimi: perler sırayla satırlara, sayılarına göre sütunlara ----
+function colsOf(L) {
+  const n = L.cells.length;
+  if (L.kind === 'set') { const end = Math.max(L.num, n); return L.cells.map((_, i) => end - n + 1 + i); }
+  if (L.kind === 'run') { const max = Math.max(...L.cells.map((c) => c.pos)), sh = max > 13 ? max - 13 : 0; return L.cells.map((c) => c.pos - sh); }
+  return L.cells.map((_, i) => i + 1);
+}
+function tablePlacement(G, ok) {
+  const items = [];
+  G.others.forEach((o, s) => o.melds.forEach((m, k) => items.push({ s, k, m, seq: o.meldSeq?.[k] ?? 0 })));
+  items.sort((a, b) => a.seq - b.seq);
+  let row = 0, pi = 0;
+  return items.map((it) => {
+    if (it.m.length === 2) { const r = { ...it, pair: true, col: (pi % 3) * 2, row: Math.floor(pi / 3) }; pi++; return r; }
+    const L = layoutMeld(it.m, ok);
+    return { ...it, cells: L.cells, cols: colsOf(L), row: row++ };
+  });
+}
+// ---- Istakadaki dizili gruplar (boşluklarla ayrılmış satır parçaları) ----
+function bestSplit(seg, ok) {
+  const n = seg.length, dp = Array.from({ length: n + 1 }, () => ({ pts: 0, g: [] }));
+  for (let i = 1; i <= n; i++) {
+    dp[i] = dp[i - 1];
+    for (let j = 0; j <= i - 3; j++) {
+      const v = validateMeld(seg.slice(j, i), ok);
+      if (v.valid && dp[j].pts + v.points > dp[i].pts) dp[i] = { pts: dp[j].pts + v.points, g: [...dp[j].g, seg.slice(j, i)] };
+    }
+  }
+  const pr = [];
+  for (let i = 0; i + 1 < n; i++) if (isPair(seg[i], seg[i + 1], ok)) { pr.push([seg[i], seg[i + 1]]); i++; }
+  return [dp[n].g, pr];
+}
+function rackGroups(G, ok, hidden) {
+  const byId = new Map(G.hand.map((t) => [t.id, t]));
+  let series = [], pairs = [];
+  for (let r = 0; r < NS / COLS; r++) {
+    let seg = [];
+    const flush = () => { if (seg.length) { const [sg, pg] = bestSplit(seg, ok); series.push(...sg); pairs.push(...pg); seg = []; } };
+    for (let c = 0; c < COLS; c++) {
+      const id = S.slots[r * COLS + c];
+      if (id != null && byId.has(id) && !hidden.has(id)) seg.push(byId.get(id)); else flush();
+    }
+    flush();
+  }
+  // En az bir taş atmaya kalmalı
+  const free = G.hand.length - hidden.size;
+  while (series.flat().length >= free && series.length) { const big = series.find((g) => g.length > 3); if (big) big.pop(); else series.sort((a, b) => pts(a, ok) - pts(b, ok)), series.shift(); }
+  while (pairs.length * 2 >= free && pairs.length) pairs.pop();
+  return { series, pairs, pc: pairs.length, total: series.reduce((t, g) => t + pts(g, ok), 0) };
+}
+const pts = (g, ok) => validateMeld(g, ok).points;
+// Seri aç / Çift aç: elle gruplanmış (Per yap) taşlar varsa onları, yoksa ıstakadaki dizili grupları açar
+function openWith(kind) {
+  const G = S.game, ok = okeyOf(G), opened = G.others[G.you].opened;
+  let groups = S.staged;
+  if (!groups.length) {
+    const rg = rackGroups(G, ok, new Set());
+    const used = new Set(rg.series.flat().map((t) => t.id));
+    groups = (kind === 'meld' ? rg.series : rg.pairs.filter((p) => opened ? p.every((t) => !used.has(t.id)) : true)).map((g) => g.map((t) => t.id));
+  }
+  if (!groups.length) return toast('Istakada açılacak dizili grup yok.');
+  act({ type: opened ? 'lay' : 'open', groups });
+}
+// Taşları işle: eldeki taşları masadaki perlere sırayla ekler (okey ve son taş hariç)
+function isleHepsi() {
+  const G = S.game, ok = okeyOf(G), me = G.you;
+  if (!G.others[me].opened) return toast('Önce açmalısın.');
+  const staged = new Set(S.staged.flat());
+  const melds = G.others.map((o) => o.melds.map((m) => [...m]));
+  let left = G.hand.length;
+  const sends = [];
+  for (const t of [...G.hand].filter((x) => !staged.has(x.id) && !isJoker(x, ok)).sort((a, b) => a.num - b.num)) {
+    if (left <= 1) break;
+    outer: for (let s = 0; s < melds.length; s++) for (let k = 0; k < melds[s].length; k++) {
+      const m = melds[s][k];
+      if (m.length >= 3 && canAddToMeld(m, t, ok)) { m.push(t); sends.push({ type: 'addToMeld', ownerSeat: s, meldIndex: k, tileId: t.id }); left--; break outer; }
+    }
+  }
+  if (!sends.length) return toast('İşlenecek taş yok.');
+  sends.forEach((a) => act(a));
+}
+const planCtx = () => ({ ...ctxOf(), prefer: S.mode === 'seri' ? 'meld' : S.mode === 'cift' ? 'pairs' : null });
+function autoLayout() {
+  if (!plan) return arrange('seri');
+  const G = S.game, pl = plan(G.hand, okeyOf(G), planCtx());
+  setLayout(pl.groups, pl.order.slice(pl.groups.flat().length));
+  S.groupOf = new Map(); pl.groups.forEach((g, i) => g.forEach((id) => S.groupOf.set(id, i)));
+}
+const ctxOf = () => {
+  const G = S.game, o = G.others[G.you];
+  return { opened: o.opened, openMode: o.openMode, pairsOnTable: G.others.some((x, i) => i !== G.you && x.openMode === 'pairs'), minMeld: G.minMeld, minPairs: G.minPairs };
+};
+const A = {
+  login() { const n = $('#name').value.trim(); if (n) { store.name = n; connect(); } },
+  create() { send({ t: 'createRoom', mode: $('#mode').value, katlamali: $('#kat').checked, turnSeconds: +$('#sec').value }); },
+  join() { send({ t: 'join', code: $('#code').value }); },
+  start() { send({ t: 'start' }); }, leave() { send({ t: 'leave' }); }, next() { send({ t: 'nextRound' }); },
+  pile() { act({ type: 'draw', source: 'pile' }); },
+  take() { act({ type: 'draw', source: 'discard' }); },
+  tile(d) { const id = +d.id; S.sel.has(id) ? S.sel.delete(id) : S.sel.add(id); },
+  stage() { if (S.sel.size) { S.staged.push([...S.sel]); S.sel.clear(); } else toast('Önce taşları seç.'); },
+  unstage() { S.staged = []; },
+  // Aç / Yere ser: elle gruplanmış (Per yap) taşlar varsa onları, yoksa Yardımlı planını yere açar
+  open() {
+    const G = S.game;
+    let groups = S.staged;
+    if (!groups.length) {
+      const pl = plan?.(G.hand, okeyOf(G), ctxOf());
+      if (!pl?.canOpen) return toast(pl?.summary ?? 'Önce taşları grupla (Per yap).');
+      groups = pl.groups;
+    }
+    act({ type: G.others[G.you].opened ? 'lay' : 'open', groups });
+  },
+  // Yardımlı: eli en iyi puanla düzenler (gruplar renkli çerçeveyle ayrılır)
+  yardim() {
+    if (!plan) return toast('Yardımlı dosyası (assist.mjs) yüklenemedi.');
+    const pl = plan(S.game.hand, okeyOf(S.game), ctxOf());
+    setLayout(pl.groups, pl.order.slice(pl.groups.flat().length)); S.staged = []; S.sel.clear();
+    S.groupOf = new Map(); pl.groups.forEach((g, i) => g.forEach((id) => S.groupOf.set(id, i)));
+    toast(pl.summary);
+  },
+  // Yardımlı aç/ser: planı kurallara uygun olarak doğrudan yere açar
+  yardimac() {
+    if (!plan) return toast('Yardımlı dosyası (assist.mjs) yüklenemedi.');
+    const pl = plan(S.game.hand, okeyOf(S.game), ctxOf());
+    if (!pl.canOpen) return toast(pl.summary);
+    act({ type: ctxOf().opened ? 'lay' : 'open', groups: pl.groups });
+  },
+  discard() { if (S.sel.size === 1) { act({ type: 'discard', tileId: [...S.sel][0] }); S.sel.clear(); } else toast('Atmak için tek taş seç.'); },
+  cancel() { act({ type: 'cancelDiscardDraw' }); },
+  meld(d) { if (S.sel.size === 1) { act({ type: 'addToMeld', ownerSeat: +d.owner, meldIndex: +d.idx, tileId: [...S.sel][0] }); S.sel.clear(); } else toast('Önce işlenecek tek taşı seç.'); },
+  seriac() { openWith('meld'); },
+  ciftac() { openWith('pairs'); },
+  isle() { isleHepsi(); },
+  hideover() { S.hideOver = true; },
+  showover() { S.hideOver = false; },
+  seri() { S.mode = S.mode === 'seri' ? 'auto' : 'seri'; S.sel.clear(); autoLayout(); },
+  cift() { S.mode = S.mode === 'cift' ? 'auto' : 'cift'; S.sel.clear(); autoLayout(); },
+  // Boş yuvaya dokun: seçili taşlar oraya (ve sağındaki boş yuvalara) taşınır
+  slot(d) {
+    if (!S.sel.size) return;
+    const sel = S.slots.filter((id) => S.sel.has(id));
+    sel.forEach((id) => (S.slots[S.slots.indexOf(id)] = null));
+    let k = +d.s;
+    for (const id of sel) { while (k < NS && S.slots[k] != null) k++; if (k >= NS) S.slots[S.slots.indexOf(null)] = id; else S.slots[k++] = id; }
+    S.sel.clear();
+  },
+  call() { send({ t: 'rtc' }); },
+  mic() { if (!localStream) return lkRoom?.localParticipant.setMicrophoneEnabled(!lkRoom.localParticipant.isMicrophoneEnabled); localStream.getAudioTracks().forEach((t) => (t.enabled = !t.enabled)); },
+  cam() {
+    if (!localStream) return lkRoom?.localParticipant.setCameraEnabled(!lkRoom.localParticipant.isCameraEnabled);
+    if (!localStream.getVideoTracks().length) return toast('Kamera yok.');
+    camOn = !camOn; localStream.getVideoTracks().forEach((t) => (t.enabled = camOn));
+    pcs.forEach((_, id) => send({ t: 'sig', to: id, data: { cam: camOn } }));
+    tileFor(S.me).classList.toggle('off', !camOn);
+  },
+  endcall() { endCall(); },
+  invite() {
+    const u = location.origin + location.pathname + '?oda=' + S.lobby.code;
+    Promise.resolve(navigator.share ? navigator.share({ url: u, title: '101 Okey' }) : navigator.clipboard.writeText(u).then(() => toast('Davet bağlantısı kopyalandı'))).catch(() => {});
+  },
+  chat() { const i = $('#ci'); if (i.value.trim()) { send({ t: 'chat', text: i.value }); i.value = ''; } },
+};
+$('#app').onclick = (e) => { if (S.justDragged) return; const b = e.target.closest('[data-act]'); if (b && A[b.dataset.act]) { A[b.dataset.act](b.dataset); render(); } };
+$('#app').onkeydown = (e) => { if (e.key === 'Enter' && e.target.id === 'ci') A.chat(); };
+
+// Taşı sürükleyip istediğin yuvaya bırak (dokunmatik ve fare). Dolu yuvaya bırakırsan yer değiştirirler.
+let drag = null;
+$('#app').onpointerdown = (e) => {
+  const t = e.target.closest('.slot .t');
+  if (!t || e.button > 0) return;
+  drag = { el: t, from: +t.closest('.slot').dataset.s, x: e.clientX, y: e.clientY, on: false, ghost: null };
+};
+document.onpointermove = (e) => {
+  if (!drag) return;
+  if (!drag.on && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 8) {
+    drag.on = true; S.dragging = true;
+    const r = drag.el.getBoundingClientRect(); drag.w = r.width; drag.h = r.height;
+    drag.ghost = drag.el.cloneNode(true);
+    Object.assign(drag.ghost.style, { position: 'fixed', pointerEvents: 'none', zIndex: 50, opacity: 0.9, width: r.width + 'px', height: r.height + 'px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: parseFloat(getComputedStyle(drag.el).fontSize) * (S.k || 1) + 'px' });
+    document.body.append(drag.ghost);
+    drag.el.style.opacity = 0.25;
+  }
+  if (drag.on) { drag.ghost.style.left = e.clientX - drag.w / 2 + 'px'; drag.ghost.style.top = e.clientY - drag.h / 2 + 'px'; }
+};
+const endDrag = (e, drop) => {
+  if (!drag) return;
+  const d = drag; drag = null;
+  if (!d.on) return;
+  d.ghost.remove(); S.dragging = false; S.justDragged = true; setTimeout(() => (S.justDragged = false), 80);
+  const el = drop ? document.elementFromPoint(e.clientX, e.clientY) : null;
+  const tid = S.slots[d.from], tl = S.game?.hand.find((x) => x.id === tid);
+  const md = el?.closest('[data-owner]');
+  if (md && tl) act({ type: 'addToMeld', ownerSeat: +md.dataset.owner, meldIndex: +md.dataset.idx, tileId: tid });   // pere sürükle: işle
+  else if (el?.closest('.pile.br') && tl) act({ type: 'discard', tileId: tid });           // sağ alttaki atık yeri: taşı at
+  else if ((el?.closest('.t.heap') || el?.closest('.ind')) && tl) {                   // gösterge/yığın: okey ile bitirme
+    if (isJoker(tl, okeyOf(S.game)) && S.game.hand.length === 1) act({ type: 'discard', tileId: tid });
+    else toast('Okeyi sadece elindeki son taş olduğunda göstergeye veya yığına bırakıp bitirebilirsin.');
+  } else {
+    const to = el?.closest('.slot');
+    if (to) { const k = +to.dataset.s; [S.slots[d.from], S.slots[k]] = [S.slots[k], S.slots[d.from]]; }
+  }
+  render();
+};
+document.onpointerup = (e) => endDrag(e, true);
+document.onpointercancel = (e) => endDrag(e, false);
+
+// Görüntülü/sesli sohbet (LiveKit). Video alanı #app dışında; yeniden çizimde bozulmaz.
+let lk, lkRoom;
+const vt = new Map(); // kimlik -> video karesi (masada oyuncunun koltuğuna yerleşir)
+function placeVideos() {
+  for (const [id, d] of vt) { const sl = document.getElementById('vs-' + id); if (sl && d.parentNode !== sl) { sl.append(d); d.querySelector('video')?.play?.().catch(() => {}); } }
+}
+async function startCall({ url, token }) {
+  try {
+    lk ??= await import('https://cdn.jsdelivr.net/npm/livekit-client@2/+esm');
+    const { Room, RoomEvent } = lk;
+    lkRoom = new Room({ adaptiveStream: true });
+    const tileOf = (p) => {
+      let d = vt.get(p.identity);
+      if (!d) { d = document.createElement('div'); d.className = 'vt'; vt.set(p.identity, d); $('#vg').append(d); }
+      placeVideos(); return d;
+    };
+    lkRoom
+      .on(RoomEvent.TrackSubscribed, (tr, _pub, p) => tileOf(p).append(tr.attach()))
+      .on(RoomEvent.TrackUnsubscribed, (tr) => tr.detach().forEach((e) => e.remove()))
+      .on(RoomEvent.LocalTrackPublished, (pub) => { if (pub.track?.kind === 'video') tileOf(lkRoom.localParticipant).append(pub.track.attach()); })
+      .on(RoomEvent.ParticipantDisconnected, (p) => { vt.get(p.identity)?.remove(); vt.delete(p.identity); });
+    await lkRoom.connect(url, token);
+    await lkRoom.localParticipant.setMicrophoneEnabled(true);
+    await lkRoom.localParticipant.setCameraEnabled(true);
+    S.call = true; render();
+  } catch (e) { endCall(); toast('Kamera/mikrofon başlatılamadı: ' + e.message); }
+}
+// Dahili (eşler arası) görüntülü sohbet: LiveKit ayarlı değilse kullanılır, hesap gerekmez.
+const pcs = new Map();
+let localStream = null, iceServers = [], camOn = true;
+function tileFor(id) {
+  let d = vt.get(id);
+  if (!d) { d = document.createElement('div'); d.className = 'vt'; vt.set(id, d); $('#vg').append(d); }
+  return d;
+}
+function dropPeer(id) { pcs.get(id)?.close(); pcs.delete(id); vt.get(id)?.remove(); vt.delete(id); }
+function makePc(id) {
+  const pc = new RTCPeerConnection({ iceServers });
+  pc.q = [];
+  localStream.getTracks().forEach((t) => pc.addTrack(t, localStream));
+  pc.onicecandidate = (e) => e.candidate && send({ t: 'sig', to: id, data: { candidate: e.candidate } });
+  pc.ontrack = (e) => {
+    const el = document.createElement(e.track.kind === 'video' ? 'video' : 'audio');
+    el.autoplay = true; el.playsInline = true; el.muted = e.track.kind === 'video';
+    el.srcObject = new MediaStream([e.track]);
+    tileFor(id).append(el); placeVideos(); el.play?.().catch(() => {});
+  };
+  pc.onconnectionstatechange = () => {
+    if (pc.connectionState === 'connected' && !camOn) send({ t: 'sig', to: id, data: { cam: false } });
+    if (pc.connectionState === 'failed') dropPeer(id);
+  };
+  pcs.set(id, pc);
+  return pc;
+}
+async function startP2P(m) {
+  try {
+    try { localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { width: 320, height: 240, frameRate: 15 } }); }
+    catch { localStream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  } catch { send({ t: 'callLeave' }); return toast('Kamera/mikrofon izni verilmedi.'); }
+  iceServers = m.iceServers || []; S.call = true; camOn = localStream.getVideoTracks().length > 0;
+  if (camOn) {
+    const v = document.createElement('video');
+    v.autoplay = true; v.muted = true; v.playsInline = true;
+    v.srcObject = new MediaStream(localStream.getVideoTracks());
+    tileFor(S.me).append(v);
+  }
+  for (const p of m.peers) { // yeni katılan, odadaki herkese teklif gönderir
+    const pc = makePc(p.id);
+    await pc.setLocalDescription(await pc.createOffer());
+    send({ t: 'sig', to: p.id, data: { sdp: pc.localDescription } });
+  }
+  render();
+}
+async function onSig(m) {
+  if (!localStream) return;
+  const d = m.data;
+  if ('cam' in d) return tileFor(m.from).classList.toggle('off', !d.cam);
+  let pc = pcs.get(m.from);
+  const flush = async () => { for (const c of pc.q.splice(0)) await pc.addIceCandidate(c).catch(() => {}); };
+  if (d.sdp?.type === 'offer') {
+    pc?.close(); pc = makePc(m.from);
+    await pc.setRemoteDescription(d.sdp); await flush();
+    await pc.setLocalDescription(await pc.createAnswer());
+    send({ t: 'sig', to: m.from, data: { sdp: pc.localDescription } });
+  } else if (d.sdp && pc) { await pc.setRemoteDescription(d.sdp); await flush(); }
+  else if (d.candidate && pc) { if (pc.remoteDescription) await pc.addIceCandidate(d.candidate).catch(() => {}); else pc.q.push(d.candidate); }
+}
+function endCall() {
+  pcs.forEach((pc) => pc.close()); pcs.clear();
+  if (localStream) { localStream.getTracks().forEach((t) => t.stop()); localStream = null; send({ t: 'callLeave' }); }
+  lkRoom?.disconnect(); lkRoom = null;
+  vt.clear(); $('#vg').innerHTML = '';
+  if (S.call) { S.call = false; render(); }
+}
+
+// Sıra süresi çubuğu
+setInterval(() => {
+  const g = S.game, bar = $('#bar'), cd = $('#cd');
+  if (cd && S.lobby?.nextAt) cd.textContent = Math.max(0, Math.ceil((S.lobby.nextAt - (Date.now() + S.skew)) / 1000));
+  if (!g || !bar || g.over || g.deadline == null) return;
+  const left = Math.max(0, (g.deadline - (Date.now() + S.skew)) / 1000);
+  bar.style.width = Math.min(100, (left / S.lobby.turnSeconds) * 100) + '%';
+  bar.classList.toggle('warn', left <= 10);
+  $('#tl').textContent = Math.ceil(left) + ' sn';
+}, 250);
+
+if (store.token) connect(); else render();
+</script></body></html>
