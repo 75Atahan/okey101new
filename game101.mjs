@@ -1,6 +1,6 @@
 // 101 Okey oyun akışı: sıra, hamleler, el sonu, tekli/eşli puanlama.
 // Sunucu bu modülü çağırır; tüm hamleler burada doğrulanır.
-import { newRound, checkOpen, canAddToMeld, isJoker, roundScore, validateMeld, isPair, RULES } from './okey101.mjs';
+import { newRound, checkOpen, canAddToMeld, isJoker, roundScore, validateMeld, isPair, handPenalty, jokerReplaceIndex, RULES } from './okey101.mjs';
 
 const fail = (error) => ({ ok: false, error });
 const OK = { ok: true };
@@ -136,11 +136,20 @@ export function addToMeld(g, p, ownerSeat, meldIndex, tileId) {
   if (err) return fail(err);
   const seat = g.seats[p];
   if (!seat.opened) return fail('Önce açmalısın.');
-  if (seat.hand.length < 2) return fail('Atacak bir taş kalmalı.');
   const meld = g.seats[ownerSeat]?.melds[meldIndex];
   const tile = seat.hand.find((t) => t.id === tileId);
   if (!meld || !tile) return fail('Geçersiz per veya taş.');
   if (meld.length === 2) return fail('Çift taşlara taş işlenmez.');
+  const ji = jokerReplaceIndex(meld, tile, g.okey);
+  if (ji >= 0) {                                   // okeyin yerine taş: okey oyuncunun eline döner
+    const joker = meld[ji];
+    meld[ji] = takeFromHand(seat, tileId);
+    seat.hand.push(joker);
+    g.acted = true;
+    if (tileId === g.mustUse) g.mustUse = null;
+    return { ok: true, swapped: true };
+  }
+  if (seat.hand.length < 2) return fail('Atacak bir taş kalmalı.');
   if (!canAddToMeld(meld, tile, g.okey)) return fail('Taş bu pere uymuyor.');
   meld.push(takeFromHand(seat, tileId));
   g.acted = true;
@@ -212,7 +221,12 @@ function endRound(g, finisher, withOkey) {
     roundScore({ opened: s.opened, hand: s.hand, finished: i === finisher, factor }, g.okey) + s.penalty
   );
   points.forEach((v, i) => (g.scores[i] += v));
-  g.over = { finisher, withOkey, byPairs, factor, points };
+  // Sıralama: elde en az taş kalan kazanır (bitiren 0 taşla birinci); eşitlikte kalan sayı toplamı düşük olan
+  const tilesLeft = g.seats.map((s) => s.hand.length);
+  const left = g.seats.map((s) => handPenalty(s.hand, g.okey));
+  const rank = [...tilesLeft.keys()].sort((a, b) => tilesLeft[a] - tilesLeft[b] || left[a] - left[b] || a - b);
+  const bonus = finisher !== null || g.seats[rank[0]].openMode === 'pairs'; // bitiren veya çift açan kazanan: büyük ödül
+  g.over = { finisher, withOkey, byPairs, factor, points, rank, tilesLeft, bonus };
   g.deadline = null;
   if (g.mode === 'pairs') {
     // Karşılıklı oturanlar takım: 0-2 ve 1-3
@@ -238,7 +252,6 @@ export function viewFor(g, p) {
     hand: g.seats[p].hand,
     others: g.seats.map((s, i) => ({
       seat: i,
-      handCount: s.hand.length,
       opened: s.opened,
       openMode: s.openMode,
       meldSeq: s.meldSeq,

@@ -115,6 +115,18 @@ body.inGame{overflow:hidden}
 .rbtn{width:92px;height:92px;border-radius:50%;border:4px solid #1b3a7a;color:#fff;font-weight:800;font-size:14px;line-height:1.15}.rbtn.red{background:radial-gradient(#ff5252,#b71c1c)}.rbtn.green{background:radial-gradient(#5be26b,#1b8a2a)}
 .trow{display:flex;align-items:center;gap:6px}.trow .sb{flex:1;margin:3px 0}.trow b{min-width:48px;font-size:13px;text-align:right}
 .myplate small{font-size:13px}
+/* v2: uyarlanabilir sahne yüksekliği (telefon yan), kamera büyütme, işlenebilir taş çerçevesi */
+#stage{height:var(--sh,890px);margin:calc(var(--sh,890px) / -2) 0 0 -640px}
+.t.xs{width:var(--cw,28.46px);height:var(--ch,35.6px);font-size:calc(var(--ch,35.6px) * .45)}
+.t.c2{width:44px;height:56px;font-size:24px}.t.m2{width:50px;height:64px;font-size:28px}
+.t.fit{outline:2px solid #e53935;outline-offset:-3px}
+.cam{cursor:zoom-in}.cam.big{transform:scale(2);transform-origin:var(--o,50% 0);z-index:60;box-shadow:0 8px 24px #000a;cursor:zoom-out}
+.a:has(.cam.big){z-index:60}
+.cmp .orack{display:none}.stage.cmp .cam{width:52px;height:40px}.cmp .np{padding:3px 6px;gap:1px}.cmp .np b{font-size:13px}.cmp .np small{font-size:11px}
+.cmp .tag{padding:3px 0;font-size:12px;margin-bottom:3px}.stage.cmp .btn{font-size:12px;padding:3px 6px}.cmp input{padding:2px 6px;font-size:13px;margin:0}
+.stage.cmp .rack .slot .t{font-size:26px}.cmp .stg{max-height:24px}.cmp .tot{font-size:16px}.cmp .bdg{font-size:13px}
+.rot{position:fixed;top:0;left:0;right:0;z-index:80;background:#f5c542;color:#222;text-align:center;padding:6px;font-weight:700}
+.stage .btn.wide{padding:6px 4px;white-space:nowrap;font-size:14px}.stage.cmp .btn.wide{font-size:12px}
 </style></head><body>
 <div id="vg" style="display:none"></div>
 <div id="app"></div><div id="toast"></div>
@@ -123,7 +135,7 @@ function showErr() { document.getElementById('app').innerHTML = '<div class="car
 setTimeout(() => { if (!document.getElementById('app').innerHTML.trim()) showErr(); }, 4000);
 </script>
 <script type="module" onerror="showErr()">
-import { validateMeld, checkOpen, isJoker, isPair, canAddToMeld, layoutMeld, handPenalty } from './okey101.mjs';
+import { validateMeld, checkOpen, isJoker, isPair, canAddToMeld, layoutMeld, handPenalty, jokerReplaceIndex } from './okey101.mjs';
 let plan = null; // Yardımlı: assist.mjs yüklenemezse oyun yine açılır
 import('./assist.mjs').then((m) => { plan = m.plan; }).catch(() => {});
 // Adrese ?test eklenirse her sekme ayrı oyuncu olur (tek bilgisayarda 4 kişilik deneme için).
@@ -171,7 +183,7 @@ function on(m) {
   else if (m.t === 'sig') onSig(m);
   else if (m.t === 'callLeft') dropPeer(m.id);
   else if (m.t === 'timeout') toast(`${S.lobby?.names[m.seat] ?? 'Oyuncu'} süreyi aştı, taş otomatik atıldı.`);
-  else if (m.t === 'error') { toast(m.error); if (/Hatalı/.test(m.error)) { S.staged = []; S.sel.clear(); } }
+  else if (m.t === 'error') { toast(m.error); S.pendingSlot = null; if (/Hatalı/.test(m.error)) { S.staged = []; S.sel.clear(); } }
   render();
 }
 
@@ -179,7 +191,7 @@ const okeyOf = (g) => ({ color: g.indicator.color, num: (g.indicator.num % 13) +
 const tile = (t, o = {}) => {
   const j = o.okey && isJoker(t, o.okey);
   const face = t.fake ? '🍀' : j ? '' : t.num; // okey boş taş, sahte okey yonca
-  const cls = ['t', o.z, o.s && 's', o.sel && 'sel', j && 'joker', o.g != null && (o.g % 2 ? 'gb' : 'ga')].filter(Boolean).join(' ');
+  const cls = ['t', o.z, o.s && 's', o.sel && 'sel', j && 'joker', o.fit && 'fit', o.g != null && (o.g % 2 ? 'gb' : 'ga')].filter(Boolean).join(' ');
   return `<button class="${cls}"${o.act ? ` data-act="${o.act}" data-id="${t.id}"` : ''} style="color:${t.fake ? '#2e7d32' : COLORS[t.color]}">${face}</button>`;
 };
 function rack(hand) {
@@ -205,10 +217,28 @@ const views = {
   table() {
     const L = S.lobby, G = S.game, me = G.you, ok = okeyOf(G), myTurn = G.turn === me && !G.over;
     const n = L.seats.length, prev = (me + n - 1) % n, myO = G.others[me];
+    const H = S.H || 890, cmp = H < 800;               // geniş ekran (telefon yan / 16:9): sıkışık yerleşim
     const byId = new Map(G.hand.map((t) => [t.id, t]));
+    // Istaka yerleşimi: ilk dağıtımda/çekince Yardımlı dizer; sürükleyerek çekilen taş seçilen yuvaya,
+    // okey değişiminde gelen okey eksilen taşın yerine konur; sadece taş eksilirse elle diziliş korunur.
+    const handIds = new Set(G.hand.map((t) => t.id));
+    const before = new Set((S.slots || []).filter((x) => x != null));
+    const freed = (S.slots || []).map((id, i) => (id != null && !handIds.has(id) ? i : -1)).filter((i) => i >= 0);
     syncSlots(G.hand);
+    const added = G.hand.filter((t) => !before.has(t.id));
     const hk = G.hand.map((t) => t.id).sort((a, b) => a - b).join(',');
-    if (S.handKey !== hk) { S.handKey = hk; autoLayout(); }   // taş çekince/atınca Yardımlı kendiliğinden dizer
+    if (S.handKey !== hk) {
+      S.handKey = hk;
+      const move = (id, k) => { S.slots[S.slots.indexOf(id)] = null; S.slots[k] = id; };
+      if (before.size === 0 || added.length > 1) autoLayout();
+      else if (added.length === 1) {
+        const ps = S.pendingSlot;
+        if (ps != null) { const cur = S.slots.indexOf(added[0].id); if (cur !== ps) [S.slots[cur], S.slots[ps]] = [S.slots[ps], S.slots[cur]]; }   // bırakılan yuvaya (doluysa yer değiştirerek)
+        else if (freed.length === 1) move(added[0].id, freed[0]);
+        else autoLayout();
+      }
+      S.pendingSlot = null;
+    }
     const stagedIds = new Set(S.staged.flat());
     const rg = rackGroups(G, ok, stagedIds);                   // ıstakada gerçekten dizili perler
     const co = S.staged.length ? checkOpen(S.staged.map((g) => g.map((id) => byId.get(id))), ok, { minMeld: G.minMeld, minPairs: G.minPairs }) : null;
@@ -222,53 +252,82 @@ const views = {
     } else { canS = myO.openMode === 'meld' && rg.series.length > 0; canC = (myO.openMode === 'pairs' || pairsOnTable) && rg.pc > 0; }
     const enough = rg.total >= G.minMeld || rg.pc >= G.minPairs;
     const totTxt = myO.opened ? `Kalan ${handPenalty(G.hand, ok)}` : `${rg.total}${rg.pc ? ` · ${rg.pc} çift` : ''}`;
-    const hint = G.over ? 'El bitti' : !myTurn ? `Sıra: ${esc(L.names[G.turn])}` : G.phase === 'draw' ? 'Çek: ortadaki taşa veya soldaki atığa dokun' : G.mustUse != null ? 'Aldığın atık taşı kullanmalısın' : 'Taş at: sağ alttaki atığa sürükle';
+    const hint = G.over ? 'El bitti' : !myTurn ? `Sıra: ${esc(L.names[G.turn])}` : G.phase === 'draw' ? 'Çek: ortadaki taşa dokun ya da ıstakaya sürükle' : G.mustUse != null ? 'Aldığın atık taşı kullanmalısın' : 'Taş at: çift dokun ya da sağ alttaki atığa sürükle';
+    // Açtıktan sonra elde kalan taşlardan işlenebilenler (ya da okey değiştirebilenler): kırmızı ince çerçeve
+    const fitSet = new Set();
+    if (myO.opened) {
+      const ms = G.others.flatMap((o) => o.melds.filter((m) => m.length >= 3));
+      for (const t of G.hand) if (!stagedIds.has(t.id) && !isJoker(t, ok) && ms.some((m) => jokerReplaceIndex(m, t, ok) >= 0 || canAddToMeld(m, t, ok))) fitSet.add(t.id);
+    }
+    // Yerleşim (sahne 1280 x H): normal (iPad) ve sıkışık (telefon yan / geniş ekran)
+    const R = cmp ? 150 : 182, rackY = cmp ? H - R - 2 : 706, meH = cmp ? 54 : 96, meY = cmp ? rackY - meH - 4 : 606;
+    const clothY = cmp ? 62 : 140, clothH = cmp ? meY - clothY - 4 : 463;
+    const CH = clothH / 13, CW = cmp ? Math.min(28.46, CH * 0.8) : 28.46, sq = 13 * CW, cx = cmp ? 96 + (740 - 2 * sq) / 2 : 96;
+    const px = cmp ? 946 + (170 - 6 * CW) / 2 : 946, vars = `--cw:${CW}px;--ch:${CH}px`;
+    const P = cmp ? {
+      info: [8, 6, 420, 24], chat: [850, 4, 420, 24], btns: [850, 30, 420, 26], top: [440, 2, 400, 56], left: [2, 96, 92, 120], right: [1136, 96, 127, 96],
+      tl: [28, 32], tr: [1194, 32], bl: [28, meY], br: [1194, meY], pz: [50, 60], pc: 'c2', mz: 'm2',
+      b1: [6, 220, 88, 28], b2: [1136, 196, 127, 26], tags: [846, 62, 90, 120], ind: [862, 188, 52, 68], heap: [862, 262, 52, 68],
+      by: [226, 260, 294, 328, 362, 396], bh: [30, 30, 30, 30, 30, 26],
+      stg: [96, meY, 330, meH], me: [440, meY, 400, meH], tot: [860, meY + 10, 150, 32], rack: [102, rackY, 1076, R], sl: [14, rackY + 8, 80, R - 16], sr: [1186, rackY + 8, 80, R - 16],
+    } : {
+      info: [40, 10, 430, 28], chat: [480, 6, 420, 34], btns: [910, 6, 340, 34], top: [440, 50, 400, 84], left: [2, 150, 92, 205], right: [1136, 136, 127, 148],
+      tl: [28, 61], tr: [1194, 61], bl: [28, 612], br: [1194, 612], pz: [57, 74], pc: 'c', mz: 'm',
+      b1: [6, 372, 88, 32], b2: [1136, 288, 127, 30], tags: [846, 140, 90, 176], ind: [858, 330, 66, 86], heap: [858, 432, 66, 86],
+      by: [322, 372, 422, 472, 522, 572], bh: [44, 44, 44, 44, 44, 32],
+      stg: [96, 610, 330, 92], me: [440, 606, 400, 96], tot: [860, 662, 150, 36], rack: [102, 706, 1076, 182], sl: [14, 730, 80, 130], sr: [1186, 730, 80, 130],
+    };
     const turnBar = '<div class="trow"><div class="sb"><div id="bar"></div></div><b id="tl"></b></div>';
     const bubble = (uid) => { const b = [...S.chat].reverse().find((c) => c.userId === uid && Date.now() - c.at < 8000); return b ? `<div class="bub">${esc(b.text)}</div>` : ''; };
-    const cam = (i) => `<div class="cam" id="vs-${L.seats[i]}"></div>`; // kamera açıksa isminin yanında sabit durur
+    // Kamera açıksa isminin yanında sabit durur; dokununca 2 kat büyür/küçülür
+    const cam = (i, org) => `<div class="cam${S.zoomCam === L.seats[i] ? ' big' : ''}" id="vs-${L.seats[i]}" data-act="camzoom" data-uid="${L.seats[i]}" style="--o:${org}"></div>`;
     const rel = (k) => (me + k) % n;
-    const box = (x, y, w, h, html, cls = '') => `<div class="a ${cls}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">${html}</div>`;
-    const plate = (i, x, y, w, h, pos) => {
-      const o = G.others[i], isT = G.turn === i && !G.over;
-      return box(x, y, w, h, `${bubble(L.seats[i])}<div class="pl">${cam(i)}<div><b>${esc(L.names[i])}${L.online[i] ? '' : ' ⚠'}</b><br><small>${o.handCount} taş${o.opened ? ' · açtı' : ''}</small></div></div>${isT ? turnBar : ''}<div class="orack">${'<i></i>'.repeat(o.handCount)}</div>`, `seat np ${pos} ${isT ? 'turn' : ''}`);
+    const box = (x, y, w, h, html, cls = '', extra = '') => `<div class="a ${cls}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;${extra}">${html}</div>`;
+    const bx = (r, html, cls = '', extra = '') => box(r[0], r[1], r[2], r[3], html, cls, extra);
+    const plate = (i, r, pos) => {
+      const o = G.others[i], isT = G.turn === i && !G.over, org = pos === 'left' ? '0 0' : pos === 'right' ? '100% 0' : '50% 0';
+      // Rakibin taş sayısı gösterilmez
+      return bx(r, `${bubble(L.seats[i])}<div class="pl">${cam(i, org)}<div><b>${esc(L.names[i])}${L.online[i] ? '' : ' ⚠'}</b><br><small>${o.opened ? 'açtı' : ''}</small></div></div>${isT ? turnBar : ''}<div class="orack">${'<i></i>'.repeat(14)}</div>`, `seat np ${pos} ${isT ? 'turn' : ''}`);
     };
-    const pile = (i, x, y, corner) => {
+    const pile = (i, xy, corner) => {
       const d = G.others[i].lastDiscard, take = i === prev && canDraw && d;
-      return box(x, y, 57, 74, d ? `<span class="${S.fresh[i] ? 'new' : ''}">${tile(d, { okey: ok, z: 'c', act: take ? 'take' : '' })}</span>` : '', `pile ${corner}`);
+      return box(xy[0], xy[1], P.pz[0], P.pz[1], d ? `<span class="${S.fresh[i] ? 'new' : ''}">${tile(d, { okey: ok, z: P.pc, act: take ? 'take' : '' })}</span>` : '', `pile ${corner}`);
     };
     // Masa: iki adet 13x13 kare; seri perler sayılarına göre hizalanır, çiftler sağdaki alana dizilir
-    const CW = 28.46, CH = 35.6, place = tablePlacement(G, ok);
-    const rows = place.filter((p) => !p.pair).map((p) => `<div class="meld-row" data-act="meld" data-owner="${p.s}" data-idx="${p.k}" style="left:${(p.row >= 13 ? 370 : 0) + (p.cols[0] - 1) * CW}px;top:${(p.row % 13) * CH}px">${p.cells.map((c) => tile(c.tile, { z: 'xs', okey: ok })).join('')}</div>`).join('');
+    const place = tablePlacement(G, ok);
+    const rows = place.filter((p) => !p.pair).map((p) => `<div class="meld-row" data-act="meld" data-owner="${p.s}" data-idx="${p.k}" style="left:${(p.row >= 13 ? sq : 0) + (p.cols[0] - 1) * CW}px;top:${(p.row % 13) * CH}px">${p.cells.map((c) => tile(c.tile, { z: 'xs', okey: ok })).join('')}</div>`).join('');
     const prs = place.filter((p) => p.pair).map((p) => `<div class="meld-row" data-act="meld" data-owner="${p.s}" data-idx="${p.k}" style="left:${p.col * CW}px;top:${p.row * CH}px">${p.m.map((t) => tile(t, { z: 'xs', okey: ok })).join('')}</div>`).join('');
-    const btn = (y, h, cls, a, label, on) => box(1136, y, 127, h, `<button class="btn ${cls} wide" data-act="${a}" ${on ? '' : 'disabled'}>${label}</button>`);
+    const sqs = (w, k) => Array.from({ length: k }, (_, i) => `<div class="sq" style="left:${i * w}px;width:${w}px;height:${clothH}px;background-size:${CW}px ${CH}px"></div>`).join('');
+    const btn = (k, cls, a, label, on) => box(1136, P.by[k], 127, P.bh[k], `<button class="btn ${cls} wide" data-act="${a}" ${on ? '' : 'disabled'}>${label}</button>`);
     const rackHtml = S.slots.map((id, k) => {
       const t = id != null && !stagedIds.has(id) ? byId.get(id) : null;
-      return `<div class="slot" data-s="${k}"${t ? '' : ' data-act="slot"'}>${t ? tile(t, { act: 'tile', sel: S.sel.has(id), okey: ok, g: S.groupOf?.get(id) }) : ''}</div>`;
+      return `<div class="slot" data-s="${k}"${t ? '' : ' data-act="slot"'}>${t ? tile(t, { act: 'tile', sel: S.sel.has(id), okey: ok, g: S.groupOf?.get(id), fit: fitSet.has(id) }) : ''}</div>`;
     }).join('');
     const stakeOn = S.stakeAt && S.balance != null && Date.now() - S.stakeAt < 2800;
     const stake = stakeOn ? `<div class="stake" style="animation-delay:-${((Date.now() - S.stakeAt) / 1000).toFixed(2)}s">💰 −${fmt(L.stake)}</div>` : '';
     const stg = S.staged.map((g) => { const v = validateMeld(g.map((id) => byId.get(id)), ok); return `<span class="grp ${v.valid || g.length === 2 ? '' : 'bad'}">${g.map((id) => tile(byId.get(id), { z: 'xs', okey: ok })).join('')}</span>`; }).join('');
-    return `<div id="stage" class="stage">
-      ${box(40, 10, 430, 28, `<small>Oda ${L.code} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'}${S.balance != null ? ` · 💰 ${fmt(S.balance)} · masa ${fmt(L.stake)}` : ''}</small>`)}
-      ${box(480, 6, 420, 34, '<input id="ci" placeholder="Mesaj yaz" maxlength="300" style="flex:1"><button class="btn alt sm" data-act="chat">Gönder</button>', 'flex')}
-      ${box(910, 6, 340, 34, `<button class="btn alt sm" data-act="invite">Davet et</button>${S.call ? '<button class="btn alt sm" data-act="mic">🎤</button><button class="btn alt sm" data-act="cam">📷</button><button class="btn alt sm" data-act="endcall">✖</button>' : '<button class="btn alt sm" data-act="call">Görüntülü katıl</button>'}`, 'flex')}
-      ${plate(rel(3), 2, 150, 92, 205, 'left')}${plate(rel(1), 1136, 136, 127, 148, 'right')}${plate(rel(2), 440, 50, 400, 84, 'top')}
-      ${pile(rel(2), 28, 61, 'tl')}${pile(rel(1), 1194, 61, 'tr')}${pile(rel(3), 28, 612, 'bl')}${pile(me, 1194, 612, 'br')}
-      ${box(6, 372, 88, 32, `${G.minMeld}<small> sayı</small>`, 'bdg')}${box(1136, 288, 127, 30, `${G.minPairs}<small> çift</small>`, 'bdg')}
-      ${box(96, 140, 740, 463, `<div class="sq" style="left:0"></div><div class="sq" style="left:370px"></div>${rows}`, 'cloth')}
-      ${box(946, 140, 170, 463, `<div class="sq" style="left:0;width:170px"></div>${prs}`, 'cloth')}
-      ${box(846, 140, 90, 176, `<div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag g">Yardımlı</div><div class="tag ${L.katlamali ? 'r' : ''}">${L.katlamali ? 'Katlamalı' : 'Katlamasız'}</div><div class="tag">1 El</div>`)}
-      ${box(858, 330, 66, 86, `<span class="ind">${tile(G.indicator, { okey: ok, z: 'm' })}</span>`)}
-      ${box(858, 432, 66, 86, `<button class="t heap ${canDraw ? 'go' : ''}" data-act="pile" ${canDraw ? '' : 'disabled'}><span>${G.pileCount}</span></button>`)}
-      ${btn(322, 44, '', 'seriac', 'Seri aç', canAct && canS)}${btn(372, 44, '', 'ciftac', 'Çift aç', canAct && canC)}
-      ${btn(422, 44, 'alt', 'unstage', 'Geri topla', S.staged.length > 0)}${btn(472, 44, 'alt', 'isle', 'Taşları işle', canAct && myO.opened)}
-      ${btn(522, 44, '', 'discard', 'At', canAct)}${btn(572, 32, 'alt', 'cancel', 'Atığı geri ver', myTurn && G.mustUse != null)}
-      ${box(96, 610, 330, 92, `<div class="row" style="flex-wrap:nowrap;gap:6px"><button class="btn alt sm" data-act="stage">Per yap</button><small>${S.staged.length ? `Açılacak: ${sum}` : 'Taşları seç → Per yap'}</small></div><div class="stg">${stg}</div>`)}
-      ${box(440, 606, 400, 96, `${bubble(L.seats[me])}<div class="pl">${cam(me)}<div style="text-align:left"><b>${esc(L.names[me])}</b><br><small>${hint}</small></div></div>${myTurn ? turnBar : ''}`, `seat np myplate ${myTurn ? 'turn' : ''}`)}
-      ${box(860, 662, 150, 36, totTxt, `tot ${myO.opened ? '' : enough ? 'ok' : 'bad'}`)}
-      ${box(14, 730, 80, 130, `<button class="side ${S.mode === 'seri' ? 'on' : ''}" data-act="seri">Seri<br>diz</button>`)}
-      ${box(1186, 730, 80, 130, `<button class="side ${S.mode === 'cift' ? 'on' : ''}" data-act="cift">Çift<br>diz</button>`)}
-      ${box(102, 706, 1076, 182, rackHtml + stake, 'rack')}
+    const call = S.call ? '<button class="btn alt sm" data-act="mic">🎤</button><button class="btn alt sm" data-act="cam">📷</button><button class="btn alt sm" data-act="endcall">✖</button>' : '<button class="btn alt sm" data-act="call">Görüntülü katıl</button>';
+    return `<div id="stage" class="stage ${cmp ? 'cmp' : ''}">
+      ${bx(P.info, `<small>Oda ${L.code} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'}${S.balance != null ? ` · 💰 ${fmt(S.balance)} · masa ${fmt(L.stake)}` : ''}</small>`)}
+      ${bx(P.chat, '<input id="ci" placeholder="Mesaj yaz" maxlength="300" style="flex:1"><button class="btn alt sm" data-act="chat">Gönder</button>', 'flex')}
+      ${bx(P.btns, `<button class="btn alt sm" data-act="invite">Davet et</button>${call}`, 'flex')}
+      ${plate(rel(3), P.left, 'left')}${plate(rel(1), P.right, 'right')}${plate(rel(2), P.top, 'top')}
+      ${pile(rel(2), P.tl, 'tl')}${pile(rel(1), P.tr, 'tr')}${pile(rel(3), P.bl, 'bl')}${pile(me, P.br, 'br')}
+      ${bx(P.b1, `${G.minMeld}<small> sayı</small>`, 'bdg')}${bx(P.b2, `${G.minPairs}<small> çift</small>`, 'bdg')}
+      ${box(cx, clothY, 2 * sq, clothH, `${sqs(sq, 2)}${rows}`, 'cloth', vars)}
+      ${box(px, clothY, 6 * CW, clothH, `${sqs(6 * CW, 1)}${prs}`, 'cloth', vars)}
+      ${bx(P.tags, `<div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag g">Yardımlı</div><div class="tag ${L.katlamali ? 'r' : ''}">${L.katlamali ? 'Katlamalı' : 'Katlamasız'}</div><div class="tag">1 El</div>`)}
+      ${bx(P.ind, `<span class="ind">${tile(G.indicator, { okey: ok, z: P.mz })}</span>`)}
+      ${bx(P.heap, `<button class="t heap ${canDraw ? 'go' : ''}" data-act="pile" ${canDraw ? '' : 'disabled'}><span>${G.pileCount}</span></button>`)}
+      ${btn(0, '', 'seriac', 'Seri aç', canAct && canS)}${btn(1, '', 'ciftac', 'Çift aç', canAct && canC)}
+      ${btn(2, 'alt', 'unstage', 'Geri topla', S.staged.length > 0)}${btn(3, 'alt', 'isle', 'Taşları işle', canAct && myO.opened)}
+      ${btn(4, '', 'discard', 'At', canAct)}${btn(5, 'alt', 'cancel', 'Atığı geri ver', myTurn && G.mustUse != null)}
+      ${bx(P.stg, `<div class="row" style="flex-wrap:nowrap;gap:6px"><button class="btn alt sm" data-act="stage">Per yap</button><small>${S.staged.length ? `Açılacak: ${sum}` : 'Taşları seç → Per yap'}</small></div><div class="stg">${stg}</div>`, '', vars)}
+      ${bx(P.me, `${bubble(L.seats[me])}<div class="pl">${cam(me, '50% 100%')}<div style="text-align:left"><b>${esc(L.names[me])}</b><br><small>${hint}</small></div></div>${myTurn ? turnBar : ''}`, `seat np myplate ${myTurn ? 'turn' : ''}`)}
+      ${bx(P.tot, totTxt, `tot ${myO.opened ? '' : enough ? 'ok' : 'bad'}`)}
+      ${bx(P.sl, `<button class="side ${S.mode === 'seri' ? 'on' : ''}" data-act="seri">Seri<br>diz</button>`)}
+      ${bx(P.sr, `<button class="side ${S.mode === 'cift' ? 'on' : ''}" data-act="cift">Çift<br>diz</button>`)}
+      ${bx(P.rack, rackHtml + stake, 'rack')}
     </div>${G.over ? overHtml(G, L) : ''}`;
   },
 };
@@ -277,26 +336,29 @@ const views = {
 function overHtml(G, L) {
   const o = G.over, n = L.seats.length;
   if (S.hideOver) return '<button class="btn over-chip" data-act="showover">Sonucu göster</button>';
-  const win = o.finisher == null ? [] : L.mode === 'pairs' ? [o.finisher, (o.finisher + 2) % n] : [o.finisher];
-  const rank = [...o.points.keys()].sort((a, b) => (win.includes(b) - win.includes(a)) || o.points[a] - o.points[b]);
-  const title = o.finisher == null ? 'Kimse bitiremedi (bedeller iade)' : `${esc(L.names[o.finisher])} kazandı${o.withOkey ? ' · okey ile bitirdi' : ''}`;
-  const secs = L.nextAt ? Math.max(0, Math.ceil((L.nextAt - (Date.now() + S.skew)) / 1000)) : null;
-  const rows = rank.map((i) => {
-    const w = win.includes(i), bal = L.balances?.[i];
-    return `<div class="rw ${w ? 'win' : ''}"><div class="av">${esc((L.names[i] || '?')[0].toUpperCase())}${w ? '<i class="crown">👑</i>' : ''}</div><div class="nm2"><b>${esc(L.names[i])}</b>${bal != null ? `<small>💰 ${fmt(bal)}${L.lastPayout ? ` (${L.lastPayout[i] >= 0 ? '+' : ''}${fmt(L.lastPayout[i])})` : ''}</small>` : ''}</div>${w ? '<span class="kz">KAZANAN</span>' : ''}<span class="pt">${o.points[i] > 0 ? '+' : ''}${o.points[i]}</span></div>`;
+  const w = o.rank[0];
+  const win = L.mode === 'pairs' ? [w, (w + 2) % n] : [w];
+  const order = L.mode === 'pairs' ? [...win, ...o.rank.filter((i) => !win.includes(i))] : o.rank;
+  const what = o.finisher != null ? (o.withOkey ? 'eli okeyle bitirdi' : 'eli bitirdi') : 'elinde en az taş kaldı';
+  const title = `${esc(L.names[w])} ${what}${o.bonus ? ' · büyük ödül' : ''}${o.byPairs ? ' · çift açtı' : ''}${o.withOkey && L.katlamali ? ' · okey ×2' : ''}`;
+  const rows = order.map((i, k) => {
+    const isW = win.includes(i), bal = L.balances?.[i];
+    return `<div class="rw ${isW ? 'win' : ''}"><div class="av">${esc((L.names[i] || '?')[0].toUpperCase())}${k === 0 ? '<i class="crown">👑</i>' : ''}</div><div class="nm2"><b>${esc(L.names[i])}</b><small>${bal != null ? `💰 ${fmt(bal)}${L.lastPayout ? ` (${L.lastPayout[i] >= 0 ? '+' : ''}${fmt(L.lastPayout[i])})` : ''} · ` : ''}${o.points[i] > 0 ? '+' : ''}${o.points[i]} puan</small></div>${isW ? '<span class="kz">KAZANAN</span>' : ''}<span class="pt">${o.tilesLeft[i]}<small> taş</small></span></div>`;
   }).join('');
   return `<div class="over"><div class="res"><div class="res-h">OYUN SONUCU</div>
-    ${secs != null ? `<div class="res-c"><b id="cd">${secs}</b> saniye içinde yeni el başlayacak</div>` : ''}
-    <div class="res-t">🏆 ${title}${o.byPairs ? ' · çift açtı: puan ve jeton ×2' : ''}${o.withOkey && L.katlamali ? ' · okey ×2' : ''}</div>${rows}${o.teams ? `<small>Takımlar: ${o.teams.join(' / ')}</small>` : ''}
+    <div class="res-t">🏆 ${title}</div>${rows}${o.teams ? `<small>Takımlar: ${o.teams.join(' / ')}</small>` : ''}
     <div class="row" style="justify-content:space-between;margin-top:12px"><button class="rbtn red" data-act="leave">Masadan<br>ayrıl</button><button class="btn alt" data-act="hideover">Masaya göz at</button><button class="rbtn green" data-act="next">Yeni oyuna<br>başla</button></div></div></div>`;
 }
-// Sahne 1280x890 sabit oranlı; ekrana sığacak şekilde ölçeklenir
+// Sahne 1280 genişlikte; yükseklik ekran oranına göre uyarlanır (geniş ekranda 640-799, diğerlerinde 890) ve ekrana sığacak şekilde ölçeklenir
 function fit() {
   if (typeof innerWidth === 'undefined') return;
-  S.k = Math.min(innerWidth / 1280, innerHeight / 890);
-  document.documentElement.style.setProperty('--sc', S.k);
+  const h0 = (1280 * innerHeight) / innerWidth;
+  S.H = h0 < 800 ? Math.max(640, Math.round(h0)) : 890;
+  S.k = Math.min(innerWidth / 1280, innerHeight / S.H);
+  const st = document.documentElement.style;
+  st.setProperty('--sc', S.k); st.setProperty('--sh', S.H + 'px');
 }
-globalThis.onresize = () => { if (S.game) fit(); };
+globalThis.onresize = () => { if (S.game) { fit(); render(); } };
 // Kazanan için masaya havai fişek + konfeti (kütüphanesiz, canvas)
 function celebrate() {
   if (typeof requestAnimationFrame !== 'function') return;
@@ -329,6 +391,7 @@ function render() {
   const inRoom = S.lobby;
   let h = S.off ? '<div class="card">Bağlantı koptu, yeniden bağlanılıyor…</div>' : '';
   h += !S.me ? views.login() : !inRoom ? views.menu() : S.game ? views.table() : views.room(S.lobby);
+  if (inGame && typeof innerWidth !== 'undefined' && innerHeight > innerWidth * 1.15) h += '<div class="rot">↻ Daha büyük görmek için telefonu yan çevir</div>';
   $('#app').innerHTML = h;
   S.fresh = {};
   placeVideos();
@@ -437,7 +500,8 @@ function openWith(kind) {
   if (!groups.length) return toast('Istakada açılacak dizili grup yok.');
   act({ type: opened ? 'lay' : 'open', groups });
 }
-// Taşları işle: eldeki taşları masadaki perlere sırayla ekler (okey ve son taş hariç)
+// Taşları işle: eldeki taşları masadaki perlere sırayla ekler (okey ve son taş hariç).
+// Önce okeyin yerine konabilecek taşlara bakar (okey ıstakaya döner).
 function isleHepsi() {
   const G = S.game, ok = okeyOf(G), me = G.you;
   if (!G.others[me].opened) return toast('Önce açmalısın.');
@@ -446,10 +510,15 @@ function isleHepsi() {
   let left = G.hand.length;
   const sends = [];
   for (const t of [...G.hand].filter((x) => !staged.has(x.id) && !isJoker(x, ok)).sort((a, b) => a.num - b.num)) {
-    if (left <= 1) break;
-    outer: for (let s = 0; s < melds.length; s++) for (let k = 0; k < melds[s].length; k++) {
+    let done = false;
+    for (let s = 0; s < melds.length && !done; s++) for (let k = 0; k < melds[s].length && !done; k++) {
+      const m = melds[s][k], ji = m.length >= 3 ? jokerReplaceIndex(m, t, ok) : -1;
+      if (ji >= 0) { m[ji] = t; sends.push({ type: 'addToMeld', ownerSeat: s, meldIndex: k, tileId: t.id }); done = true; }
+    }
+    if (done || left <= 1) continue;
+    for (let s = 0; s < melds.length && !done; s++) for (let k = 0; k < melds[s].length && !done; k++) {
       const m = melds[s][k];
-      if (m.length >= 3 && canAddToMeld(m, t, ok)) { m.push(t); sends.push({ type: 'addToMeld', ownerSeat: s, meldIndex: k, tileId: t.id }); left--; break outer; }
+      if (m.length >= 3 && canAddToMeld(m, t, ok)) { m.push(t); sends.push({ type: 'addToMeld', ownerSeat: s, meldIndex: k, tileId: t.id }); left--; done = true; }
     }
   }
   if (!sends.length) return toast('İşlenecek taş yok.');
@@ -473,7 +542,14 @@ const A = {
   start() { send({ t: 'start' }); }, leave() { send({ t: 'leave' }); }, next() { send({ t: 'nextRound' }); },
   pile() { act({ type: 'draw', source: 'pile' }); },
   take() { act({ type: 'draw', source: 'discard' }); },
-  tile(d) { const id = +d.id; S.sel.has(id) ? S.sel.delete(id) : S.sel.add(id); },
+  // Taşa çift dokun: sağdaki atığa atılır
+  tile(d) {
+    const id = +d.id, now = Date.now();
+    if (S.lastTap && S.lastTap.id === id && now - S.lastTap.t < 380) { S.lastTap = null; S.sel.delete(id); act({ type: 'discard', tileId: id }); return; }
+    S.lastTap = { id, t: now };
+    S.sel.has(id) ? S.sel.delete(id) : S.sel.add(id);
+  },
+  camzoom(d) { S.zoomCam = S.zoomCam === d.uid ? null : d.uid; },
   stage() { if (S.sel.size) { S.staged.push([...S.sel]); S.sel.clear(); } else toast('Önce taşları seç.'); },
   unstage() { S.staged = []; },
   // Aç / Yere ser: elle gruplanmış (Per yap) taşlar varsa onları, yoksa Yardımlı planını yere açar
@@ -541,11 +617,15 @@ $('#app').onclick = (e) => { if (S.justDragged) return; const b = e.target.close
 $('#app').onkeydown = (e) => { if (e.key === 'Enter' && e.target.id === 'ci') A.chat(); };
 
 // Taşı sürükleyip istediğin yuvaya bırak (dokunmatik ve fare). Dolu yuvaya bırakırsan yer değiştirirler.
+// Yığından / soldaki atıktan çekerken de taşı sürükleyip ıstakada istediğin yuvaya bırakabilirsin.
 let drag = null;
 $('#app').onpointerdown = (e) => {
+  if (e.button > 0) return;
   const t = e.target.closest('.slot .t');
-  if (!t || e.button > 0) return;
-  drag = { el: t, from: +t.closest('.slot').dataset.s, x: e.clientX, y: e.clientY, on: false, ghost: null };
+  const h = t ? null : e.target.closest('.t.heap:not(:disabled), .pile.bl .t[data-act="take"]');
+  const el = t || h;
+  if (!el) return;
+  drag = { el, kind: t ? 'rack' : 'draw', source: h?.classList.contains('heap') ? 'pile' : 'discard', from: t ? +t.closest('.slot').dataset.s : -1, x: e.clientX, y: e.clientY, on: false, ghost: null };
 };
 document.onpointermove = (e) => {
   if (!drag) return;
@@ -565,11 +645,16 @@ const endDrag = (e, drop) => {
   if (!d.on) return;
   d.ghost.remove(); S.dragging = false; S.justDragged = true; setTimeout(() => (S.justDragged = false), 80);
   const el = drop ? document.elementFromPoint(e.clientX, e.clientY) : null;
+  if (d.kind === 'draw') {                                                          // çekilen taş bırakılan yuvaya gelir
+    const to = el?.closest('.slot');
+    if (to) { S.pendingSlot = +to.dataset.s; act({ type: 'draw', source: d.source }); } else render();
+    return;
+  }
   const tid = S.slots[d.from], tl = S.game?.hand.find((x) => x.id === tid);
   const md = el?.closest('[data-owner]');
   if (md && tl) act({ type: 'addToMeld', ownerSeat: +md.dataset.owner, meldIndex: +md.dataset.idx, tileId: tid });   // pere sürükle: işle
-  else if (el?.closest('.pile.br') && tl) act({ type: 'discard', tileId: tid });           // sağ alttaki atık yeri: taşı at
-  else if ((el?.closest('.t.heap') || el?.closest('.ind')) && tl) {                   // gösterge/yığın: okey ile bitirme
+  else if (el?.closest('.pile.br') && tl) act({ type: 'discard', tileId: tid });                                    // sağ alttaki atık yeri: at
+  else if ((el?.closest('.t.heap') || el?.closest('.ind')) && tl) {                                                  // gösterge/yığın: okey ile bitirme
     if (isJoker(tl, okeyOf(S.game)) && S.game.hand.length === 1) act({ type: 'discard', tileId: tid });
     else toast('Okeyi sadece elindeki son taş olduğunda göstergeye veya yığına bırakıp bitirebilirsin.');
   } else {

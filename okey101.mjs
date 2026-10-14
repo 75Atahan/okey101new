@@ -163,3 +163,16 @@ export function layoutMeld(tiles, okey) {
   }
   return flat();
 }
+
+// Perde okeyin yerine tam oturan taş varsa okeyin sırasını döndürür (yoksa -1).
+// Taş okeyin yerine konunca okey oyuncunun eline döner.
+export function jokerReplaceIndex(meld, tile, okey) {
+  if (isJoker(tile, okey)) return -1;
+  for (let i = 0; i < meld.length; i++) {
+    if (!isJoker(meld[i], okey)) continue;
+    const next = [...meld];
+    next[i] = tile;
+    if (validateMeld(next, okey).valid) return i;
+  }
+  return -1;
+}

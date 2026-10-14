@@ -14,7 +14,7 @@ assert.ok(discard(g, 0, first.id).ok);
 assert.equal(g.turn, 1);
 assert.ok(draw(g, 1, 'discard').ok);                     // soldaki atığı alır
 assert.equal(g.seats[1].hand.length, 22);
-assert.equal(viewFor(g, 1).others[0].handCount, 21);
+assert.ok(!('handCount' in viewFor(g, 1).others[0]));
 
 // Eli bitirme: aç, işle, son taşı at
 g = createGame({ mode: 'pairs' });

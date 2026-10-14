@@ -33,8 +33,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
 
   const get = (code) => rooms.get(code);
   const stakeOf = (room) => GAME_STAKE * (room.katlamali ? 2 : 1); // katlamalıda 2 katı
-  const NEXT_MS = 8000; // el bitince yeni el otomatik başlar
-  const onOver = (room) => { if (room.game?.over && room.nextAt == null) room.nextAt = clock() + NEXT_MS; };
+  const onOver = () => {}; // yeni el kendiliğinden başlamaz: oyunculardan biri "Yeni oyuna başla"ya basar
 
   // Her el başında herkesten masa bedeli alınır (hepsi ya da hiçbiri).
   function chargeRound(room) {
@@ -44,28 +43,22 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
     room.pot = stakeOf(room) * room.seats.length;
     return null;
   }
-  // El bitince kazanan(lar)a havuz ödenir; kimse bitiremediyse bedeller iade edilir.
+  // El bitince: elde en az taş kalan (bitiren) kazanır, ikinci bedelini geri alır.
+  // Normal: 1. = 3 bedel (7.500), 2. = 1 bedel (2.500). Bitiren veya çift açan kazanan: 1. = 6 bedel (15.000).
+  // Eşlide kazanan takım toplam ödülü paylaşır (normal: havuz = 4 bedel, büyük ödül: 6 bedel).
   function settle(room) {
     const o = room.game?.over;
     if (!wallet || !o || room.settled) return;
     room.settled = true;
-    const n = room.seats.length, st = stakeOf(room), pay = Array(n).fill(0);
-    if (o.finisher === null) pay.fill(st);
-    else if (room.mode === 'pairs') { pay[o.finisher] = room.pot / 2; pay[(o.finisher + 2) % n] = room.pot / 2; }
-    else pay[o.finisher] = room.pot;
-    room.seats.forEach((id, i) => wallet.pay(id, pay[i]));
-    // Çift açarak bitirildiyse jeton yine 2 katı: kaybedenler bir bedel daha öder (bakiyesi yettiği kadar)
-    if (o.byPairs && o.finisher !== null) {
-      const winners = room.mode === 'pairs' ? [o.finisher, (o.finisher + 2) % n] : [o.finisher];
-      let extra = 0;
-      room.seats.forEach((id, i) => {
-        if (winners.includes(i)) return;
-        const e = Math.min(wallet.balance(id), st);
-        if (e > 0 && wallet.charge([id], e)) { pay[i] -= e; extra += e; }
-      });
-      const share = Math.floor(extra / winners.length);
-      winners.forEach((i, k) => { const x = share + (k === 0 ? extra - share * winners.length : 0); wallet.pay(room.seats[i], x); pay[i] += x; });
+    const n = room.seats.length, st = stakeOf(room), pay = Array(n).fill(0), w = o.rank[0];
+    if (room.mode === 'pairs') {
+      const prize = (o.bonus ? 6 : 4) * st;
+      pay[w] = prize / 2; pay[(w + 2) % n] = prize / 2;
+    } else {
+      pay[w] = (o.bonus ? 6 : 3) * st;
+      pay[o.rank[1]] = st;
     }
+    room.seats.forEach((id, i) => wallet.pay(id, pay[i]));
     room.lastPayout = pay.map((x) => x - st);
   }
 
@@ -166,10 +159,6 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
         const r = autoPlay(g);
         settle(room); onOver(room);
         if (r.ok) events.push({ kind: 'timeout', code, seat: r.seat, tileId: r.tileId });
-      } else if (g.over && room.nextAt != null && clock() >= room.nextAt) {
-        const err = chargeRound(room);            // 8 sn dolunca yeni el kendiliğinden başlar
-        if (err) events.push({ kind: 'nextFail', code, error: err });
-        else { startRound(g); events.push({ kind: 'next', code }); }
       }
     }
     return events;
