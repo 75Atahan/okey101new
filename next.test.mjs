@@ -8,30 +8,43 @@ let c = Date.parse('2026-10-06T10:00:00Z');
 const wallet = createWallet({ now: () => c });
 const rm = createRoomManager({ wallet, clock: () => c });
 const { code } = rm.createRoom('a', {});
+const U = ['a', 'b', 'c', 'd'];
 ['b', 'c', 'd'].forEach((u) => rm.join(code, u));
-rm.start(code, 'a');
-const g = rm._room(code).game; g.okey = { color: 1, num: 5 };
-const a = [T(0, 11), T(0, 12), T(0, 13)], b = [T(1, 10), T(2, 10), T(3, 10)], d = [T(0, 9), T(0, 10), T(0, 11), T(0, 12)], last = T(3, 2);
-g.seats[0].hand = [...a, ...b, ...d, last];
-rm.act(code, 'a', { type: 'open', groups: [a, b, d].map(ids) });
-rm.act(code, 'a', { type: 'discard', tileId: last.id });
-assert.ok(rm.view(code, 'a').game.over);
+assert.ok(rm.start(code, 'd').ok);                    // yönetici olmayan da başlatabilir (oturan herkes)
 
-// El bitince yeni el kendiliğinden BAŞLAMAZ; biri "Yeni oyuna başla" demeli
-assert.equal(rm.view(code, 'a').lobby.nextAt, null);
-c += 60000;
-assert.deepEqual(rm.tick(), []);
-assert.ok(rm.view(code, 'a').game.over);
+function finishRound(seat) {                          // verilen koltuktaki oyuncu eli bitirir
+  const g = rm._room(code).game; g.okey = { color: 1, num: 5 }; g.turn = seat; g.phase = 'discard';
+  const a = [T(0, 11), T(0, 12), T(0, 13)], b = [T(1, 10), T(2, 10), T(3, 10)], d = [T(0, 9), T(0, 10), T(0, 11), T(0, 12)], last = T(3, 2);
+  g.seats[seat].hand = [...a, ...b, ...d, last];
+  assert.ok(rm.act(code, U[seat], { type: 'open', groups: [a, b, d].map(ids) }).ok);
+  assert.ok(rm.act(code, U[seat], { type: 'discard', tileId: last.id }).ok);
+  assert.ok(rm.view(code, 'a').game.over);
+}
+finishRound(0);
 
-// Odada olmayan başlatamaz; oturan herkes başlatabilir, bedel yeniden alınır
+// Yeni el: tek kişi basınca başlamaz; oyundaki herkes hazır olunca başlar
 assert.ok(!rm.nextRound(code, 'x').ok);
+let r = rm.nextRound(code, 'c');
+assert.ok(r.ok && r.waiting && rm.view(code, 'a').game.over);
+assert.equal(rm.view(code, 'a').lobby.ready.filter(Boolean).length, 1);
+assert.ok(rm.nextRound(code, 'a').waiting); assert.ok(rm.nextRound(code, 'b').waiting);
 const before = rm.balance('a');
-assert.ok(rm.nextRound(code, 'c').ok);
-assert.equal(rm.view(code, 'a').game.over, null);
+r = rm.nextRound(code, 'd');
+assert.ok(r.started); assert.equal(rm.view(code, 'a').game.over, null);
 assert.equal(rm.balance('a'), before - 2500);
 
+// Biri basmazsa ilk basıştan 20 sn sonra beklenmeden başlar
+finishRound(1);
+rm.nextRound(code, 'a');
+c += 19000; assert.deepEqual(rm.tick(), []);
+c += 1500;
+assert.equal(rm.tick()[0].kind, 'next');
+assert.equal(rm.view(code, 'a').game.over, null);
+
 // Jetonu yetmeyen varsa yeni el başlamaz
-const g2 = rm._room(code).game; g2.over = { finisher: 0, withOkey: false, byPairs: false, factor: 1, points: [0, 0, 0, 0], rank: [0, 1, 2, 3], tilesLeft: [0, 1, 2, 3], bonus: true };
+finishRound(2);
 wallet.charge(['b'], wallet.balance('b'));
-assert.match(rm.nextRound(code, 'a').error, /yetersiz/);
-console.log('Yeni el testleri geçti');
+U.slice(0, 3).forEach((u) => rm.nextRound(code, u));
+assert.match(rm.nextRound(code, 'd').error, /yetersiz/);
+assert.ok(rm.view(code, 'a').game.over);
+console.log('Yeni el (hazır oylaması) testleri geçti');

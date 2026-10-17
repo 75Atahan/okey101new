@@ -26,6 +26,9 @@ const FILES = {
   '/': ['index.html', 'text/html; charset=utf-8'],
   '/okey101.mjs': ['okey101.mjs', 'text/javascript; charset=utf-8'],
   '/assist.mjs': ['assist.mjs', 'text/javascript; charset=utf-8'],
+  '/manifest.webmanifest': ['manifest.webmanifest', 'application/manifest+json; charset=utf-8'],
+  '/icon-192.png': ['icon-192.png', 'image/png'],
+  '/icon-512.png': ['icon-512.png', 'image/png'],
 };
 const server = http.createServer(async (req, res) => {
   const f = FILES[req.url.split('?')[0]];
@@ -57,6 +60,6 @@ setInterval(() => {
   }
 }, 30000).unref();
 
-setInterval(hub.tick, 1000).unref(); // sıra süresi kontrolü
+setInterval(hub.tick, 500).unref(); // sıra süresi kontrolü
 
 server.listen(PORT, () => console.log(`Dinleniyor: ${PORT}`));

@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="tr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#0b2c18">
+<link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icon-192.png">
 <title>101 Okey</title>
 <style>
 :root{--felt:#14532d;--felt2:#0f3d21;--card:#fffaf0;--gold:#f5c542}
@@ -120,13 +123,24 @@ body.inGame{overflow:hidden}
 .t.xs{width:var(--cw,28.46px);height:var(--ch,35.6px);font-size:calc(var(--ch,35.6px) * .45)}
 .t.c2{width:44px;height:56px;font-size:24px}.t.m2{width:50px;height:64px;font-size:28px}
 .t.fit{outline:2px solid #e53935;outline-offset:-3px}
-.cam{cursor:zoom-in}.cam.big{transform:scale(2);transform-origin:var(--o,50% 0);z-index:60;box-shadow:0 8px 24px #000a;cursor:zoom-out}
+.cam{cursor:zoom-in}.cam.big{transform:scale(4);transform-origin:var(--o,50% 0);z-index:60;box-shadow:0 8px 24px #000a;cursor:zoom-out}
 .a:has(.cam.big){z-index:60}
 .cmp .orack{display:none}.stage.cmp .cam{width:52px;height:40px}.cmp .np{padding:3px 6px;gap:1px}.cmp .np b{font-size:13px}.cmp .np small{font-size:11px}
 .cmp .tag{padding:3px 0;font-size:12px;margin-bottom:3px}.stage.cmp .btn{font-size:12px;padding:3px 6px}.cmp input{padding:2px 6px;font-size:13px;margin:0}
 .stage.cmp .rack .slot .t{font-size:26px}.cmp .stg{max-height:24px}.cmp .tot{font-size:16px}.cmp .bdg{font-size:13px}
 .rot{position:fixed;top:0;left:0;right:0;z-index:80;background:#f5c542;color:#222;text-align:center;padding:6px;font-weight:700}
 .stage .btn.wide{padding:6px 4px;white-space:nowrap;font-size:14px}.stage.cmp .btn.wide{font-size:12px}
+/* v3: koyu desenli yeşil örtü, 3 boyutlu taş ve ıstaka */
+body{background-color:#08250f;background-image:repeating-linear-gradient(45deg,#ffffff08 0 2px,transparent 2px 24px),repeating-linear-gradient(-45deg,#ffffff08 0 2px,transparent 2px 24px),radial-gradient(ellipse at 50% 38%,#17592f 0%,#0b351c 50%,#051b0b 100%);background-attachment:fixed}
+.t{background:linear-gradient(180deg,#fffef9 0%,#f6efd9 65%,#eadfc2 100%);border:1px solid #dcd2b4;border-bottom:4px solid #b8a97f;border-radius:8px;box-shadow:0 3px 4px #0009,inset 0 1px 0 #fff,inset 0 0 7px #e8dcb9;text-shadow:0 1px 0 #fff8}
+.t.xs{border-bottom-width:2px;border-radius:4px;box-shadow:0 1px 2px #0008,inset 0 1px 0 #fff}
+.t.sel{box-shadow:0 10px 10px #000a,inset 0 1px 0 #fff}
+.rack{background:repeating-linear-gradient(90deg,#00000012 0 1px,transparent 1px 8px),linear-gradient(180deg,#f0b445 0%,#d9972b 45%,#c0801f 100%);border-radius:14px 14px 8px 8px;border-top:6px solid #f7d283;border-bottom:12px solid #86520f;box-shadow:0 12px 22px #000b,inset 0 8px 14px #ffffff40,inset 0 -10px 14px #00000050}
+.slot{background:#b97c1f;box-shadow:inset 0 4px 7px #000a,inset 0 -1px 0 #ffffff50;border-radius:7px}
+.stage.cmp .rack{border-top-width:4px;border-bottom-width:8px}
+.side{background:linear-gradient(180deg,#4a82e6,#1e4fa3);box-shadow:0 4px 0 #12306e,0 8px 10px #0008;border-radius:12px;text-shadow:0 1px 0 #0006}
+.btn{box-shadow:0 3px 0 #0006,0 6px 8px #0004}.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #0006}
+.seat,.card{box-shadow:0 4px 10px #0007}
 </style></head><body>
 <div id="vg" style="display:none"></div>
 <div id="app"></div><div id="toast"></div>
@@ -207,13 +221,17 @@ const views = {
     <select id="mode"><option value="single">Tekli</option><option value="pairs">Eşli</option></select>
     <label><input type="checkbox" id="kat"> Katlamalı</label>
     <select id="sec"><option value="30">30 sn / sıra</option><option value="45" selected>45 sn / sıra</option><option value="60">60 sn / sıra</option></select>
-    <button class="btn" data-act="create">Oda kur</button></div>
+    <select id="bots"><option value="0">Bot yok</option><option value="1">1 bot</option><option value="2">2 bot</option><option value="3">3 bot</option></select>
+    <small>Botlu masa jetonsuz antrenman masasıdır; yeni gelen oyuncu botun yerine geçer.</small>
+    <button class="btn" data-act="create">Oda kur</button> <button class="btn alt" data-act="full">Tam ekran</button></div>
     <div class="card"><h3>Odaya katıl</h3><input id="code" placeholder="Oda kodu" maxlength="6"><button class="btn alt" data-act="join">Katıl</button></div>`,
   room: (L) => `<div class="card"><small>Oda kodu</small><h1 style="margin:0;letter-spacing:4px">${L.code}</h1>
-    <p>${L.mode === 'pairs' ? 'Eşli' : 'Tekli'} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'} · ${L.turnSeconds} sn · masa ${fmt(L.stake)}</p>
-    ${L.seats.map((id, i) => `<div>${i + 1}. ${id ? esc(L.names[i]) + (L.online[i] ? '' : ' ⚠') : '<small>boş</small>'}</div>`).join('')}
-    <div class="row" style="margin-top:10px">${L.host === S.me ? `<button class="btn" data-act="start" ${L.seats.includes(null) ? 'disabled' : ''}>Başlat</button>` : '<small>Oda sahibi başlatacak…</small>'}
-    <button class="btn alt" data-act="invite">Davet et</button><button class="btn alt" data-act="leave">Ayrıl</button></div></div>`,
+    <p>${L.mode === 'pairs' ? 'Eşli' : 'Tekli'} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'} · ${L.turnSeconds} sn · ${L.practice ? 'antrenman (jetonsuz)' : 'masa ' + fmt(L.stake)}</p>
+    ${L.seats.map((id, i) => `<div class="row" style="gap:6px">${i + 1}. ${id ? esc(L.names[i]) + (L.online[i] ? '' : ' ⚠') : '<small>boş</small>'}${L.bots?.[i] && L.host === S.me ? `<button class="btn alt sm" data-act="rmbot" data-seat="${i}">Çıkar</button>` : ''}</div>`).join('')}
+    <div class="row" style="margin-top:10px">${L.seats.includes(null) ? '' : '<button class="btn" data-act="start">Başlat</button>'}
+    ${L.host === S.me && L.seats.includes(null) ? '<button class="btn alt" data-act="addbot">Bot ekle</button>' : ''}
+    <button class="btn alt" data-act="invite">Davet et</button><button class="btn alt" data-act="full">Tam ekran</button><button class="btn alt" data-act="leave">Ayrıl</button></div>
+    ${L.seats.includes(null) ? '<small>4 koltuk dolunca (oyuncu ya da bot) herkes Başlat\'a basabilir.</small>' : ''}</div>`,
   table() {
     const L = S.lobby, G = S.game, me = G.you, ok = okeyOf(G), myTurn = G.turn === me && !G.over;
     const n = L.seats.length, prev = (me + n - 1) % n, myO = G.others[me];
@@ -303,14 +321,14 @@ const views = {
       const t = id != null && !stagedIds.has(id) ? byId.get(id) : null;
       return `<div class="slot" data-s="${k}"${t ? '' : ' data-act="slot"'}>${t ? tile(t, { act: 'tile', sel: S.sel.has(id), okey: ok, g: S.groupOf?.get(id), fit: fitSet.has(id) }) : ''}</div>`;
     }).join('');
-    const stakeOn = S.stakeAt && S.balance != null && Date.now() - S.stakeAt < 2800;
+    const stakeOn = S.stakeAt && S.balance != null && !L.practice && Date.now() - S.stakeAt < 2800;
     const stake = stakeOn ? `<div class="stake" style="animation-delay:-${((Date.now() - S.stakeAt) / 1000).toFixed(2)}s">💰 −${fmt(L.stake)}</div>` : '';
     const stg = S.staged.map((g) => { const v = validateMeld(g.map((id) => byId.get(id)), ok); return `<span class="grp ${v.valid || g.length === 2 ? '' : 'bad'}">${g.map((id) => tile(byId.get(id), { z: 'xs', okey: ok })).join('')}</span>`; }).join('');
     const call = S.call ? '<button class="btn alt sm" data-act="mic">🎤</button><button class="btn alt sm" data-act="cam">📷</button><button class="btn alt sm" data-act="endcall">✖</button>' : '<button class="btn alt sm" data-act="call">Görüntülü katıl</button>';
     return `<div id="stage" class="stage ${cmp ? 'cmp' : ''}">
-      ${bx(P.info, `<small>Oda ${L.code} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'}${S.balance != null ? ` · 💰 ${fmt(S.balance)} · masa ${fmt(L.stake)}` : ''}</small>`)}
+      ${bx(P.info, `<small>Oda ${L.code} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'}${L.practice ? ' · antrenman (jetonsuz)' : S.balance != null ? ` · 💰 ${fmt(S.balance)} · masa ${fmt(L.stake)}` : ''}</small>`)}
       ${bx(P.chat, '<input id="ci" placeholder="Mesaj yaz" maxlength="300" style="flex:1"><button class="btn alt sm" data-act="chat">Gönder</button>', 'flex')}
-      ${bx(P.btns, `<button class="btn alt sm" data-act="invite">Davet et</button>${call}`, 'flex')}
+      ${bx(P.btns, `<button class="btn alt sm" data-act="invite">Davet et</button><button class="btn alt sm" data-act="full">⛶</button>${call}`, 'flex')}
       ${plate(rel(3), P.left, 'left')}${plate(rel(1), P.right, 'right')}${plate(rel(2), P.top, 'top')}
       ${pile(rel(2), P.tl, 'tl')}${pile(rel(1), P.tr, 'tr')}${pile(rel(3), P.bl, 'bl')}${pile(me, P.br, 'br')}
       ${bx(P.b1, `${G.minMeld}<small> sayı</small>`, 'bdg')}${bx(P.b2, `${G.minPairs}<small> çift</small>`, 'bdg')}
@@ -345,9 +363,13 @@ function overHtml(G, L) {
     const isW = win.includes(i), bal = L.balances?.[i];
     return `<div class="rw ${isW ? 'win' : ''}"><div class="av">${esc((L.names[i] || '?')[0].toUpperCase())}${k === 0 ? '<i class="crown">👑</i>' : ''}</div><div class="nm2"><b>${esc(L.names[i])}</b><small>${bal != null ? `💰 ${fmt(bal)}${L.lastPayout ? ` (${L.lastPayout[i] >= 0 ? '+' : ''}${fmt(L.lastPayout[i])})` : ''} · ` : ''}${o.points[i] > 0 ? '+' : ''}${o.points[i]} puan</small></div>${isW ? '<span class="kz">KAZANAN</span>' : ''}<span class="pt">${o.tilesLeft[i]}<small> taş</small></span></div>`;
   }).join('');
+  const isHuman = L.seats.map((id, i) => !!id && !L.bots?.[i]), humanN = isHuman.filter(Boolean).length;
+  const readyN = (L.ready || []).filter((r, i) => r && isHuman[i]).length, iReady = !!L.ready?.[G.you];
+  const secs = L.readyAt ? Math.max(0, Math.ceil((L.readyAt + (L.readyGrace || 20000) - (Date.now() + S.skew)) / 1000)) : null;
   return `<div class="over"><div class="res"><div class="res-h">OYUN SONUCU</div>
+    <div class="res-c">Hazır: ${readyN}/${humanN}${secs != null ? ` · <b id="cd">${secs}</b> sn içinde başlar` : ''}</div>
     <div class="res-t">🏆 ${title}</div>${rows}${o.teams ? `<small>Takımlar: ${o.teams.join(' / ')}</small>` : ''}
-    <div class="row" style="justify-content:space-between;margin-top:12px"><button class="rbtn red" data-act="leave">Masadan<br>ayrıl</button><button class="btn alt" data-act="hideover">Masaya göz at</button><button class="rbtn green" data-act="next">Yeni oyuna<br>başla</button></div></div></div>`;
+    <div class="row" style="justify-content:space-between;margin-top:12px"><button class="rbtn red" data-act="leave">Masadan<br>ayrıl</button><button class="btn alt" data-act="hideover">Masaya göz at</button><button class="rbtn green" data-act="next" ${iReady ? 'disabled' : ''}>${iReady ? 'Hazır ✓' : 'Yeni oyuna<br>başla'}</button></div></div></div>`;
 }
 // Sahne 1280 genişlikte; yükseklik ekran oranına göre uyarlanır (geniş ekranda 640-799, diğerlerinde 890) ve ekrana sığacak şekilde ölçeklenir
 function fit() {
@@ -537,7 +559,7 @@ const ctxOf = () => {
 };
 const A = {
   login() { const n = $('#name').value.trim(); if (n) { store.name = n; connect(); } },
-  create() { send({ t: 'createRoom', mode: $('#mode').value, katlamali: $('#kat').checked, turnSeconds: +$('#sec').value }); },
+  create() { send({ t: 'createRoom', mode: $('#mode').value, katlamali: $('#kat').checked, turnSeconds: +$('#sec').value, bots: +$('#bots').value }); },
   join() { send({ t: 'join', code: $('#code').value }); },
   start() { send({ t: 'start' }); }, leave() { send({ t: 'leave' }); }, next() { send({ t: 'nextRound' }); },
   pile() { act({ type: 'draw', source: 'pile' }); },
@@ -581,6 +603,16 @@ const A = {
   discard() { if (S.sel.size === 1) { act({ type: 'discard', tileId: [...S.sel][0] }); S.sel.clear(); } else toast('Atmak için tek taş seç.'); },
   cancel() { act({ type: 'cancelDiscardDraw' }); },
   meld(d) { if (S.sel.size === 1) { act({ type: 'addToMeld', ownerSeat: +d.owner, meldIndex: +d.idx, tileId: [...S.sel][0] }); S.sel.clear(); } else toast('Önce işlenecek tek taşı seç.'); },
+  addbot() { send({ t: 'addBot' }); },
+  rmbot(d) { send({ t: 'removeBot', seat: +d.seat }); },
+  // Tam ekran: adres çubuğu gizlenir, oyun büyür (iPhone'da Safari desteklemez: Ana Ekrana Ekle)
+  full() {
+    const el = document.documentElement, d = document, hint = "Tam ekran açılamadı. iPhone'da: Paylaş → Ana Ekrana Ekle, sonra oradan aç.";
+    if (d.fullscreenElement || d.webkitFullscreenElement) { (d.exitFullscreen || d.webkitExitFullscreen)?.call(d); return; }
+    const req = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (!req) return toast(hint);
+    Promise.resolve(req.call(el)).catch(() => toast(hint));
+  },
   seriac() { openWith('meld'); },
   ciftac() { openWith('pairs'); },
   isle() { isleHepsi(); },
@@ -764,7 +796,7 @@ function endCall() {
 // Sıra süresi çubuğu
 setInterval(() => {
   const g = S.game, bar = $('#bar'), cd = $('#cd');
-  if (cd && S.lobby?.nextAt) cd.textContent = Math.max(0, Math.ceil((S.lobby.nextAt - (Date.now() + S.skew)) / 1000));
+  if (cd && S.lobby?.readyAt) cd.textContent = Math.max(0, Math.ceil((S.lobby.readyAt + (S.lobby.readyGrace || 20000) - (Date.now() + S.skew)) / 1000));
   if (!g || !bar || g.over || g.deadline == null) return;
   const left = Math.max(0, (g.deadline - (Date.now() + S.skew)) / 1000);
   bar.style.width = Math.min(100, (left / S.lobby.turnSeconds) * 100) + '%';

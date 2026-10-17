@@ -13,7 +13,7 @@ assert.ok(m.join(code, 'b').ok && m.join(code, 'c').ok);
 assert.ok(!m.start(code, 'a').ok);                 // 3 kişi
 assert.ok(m.join(code, 'd').ok);
 assert.ok(!m.join(code, 'e').ok);                  // dolu
-assert.ok(!m.start(code, 'b').ok);                 // sadece oda sahibi
+assert.ok(!m.start(code, 'x').ok);                 // odada olmayan başlatamaz (yönetici şart değil)
 assert.ok(m.start(code, 'a').ok);
 const v = m.view(code, 'a');
 assert.equal(v.lobby.katlamali, true);
