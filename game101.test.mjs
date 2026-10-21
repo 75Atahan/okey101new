@@ -30,9 +30,9 @@ assert.ok(o.ok && o.total === 108);
 assert.ok(addToMeld(g, 0, 0, 2, add.id).ok);
 const d = discard(g, 0, last.id);
 assert.ok(d.finished && g.over.finisher === 0);
-assert.equal(g.scores[0], 0);   // yetersiz açış denemesi +101 ceza, bitirme -101
+assert.equal(g.scores[0], -101);   // başarısız deneme sonra açtı: ceza yok
 assert.equal(g.scores[1], 202);
-assert.deepEqual(g.teamScores, [0 + 202, 202 + 202]);
+assert.deepEqual(g.teamScores, [-101 + 202, 202 + 202]);
 
 // Atık taş zorunluluğu: vazgeç hamlesi
 g = createGame();

@@ -39,6 +39,7 @@ export function startRound(g) {
   g.lastDrawn = null;
   g.meldCounter = 0;
   g.penalized = false;
+  g.openAttempt = null;
   g.deadline = g.clock() + g.turnMs; // başlayan oyuncunun süresi
 }
 
@@ -94,9 +95,10 @@ export function cancelDiscardDraw(g, p) {
 
 // groups: her biri taş id dizisi. Per veya çiftlerle açar.
 // Hatalı açış/serme: taşlar geri alınır (elde kalır) ve oyuncu 101 ceza puanı yer (turda bir kez).
+function notePenalty(g, p, why) { g.penaltySeq = (g.penaltySeq || 0) + 1; g.lastPenalty = { seq: g.penaltySeq, seat: p, why }; }
 function penalize(g, p, msg) {
   const first = !g.penalized;
-  if (first) { g.seats[p].penalty += RULES.WRONG_OPEN_PENALTY; g.penalized = true; }
+  if (first) { g.seats[p].penalty += RULES.WRONG_OPEN_PENALTY; g.penalized = true; notePenalty(g, p, 'hatalı açış denemesi'); }
   return fail(`Hatalı açış! ${msg}${first ? ` (+${RULES.WRONG_OPEN_PENALTY} ceza puanı)` : ''}`);
 }
 
@@ -114,7 +116,10 @@ export function open(g, p, groups) {
     return fail('Aldığın atık taşla açmalısın.');
   const res = checkOpen(melds, g.okey, { minMeld: g.minMeld, minPairs: g.minPairs });
   if (!res.canOpen)
-    return penalize(g, p, `Açılış için en az ${g.minMeld} sayı veya ${g.minPairs} çift gerekli.`);
+  {
+    g.openAttempt = p;   // denedi: tur açmadan biterse 101 ceza
+    return fail(`Açılamadı: en az ${g.minMeld} sayı ya da ${g.minPairs} çift gerekli. Turu açmadan bitirirsen ${RULES.WRONG_OPEN_PENALTY} ceza puanı yersin.`);
+  }
   ids.forEach((id) => takeFromHand(seat, id));
   seat.melds.push(...melds);
   melds.forEach(() => seat.meldSeq.push(g.meldCounter++));
@@ -189,7 +194,7 @@ export function lay(g, p, groups) {
   return OK;
 }
 
-export function discard(g, p, tileId) {
+export function discard(g, p, tileId, opts = {}) {
   const err = guard(g, p, 'discard');
   if (err) return fail(err);
   const seat = g.seats[p];
@@ -198,6 +203,14 @@ export function discard(g, p, tileId) {
   if (seat.hand.length === 1 && !seat.opened) return fail('Açmadan el bitirilemez.');
   const tile = takeFromHand(seat, tileId);
   g.discardPiles[p].push(tile);
+  if (!opts.free && seat.hand.length > 0 && isJoker(tile, g.okey)) {   // okeyi (son taş değilken) atmak: 101 ceza
+    seat.penalty += RULES.WRONG_OPEN_PENALTY;
+    notePenalty(g, p, 'okeyi attı');
+  }
+  if (g.openAttempt === p && !seat.opened) {          // açmayı denedi ama açamadan turu bitirdi: ceza (hiç denemeyene ceza yok)
+    seat.penalty += RULES.WRONG_OPEN_PENALTY;
+    notePenalty(g, p, 'açmayı denedi ama açamadı');
+  }
   if (seat.hand.length === 0) {
     endRound(g, p, isJoker(tile, g.okey));
     return { ok: true, finished: true };
@@ -209,6 +222,7 @@ export function discard(g, p, tileId) {
   g.turn = (p + 1) % g.players;
   g.phase = 'draw';
   g.penalized = false;
+  g.openAttempt = null;
   g.deadline = g.clock() + g.turnMs;
   return OK;
 }
@@ -246,6 +260,7 @@ export function viewFor(g, p) {
     minPairs: g.minPairs,
     deadline: g.deadline,
     serverNow: g.clock(),
+    penaltyNote: g.lastPenalty ?? null,
     mustUse: g.turn === p ? g.mustUse : null,
     indicator: g.indicator,
     pileCount: g.pile.length,
@@ -282,7 +297,9 @@ export function autoPlay(g) {
   let id = g.lastDrawn;
   if (id == null || !seat.hand.some((t) => t.id === id))
     id = (seat.hand.findLast((t) => !isJoker(t, g.okey)) ?? seat.hand.at(-1)).id;
+  const picked = seat.hand.find((t) => t.id === id);
+  if (picked && isJoker(picked, g.okey) && seat.hand.length > 1) id = (seat.hand.findLast((t) => !isJoker(t, g.okey)) ?? picked).id;   // okey atılmaz
   g.mustUse = null; // süre dolduğunda atık taş zorunluluğu geçersiz
-  const r = discard(g, p, id);
+  const r = discard(g, p, id, { free: true });
   return r.ok ? { ok: true, seat: p, tileId: id } : r;
 }

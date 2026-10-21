@@ -55,7 +55,8 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
   // Her el başında herkesten masa bedeli alınır (hepsi ya da hiçbiri).
   function chargeRound(room) {
     room.settled = false; room.lastPayout = null; room.nextAt = null; room.ready = new Set(); room.readyAt = null; room.botAt = null;
-    if (!wallet || hasBots(room)) { room.pot = 0; return null; }   // botlu masa: antrenman, jeton yok
+    room.practice = hasBots(room);                          // botlu masa: antrenman, jeton yok (tur başında belirlenir)
+    if (!wallet || room.practice) { room.pot = 0; return null; }
     if (!wallet.charge(room.seats, stakeOf(room))) return 'Bir oyuncunun jetonu yetersiz.';
     room.pot = stakeOf(room) * room.seats.length;
     return null;
@@ -67,7 +68,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
     const o = room.game?.over;
     if (!wallet || !o || room.settled) return;
     room.settled = true;
-    if (hasBots(room)) { room.lastPayout = null; return; }
+    if (room.practice) { room.lastPayout = null; return; }
     const n = room.seats.length, st = stakeOf(room), pay = Array(n).fill(0), w = o.rank[0];
     if (room.mode === 'pairs') {
       const prize = (o.bonus ? 6 : 4) * st;
@@ -76,7 +77,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
       pay[w] = (o.bonus ? 6 : 3) * st;
       pay[o.rank[1]] = st;
     }
-    room.seats.forEach((id, i) => wallet.pay(id, pay[i]));
+    room.seats.forEach((id, i) => { if (!isBot(id)) wallet.pay(id, pay[i]); });   // oyundan çıkıp yerine bot geçen koltuğa ödeme yok
     room.lastPayout = pay.map((x) => x - st);
   }
 
@@ -98,10 +99,17 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
   function leave(code, userId) {
     const room = get(code);
     if (!room) return fail('Oda bulunamadı.');
-    if (room.game && !room.game.over) return fail('Oyun başladı.');
-    if (room.game) { room.game = null; room.nextAt = null; room.ready = new Set(); room.readyAt = null; } // el bitti: masa bekleme ekranına döner
     const s = room.seats.indexOf(userId);
     if (s < 0) return fail('Odada değilsin.');
+    if (room.game && !room.game.over) {                     // oyun sırasında çıkış: yerine bot geçer, yatırılan jeton kaybolur
+      room.seats[s] = newBot(room);
+      room.botAt = null;
+      const rest = humansOf(room);
+      if (rest.length === 0) { room.seats.filter(isBot).forEach((id) => botNames.delete(id)); rooms.delete(code); }
+      else if (room.hostId === userId) room.hostId = rest[0];
+      return { ok: true, replaced: true };
+    }
+    if (room.game) { room.game = null; room.nextAt = null; room.ready = new Set(); room.readyAt = null; } // el bitti: masa bekleme ekranına döner
     room.seats[s] = null;
     const rest = humansOf(room);
     if (rest.length === 0) { room.seats.filter(isBot).forEach((id) => botNames.delete(id)); rooms.delete(code); }
@@ -193,7 +201,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
     if (p < 0) return fail('Bu odada değilsin.');
     return {
       ok: true,
-      lobby: { code, host: room.hostId, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, stake: hasBots(room) ? 0 : stakeOf(room), practice: hasBots(room), bots: room.seats.map(isBot), ready: room.seats.map((id) => !!id && (isBot(id) || room.ready.has(id))), readyAt: room.readyAt, readyGrace: READY_GRACE_MS, lastPayout: room.lastPayout ?? null, nextAt: room.nextAt ?? null, balances: wallet ? room.seats.map((id) => (id && !isBot(id) ? wallet.balance(id) : null)) : null, seats: room.seats, started: !!room.game },
+      lobby: { code, host: room.hostId, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, stake: (room.game ? room.practice : hasBots(room)) ? 0 : stakeOf(room), practice: room.game ? !!room.practice : hasBots(room), bots: room.seats.map(isBot), ready: room.seats.map((id) => !!id && (isBot(id) || room.ready.has(id))), readyAt: room.readyAt, readyGrace: READY_GRACE_MS, lastPayout: room.lastPayout ?? null, nextAt: room.nextAt ?? null, balances: wallet ? room.seats.map((id) => (id && !isBot(id) ? wallet.balance(id) : null)) : null, seats: room.seats, started: !!room.game },
       game: room.game ? viewFor(room.game, p) : null,
       balance: wallet ? wallet.balance(userId) : null,
     };

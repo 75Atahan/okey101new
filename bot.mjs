@@ -83,7 +83,7 @@ function playDiscardPhase(g, p) {
   }
   if (g.mustUse != null) { autoPlay(g); return; }              // alınan atık kullanılamadıysa güvenli çıkış
   const t = seat.hand.length === 1 ? seat.hand[0] : worstTile(g, p);
-  if (!discard(g, p, t.id).ok) autoPlay(g);
+  if (!discard(g, p, t.id, { free: true }).ok) autoPlay(g);
 }
 
 // Sıra botta ise bir adım oynar: çekme aşaması ya da (aç/işle/at) aşaması.
