@@ -282,10 +282,12 @@ const views = {
       else { canS = rg.total >= G.minMeld; canC = rg.pc >= G.minPairs; }
     } else { canS = myO.openMode === 'meld' && rg.series.length > 0; canC = (myO.openMode === 'pairs' || pairsOnTable) && rg.pc > 0; }
     const enough = rg.total >= G.minMeld || rg.pc >= G.minPairs;
-    const totTxt = myO.opened ? `Kalan ${handPenalty(G.hand, ok)}` : `${rg.total}${rg.pc ? ` · ${rg.pc} çift` : ''}`;
+    const mult = myO.openMode === 'pairs' ? 2 : 1;               // çift açanın elde kalan sayıları 2 katı sayılır
+    const totTxt = myO.opened ? `Kalan ${handPenalty(G.hand, ok) * mult}${mult > 1 ? ' (×2)' : ''}` : `${rg.total}${rg.pc ? ` · ${rg.pc} çift` : ''}`;
     const hint = G.over ? 'El bitti' : !myTurn ? `Sıra: ${esc(L.names[G.turn])}` : G.phase === 'draw' ? 'Çek: ortadaki taşa dokun ya da ıstakaya sürükle' : G.mustUse != null ? 'Aldığın atık taşı kullanmalısın' : 'Taş at: çift dokun ya da sağ alttaki atığa sürükle';
     // Açtıktan sonra elde kalan taşlardan işlenebilenler (ya da okey değiştirebilenler): kırmızı ince çerçeve
-    const fitSet = new Set();
+    const fitSet = new Set(G.hand.filter((t) => isJoker(t, ok)).map((t) => t.id));   // okey her zaman kırmızı çerçeveli (atılırsa ceza)
+    S.fit = fitSet;
     if (myO.opened) {
       const ms = G.others.flatMap((o) => o.melds.filter((m) => m.length >= 3));
       for (const t of G.hand) if (!stagedIds.has(t.id) && !isJoker(t, ok) && ms.some((m) => jokerReplaceIndex(m, t, ok) >= 0 || canAddToMeld(m, t, ok))) fitSet.add(t.id);
@@ -354,7 +356,6 @@ const views = {
       ${btn(0, canS ? '' : 'dim', 'seriac', 'Seri aç', canAct)}${btn(1, canC ? '' : 'dim', 'ciftac', 'Çift aç', canAct)}
       ${btn(2, 'alt', 'unstage', 'Geri topla', S.staged.length > 0)}${btn(3, 'alt', 'isle', 'Taşları işle', canAct && myO.opened)}
       ${btn(4, '', 'discard', 'At', canAct)}${btn(5, 'alt', 'cancel', 'Atığı geri ver', myTurn && G.mustUse != null)}
-      ${bx(P.stg, `<div class="row" style="flex-wrap:nowrap;gap:6px"><button class="btn alt sm" data-act="stage">Per yap</button><small>${S.staged.length ? `Açılacak: ${sum}` : 'Taşları seç → Per yap'}</small></div><div class="stg">${stg}</div>`, '', vars)}
       ${bx(P.me, `${bubble(L.seats[me])}<div class="pl">${cam(me, '50% 100%')}<div style="text-align:left"><b>${esc(L.names[me])}</b><br><small>${hint}</small></div></div>${myTurn ? turnBar : ''}`, `seat np myplate ${myTurn ? 'turn' : ''}`)}
       ${bx(P.tot, totTxt, `tot ${myO.opened ? '' : enough ? 'ok' : 'bad'}`)}
       ${bx(P.sl, `<button class="side ${S.mode === 'seri' ? 'on' : ''}" data-act="seri">Seri<br>diz</button>`)}
@@ -371,11 +372,11 @@ function overHtml(G, L) {
   const w = o.rank[0];
   const win = L.mode === 'pairs' ? [w, (w + 2) % n] : [w];
   const order = L.mode === 'pairs' ? [...win, ...o.rank.filter((i) => !win.includes(i))] : o.rank;
-  const what = o.finisher != null ? (o.withOkey ? 'eli okeyle bitirdi' : 'eli bitirdi') : 'elinde en az taş kaldı';
+  const what = o.finisher != null ? (o.withOkey ? 'eli okeyle bitirdi' : 'eli bitirdi') : 'en az sayı kaldı';
   const title = `${esc(L.names[w])} ${what}${o.bonus ? ' · büyük ödül' : ''}${o.byPairs ? ' · çift açtı' : ''}${o.withOkey && L.katlamali ? ' · okey ×2' : ''}`;
   const rows = order.map((i, k) => {
     const isW = win.includes(i), bal = L.balances?.[i];
-    return `<div class="rw ${isW ? 'win' : ''}"><div class="av">${esc((L.names[i] || '?')[0].toUpperCase())}${k === 0 ? '<i class="crown">👑</i>' : ''}</div><div class="nm2"><b>${esc(L.names[i])}</b><small>${bal != null ? `💰 ${fmt(bal)}${L.lastPayout ? ` (${L.lastPayout[i] >= 0 ? '+' : ''}${fmt(L.lastPayout[i])})` : ''} · ` : ''}${o.points[i] > 0 ? '+' : ''}${o.points[i]} puan</small></div>${isW ? '<span class="kz">KAZANAN</span>' : ''}<span class="pt">${o.tilesLeft[i]}<small> taş</small></span></div>`;
+    return `<div class="rw ${isW ? 'win' : ''}"><div class="av">${esc((L.names[i] || '?')[0].toUpperCase())}${k === 0 ? '<i class="crown">👑</i>' : ''}</div><div class="nm2"><b>${esc(L.names[i])}</b><small>${bal != null ? `💰 ${fmt(bal)}${L.lastPayout ? ` (${L.lastPayout[i] >= 0 ? '+' : ''}${fmt(L.lastPayout[i])})` : ''} · ` : ''}${o.points[i] > 0 ? '+' : ''}${o.points[i]} puan</small></div>${isW ? '<span class="kz">KAZANAN</span>' : ''}<span class="pt">${o.left[i]}<small> sayı</small></span></div>`;
   }).join('');
   const isHuman = L.seats.map((id, i) => !!id && !L.bots?.[i]), humanN = isHuman.filter(Boolean).length;
   const readyN = (L.ready || []).filter((r, i) => r && isHuman[i]).length, iReady = !!L.ready?.[G.you];
@@ -392,15 +393,22 @@ function clack() {
   if (store.mute === '1') return;
   try {
     unlockAudio(); if (!ac) return;
-    const t = ac.currentTime, n = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.04), ac.sampleRate), d = n.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
-    const src = ac.createBufferSource(), bp = ac.createBiquadFilter(), ng = ac.createGain();
-    src.buffer = n; bp.type = 'bandpass'; bp.frequency.value = 1800; ng.gain.value = 0.6;
-    src.connect(bp).connect(ng).connect(ac.destination); src.start(t);
-    const o = ac.createOscillator(), g = ac.createGain();
-    o.type = 'triangle'; o.frequency.setValueAtTime(260, t); o.frequency.exponentialRampToValueAtTime(110, t + 0.06);
-    g.gain.setValueAtTime(0.45, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
-    o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.1);
+    const t0 = ac.currentTime;
+    const tap = (when, freq, gain, thud) => {                    // kısa, tiz bir çıtırtı (+ istenirse hafif tok)
+      const n = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.025), ac.sampleRate), d = n.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 4);
+      const src = ac.createBufferSource(), bp = ac.createBiquadFilter(), g = ac.createGain();
+      src.buffer = n; bp.type = 'bandpass'; bp.frequency.value = freq; bp.Q.value = 4; g.gain.value = gain;
+      src.connect(bp).connect(g).connect(ac.destination); src.start(when);
+      if (thud) {
+        const o = ac.createOscillator(), og = ac.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(190, when); o.frequency.exponentialRampToValueAtTime(95, when + 0.05);
+        og.gain.setValueAtTime(0.3, when); og.gain.exponentialRampToValueAtTime(0.001, when + 0.06);
+        o.connect(og).connect(ac.destination); o.start(when); o.stop(when + 0.07);
+      }
+    };
+    tap(t0, 3400, 1.1, true);          // çık
+    tap(t0 + 0.05, 2300, 0.7, false);  // çık (ikinci küçük vuruş)
   } catch {}
 }
 // Sahne 1280 genişlikte; yükseklik ekran oranına göre uyarlanır (geniş ekranda 640-799, diğerlerinde 890) ve ekrana sığacak şekilde ölçeklenir
@@ -559,10 +567,13 @@ function openWith(kind) {
   if (!groups.length) return toast('Istakada açılacak dizili grup yok.');
   act({ type: opened ? 'lay' : 'open', groups });
 }
-// Okeyi (son taş değilken) atmak 101 ceza yedirir: önce onay sorulur
+// Okeyi ya da işlenebilen taşı (kırmızı çerçeveli) son taş değilken atmak 101 ceza yedirir: önce onay sorulur
 function discardTile(id) {
   const G = S.game, t = G.hand.find((x) => x.id === id);
-  if (t && isJoker(t, okeyOf(G)) && G.hand.length > 1 && !confirm('Okeyi atarsan 101 ceza puanı yersin. Yine de atılsın mı?')) return;
+  if (t && G.hand.length > 1 && S.fit?.has(id)) {
+    const msg = isJoker(t, okeyOf(G)) ? 'Okeyi atarsan 101 ceza puanı yersin. Yine de atılsın mı?' : 'Bu taş masaya işlenebiliyor (kırmızı çerçeveli). Atarsan 101 ceza puanı yersin. Yine de atılsın mı?';
+    if (!confirm(msg)) return;
+  }
   act({ type: 'discard', tileId: id });
 }
 // Taşları işle: eldeki taşları masadaki perlere sırayla ekler (okey ve son taş hariç).

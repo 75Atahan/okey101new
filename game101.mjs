@@ -194,6 +194,11 @@ export function lay(g, p, groups) {
   return OK;
 }
 
+// Masadaki bir pere işlenebilen (ya da okeyin yerine geçebilen) taş mı?
+export function canProcess(g, tile) {
+  return g.seats.some((s) => s.melds.some((m) => m.length >= 3 && (jokerReplaceIndex(m, tile, g.okey) >= 0 || canAddToMeld(m, tile, g.okey))));
+}
+
 export function discard(g, p, tileId, opts = {}) {
   const err = guard(g, p, 'discard');
   if (err) return fail(err);
@@ -206,6 +211,10 @@ export function discard(g, p, tileId, opts = {}) {
   if (!opts.free && seat.hand.length > 0 && isJoker(tile, g.okey)) {   // okeyi (son taş değilken) atmak: 101 ceza
     seat.penalty += RULES.WRONG_OPEN_PENALTY;
     notePenalty(g, p, 'okeyi attı');
+  }
+  if (!opts.free && seat.opened && seat.hand.length > 0 && !isJoker(tile, g.okey) && canProcess(g, tile)) {   // açtıktan sonra işleyebileceği taşı atmak: 101 ceza
+    seat.penalty += RULES.WRONG_OPEN_PENALTY;
+    notePenalty(g, p, 'işleyebileceği taşı attı');
   }
   if (g.openAttempt === p && !seat.opened) {          // açmayı denedi ama açamadan turu bitirdi: ceza (hiç denemeyene ceza yok)
     seat.penalty += RULES.WRONG_OPEN_PENALTY;
@@ -232,15 +241,16 @@ function endRound(g, finisher, withOkey) {
   const byPairs = finisher !== null && g.seats[finisher].openMode === 'pairs';
   const factor = (byPairs ? 2 : 1) * (g.katlamali && withOkey ? RULES.KATLAMA_FACTOR : 1);
   const points = g.seats.map((s, i) =>
-    roundScore({ opened: s.opened, hand: s.hand, finished: i === finisher, factor }, g.okey) + s.penalty
+    roundScore({ opened: s.opened, hand: s.hand, finished: i === finisher, factor: factor * (i !== finisher && s.opened && s.openMode === 'pairs' ? 2 : 1) }, g.okey) + s.penalty
   );
   points.forEach((v, i) => (g.scores[i] += v));
   // Sıralama: elde en az taş kalan kazanır (bitiren 0 taşla birinci); eşitlikte kalan sayı toplamı düşük olan
   const tilesLeft = g.seats.map((s) => s.hand.length);
-  const left = g.seats.map((s) => handPenalty(s.hand, g.okey));
-  const rank = [...tilesLeft.keys()].sort((a, b) => tilesLeft[a] - tilesLeft[b] || left[a] - left[b] || a - b);
+  // Elde kalan sayıların toplamı sıralamayı belirler (taş adedi değil); çift açanın sayıları 2 katı sayılır
+  const left = g.seats.map((s) => handPenalty(s.hand, g.okey) * (s.opened && s.openMode === 'pairs' ? 2 : 1));
+  const rank = [...left.keys()].sort((a, b) => (finisher === a ? -1 : finisher === b ? 1 : 0) || left[a] - left[b] || tilesLeft[a] - tilesLeft[b] || a - b);
   const bonus = finisher !== null || g.seats[rank[0]].openMode === 'pairs'; // bitiren veya çift açan kazanan: büyük ödül
-  g.over = { finisher, withOkey, byPairs, factor, points, rank, tilesLeft, bonus };
+  g.over = { finisher, withOkey, byPairs, factor, points, rank, tilesLeft, left, bonus };
   g.deadline = null;
   if (g.mode === 'pairs') {
     // Karşılıklı oturanlar takım: 0-2 ve 1-3

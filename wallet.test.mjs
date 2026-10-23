@@ -21,11 +21,11 @@ const mk = (opts) => {
   ['b', 'c', 'd'].forEach((u) => rm.join(code, u));
   return { rm, code, wallet };
 };
-// Diğer ellerin taş sayıları: b=8, c=12, d=5  -> sıralama a (bitiren), d, b, c
-const shape = (g, sizes) => sizes.forEach((n, i) => n && (g.seats[i].hand = g.seats[i].hand.slice(0, n)));
-function finish(rm, code, sizes = [null, 8, 12, 5]) {           // koltuk 0 ('a') eli seri açıp bitirir
+// Diğer ellerin kalan sayı toplamları: b=7, c=30, d=1  -> sıralama a (bitiren), d, b, c
+const shape = (g) => { g.seats[1].hand = [T(0, 3), T(1, 4)]; g.seats[2].hand = [T(0, 10), T(1, 10), T(2, 10)]; g.seats[3].hand = [T(0, 1)]; };
+function finish(rm, code) {           // koltuk 0 ('a') eli seri açıp bitirir
   const g = rm._room(code).game; g.okey = { color: 1, num: 5 };
-  shape(g, sizes);
+  shape(g);
   const a = [T(0, 11), T(0, 12), T(0, 13)], b = [T(1, 10), T(2, 10), T(3, 10)];
   const c = [T(0, 9), T(0, 10), T(0, 11), T(0, 12)], last = T(3, 2);
   g.seats[0].hand = [...a, ...b, ...c, last];
@@ -56,7 +56,7 @@ assert.deepEqual(bal(rm), [15000, 7500, 15000, 7500]);
 rm.start(code, 'a');
 {
   const g = rm._room(code).game; g.pile = [];
-  shape(g, [null, 15, 20, 18]);
+  g.seats[1].hand = [T(0, 1)]; g.seats[3].hand = [T(0, 2), T(1, 2)]; g.seats[2].hand = [T(0, 5), T(1, 5), T(2, 5)];   // sayı toplamı: b=1, d=4, c=15, a>=21
   assert.ok(rm.act(code, 'a', { type: 'discard', tileId: g.seats[0].hand[0].id }).ok);
   assert.deepEqual(g.over.rank.slice(0, 2), [1, 3]); assert.equal(g.over.bonus, false);
   assert.deepEqual(bal(rm), [7500, 15000, 7500, 10000]);
@@ -66,7 +66,7 @@ rm.start(code, 'a');
 rm.start(code, 'a');
 {
   const g = rm._room(code).game; g.okey = { color: 1, num: 5 };
-  shape(g, [null, 8, 12, 5]);
+  shape(g);
   const pr = [1, 2, 3, 4, 5].map((n) => [T(0, n), T(0, n)]), last = T(3, 2);
   g.seats[0].hand = [...pr.flat(), last];
   assert.ok(rm.act(code, 'a', { type: 'open', groups: pr.map(ids) }).ok);
