@@ -1,7 +1,7 @@
 // Bilgisayar oyuncu: motorun hamleleriyle insan gibi oynar (çek, aç, ser, işle, at).
 // Sunucu tarafında çalışır; her hamle motorun kurallarından geçer (ceza yemez).
 import { draw, open, lay, addToMeld, discard, cancelDiscardDraw, autoPlay } from './game101.mjs';
-import { isJoker, canAddToMeld, jokerReplaceIndex, checkOpen } from './okey101.mjs';
+import { isJoker, canAddToMeld, jokerReplaceIndex, pairReplaceIndex, checkOpen } from './okey101.mjs';
 import { plan } from './assist.mjs';
 
 const face = (t, okey) => (t.fake ? { color: okey.color, num: okey.num } : { color: t.color, num: t.num });
@@ -62,20 +62,16 @@ function playDiscardPhase(g, p) {
   if (seat.opened) {
     const pl2 = plan(seat.hand, ok, ctxOf(g, p));                // açtıktan sonra yeni grupları da serer
     if (pl2.canOpen && pl2.groups.length) lay(g, p, pl2.groups);
-    const pass = () => {                                         // masadaki perlere işle: önce okey değişimi, sonra uzatma
+    const pass = () => {                                         // önce okeyleri geri alır (çift ve seri), sonra kalan taşları ekler
       let changed = false;
+      const each = (fn) => { for (let s = 0; s < g.seats.length; s++) for (let k = 0; k < g.seats[s].melds.length; k++) if (fn(s, k, g.seats[s].melds[k])) return true; return false; };
       for (const t of [...seat.hand]) {
         if (!seat.hand.includes(t) || isJoker(t, ok)) continue;
-        let done = false;
-        for (let s = 0; s < g.seats.length && !done; s++) for (let k = 0; k < g.seats[s].melds.length && !done; k++) {
-          const m = g.seats[s].melds[k];
-          if (m.length >= 3 && jokerReplaceIndex(m, t, ok) >= 0 && addToMeld(g, p, s, k, t.id).ok) done = changed = true;
-        }
-        if (done || seat.hand.length < 2) continue;
-        for (let s = 0; s < g.seats.length && !done; s++) for (let k = 0; k < g.seats[s].melds.length && !done; k++) {
-          const m = g.seats[s].melds[k];
-          if (m.length >= 3 && canAddToMeld(m, t, ok) && addToMeld(g, p, s, k, t.id).ok) done = changed = true;
-        }
+        if (each((s, k, m) => (m.length >= 3 ? jokerReplaceIndex(m, t, ok) : pairReplaceIndex(m, t, ok)) >= 0 && addToMeld(g, p, s, k, t.id).ok)) changed = true;
+      }
+      for (const t of [...seat.hand]) {
+        if (!seat.hand.includes(t) || isJoker(t, ok) || seat.hand.length < 2) continue;
+        if (each((s, k, m) => m.length >= 3 && canAddToMeld(m, t, ok) && addToMeld(g, p, s, k, t.id).ok)) changed = true;
       }
       return changed;
     };

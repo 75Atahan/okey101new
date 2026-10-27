@@ -69,19 +69,19 @@ function tryRun(real, jokers) {
   if (n < 3 || n > 13 || real.length === 0) return null;
   const color = real[0].color;
   if (!real.every((t) => t.color === color)) return null;
-  // Pozisyonlar 1..14; 14 = 13'ten sonra gelen 1.
-  for (let s = 1; s + n - 1 <= 14; s++) {
+  // Dizi yalnızca 1..13 arasında kurulur: 13'ten sonra 1 gelmez (12-13-1 geçersiz).
+  for (let s = 1; s + n - 1 <= 13; s++) {
     const e = s + n - 1;
     const used = new Set();
     let ok = true;
     for (const t of real) {
-      const p = t.num >= s && t.num <= e ? t.num : t.num === 1 && 14 <= e && 14 >= s ? 14 : -1;
+      const p = t.num >= s && t.num <= e ? t.num : -1;
       if (p < 0 || used.has(p)) { ok = false; break; }
       used.add(p);
     }
     if (!ok) continue;
     let points = 0;
-    for (let p = s; p <= e; p++) points += p === 14 ? RULES.ACE_AFTER_13 : p;
+    for (let p = s; p <= e; p++) points += p;
     return { type: 'run', points };
   }
   return null;
@@ -133,7 +133,7 @@ export function roundScore({ opened, hand, finished, factor = 1 }, okey) {
   return base * factor;
 }
 
-// Perin masada gösterimi: kind 'set' | 'run'; her hücre için pos (1..14, 14 = 13'ten sonraki 1).
+// Perin masada gösterimi: kind 'set' | 'run'; her hücre için pos (1..13).
 // Okey, yerine geçtiği sayının hücresine konur.
 export function layoutMeld(tiles, okey) {
   const flat = () => ({ kind: null, cells: tiles.map((tile, i) => ({ tile, pos: i + 1 })) });
@@ -147,12 +147,12 @@ export function layoutMeld(tiles, okey) {
     return { kind: 'set', num, cells: [...sorted, ...jokers].map((tile) => ({ tile, pos: num })) };
   }
   const n = tiles.length;
-  for (let s = 1; s + n - 1 <= 14; s++) {
+  for (let s = 1; s + n - 1 <= 13; s++) {
     const e = s + n - 1, slots = new Map();
     let fits = true;
     for (const t of real) {
       const f = face(t, okey);
-      const p = f.num >= s && f.num <= e ? f.num : f.num === 1 && e === 14 ? 14 : -1;
+      const p = f.num >= s && f.num <= e ? f.num : -1;
       if (p < 0 || slots.has(p)) { fits = false; break; }
       slots.set(p, t);
     }
@@ -173,6 +173,19 @@ export function jokerReplaceIndex(meld, tile, okey) {
     const next = [...meld];
     next[i] = tile;
     if (validateMeld(next, okey).valid) return i;
+  }
+  return -1;
+}
+
+// Çiftte okeyin yerine eşi (aynı renk ve sayı) konabilir; okey eline döner. İki okeyli çiftte her taş okeyin yerine geçer.
+export function pairReplaceIndex(pair, tile, okey) {
+  if (pair.length !== 2 || isJoker(tile, okey)) return -1;
+  for (let i = 0; i < 2; i++) {
+    if (!isJoker(pair[i], okey)) continue;
+    const other = pair[1 - i];
+    if (isJoker(other, okey)) return i;
+    const a = face(tile, okey), b = face(other, okey);
+    if (a.color === b.color && a.num === b.num) return i;
   }
   return -1;
 }

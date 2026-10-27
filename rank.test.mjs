@@ -37,11 +37,11 @@ g.turn = 0; g.phase = 'discard';
 assert.ok(discard(g, 0, fit.id).ok);
 assert.equal(g.seats[0].penalty, 101);
 assert.equal(g.lastPenalty.why, 'işleyebileceği taşı attı');
-// Açmamış oyuncu ya da otomatik atış ceza yemez
+// Masada per varken açmamış oyuncu da işlek taşı atarsa ceza yer; otomatik atış (free) yemez
 g = createGame({ clock: () => 0 }); g.okey = okey;
 g.seats[1].opened = true; g.seats[1].openMode = 'meld'; g.seats[1].melds = [[T(0, 11), T(0, 12), T(0, 13)]];
 const f2 = T(0, 10); g.turn = 0; g.phase = 'discard'; g.seats[0].hand = [f2, T(3, 3)];
-assert.ok(discard(g, 0, f2.id).ok); assert.equal(g.seats[0].penalty, 0);
+assert.ok(discard(g, 0, f2.id).ok); assert.equal(g.seats[0].penalty, 101);
 g.seats[2].opened = true; g.seats[2].openMode = 'meld';
 const f3 = T(0, 10); g.turn = 2; g.phase = 'discard'; g.seats[2].hand = [f3, T(3, 3)];
 assert.ok(discard(g, 2, f3.id, { free: true }).ok); assert.equal(g.seats[2].penalty, 0);

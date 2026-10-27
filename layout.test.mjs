@@ -12,7 +12,7 @@ assert.equal(L.kind, 'set'); assert.equal(L.num, 13);
 L = layoutMeld([T(0, 4), T(1, 5), T(0, 6)], okey);                                 // okey 5'in yerine
 assert.deepEqual(L.cells.map((c) => c.pos), [4, 5, 6]);
 assert.equal(L.cells[1].tile.color, 1);
-assert.deepEqual(pos([T(0, 12), T(0, 13), T(0, 1)]), [12, 13, 14]);                // 13'ten sonra 1
+assert.equal(layoutMeld([T(0, 12), T(0, 13), T(0, 1)], okey).kind, null);          // 13'ten sonra 1 gelmez
 assert.equal(layoutMeld([T(0, 1), T(2, 9), T(3, 4)], okey).kind, null);            // geçersiz
 
 // Açmayı deneyip açamamak: ceza anında değil, tur açmadan biterse verilir; hiç denemeyene ceza yok

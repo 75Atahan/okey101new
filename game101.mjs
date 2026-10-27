@@ -1,6 +1,6 @@
 // 101 Okey oyun akışı: sıra, hamleler, el sonu, tekli/eşli puanlama.
 // Sunucu bu modülü çağırır; tüm hamleler burada doğrulanır.
-import { newRound, checkOpen, canAddToMeld, isJoker, roundScore, validateMeld, isPair, handPenalty, jokerReplaceIndex, RULES } from './okey101.mjs';
+import { newRound, checkOpen, canAddToMeld, isJoker, roundScore, validateMeld, isPair, handPenalty, jokerReplaceIndex, pairReplaceIndex, RULES } from './okey101.mjs';
 
 const fail = (error) => ({ ok: false, error });
 const OK = { ok: true };
@@ -144,7 +144,16 @@ export function addToMeld(g, p, ownerSeat, meldIndex, tileId) {
   const meld = g.seats[ownerSeat]?.melds[meldIndex];
   const tile = seat.hand.find((t) => t.id === tileId);
   if (!meld || !tile) return fail('Geçersiz per veya taş.');
-  if (meld.length === 2) return fail('Çift taşlara taş işlenmez.');
+  if (meld.length === 2) {                         // çifte sadece okeyin yerine eşi konur, okey eline döner
+    const pi = pairReplaceIndex(meld, tile, g.okey);
+    if (pi < 0) return fail('Çift taşlara taş işlenmez (sadece okeyin yerine eşi konur).');
+    const joker = meld[pi];
+    meld[pi] = takeFromHand(seat, tileId);
+    seat.hand.push(joker);
+    g.acted = true;
+    if (tileId === g.mustUse) g.mustUse = null;
+    return { ok: true, swapped: true };
+  }
   const ji = jokerReplaceIndex(meld, tile, g.okey);
   if (ji >= 0) {                                   // okeyin yerine taş: okey oyuncunun eline döner
     const joker = meld[ji];
@@ -196,7 +205,7 @@ export function lay(g, p, groups) {
 
 // Masadaki bir pere işlenebilen (ya da okeyin yerine geçebilen) taş mı?
 export function canProcess(g, tile) {
-  return g.seats.some((s) => s.melds.some((m) => m.length >= 3 && (jokerReplaceIndex(m, tile, g.okey) >= 0 || canAddToMeld(m, tile, g.okey))));
+  return g.seats.some((s) => s.melds.some((m) => (m.length >= 3 ? jokerReplaceIndex(m, tile, g.okey) >= 0 || canAddToMeld(m, tile, g.okey) : pairReplaceIndex(m, tile, g.okey) >= 0)));
 }
 
 export function discard(g, p, tileId, opts = {}) {
@@ -212,7 +221,7 @@ export function discard(g, p, tileId, opts = {}) {
     seat.penalty += RULES.WRONG_OPEN_PENALTY;
     notePenalty(g, p, 'okeyi attı');
   }
-  if (!opts.free && seat.opened && seat.hand.length > 0 && !isJoker(tile, g.okey) && canProcess(g, tile)) {   // açtıktan sonra işleyebileceği taşı atmak: 101 ceza
+  if (!opts.free && seat.hand.length > 0 && !isJoker(tile, g.okey) && canProcess(g, tile)) {   // masadaki pere işlenebilen taşı atmak: 101 ceza
     seat.penalty += RULES.WRONG_OPEN_PENALTY;
     notePenalty(g, p, 'işleyebileceği taşı attı');
   }

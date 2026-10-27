@@ -34,12 +34,12 @@ function bestSeries(cnt0, jk0) {
     // Diziler: bu taşla başlayan, aynı renk ardışık (13'ten sonra 1 gelebilir)
     const taken = [i], faces = [i];
     let j = 0, pts = n;
-    for (let p = n + 1; p <= 14 && p - n + 1 <= 13; p++) {
-      const ix = IDX(c, p === 14 ? 1 : p);
+    for (let p = n + 1; p <= 13; p++) {
+      const ix = IDX(c, p);
       if (cnt[ix] > 0) { cnt[ix]--; taken.push(ix); faces.push(ix); }
       else if (j < jk) { j++; faces.push(-1); }
       else break;
-      pts += p === 14 ? RULES.ACE_AFTER_13 : p;
+      pts += p;
       if (faces.length >= 3) {
         const r = rec(cnt, jk - j);
         best = better({ pts: pts + r.pts, used: faces.length + r.used, melds: [{ faces: [...faces] }, ...r.melds] }, best);
