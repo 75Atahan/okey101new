@@ -166,6 +166,10 @@ body{background-color:#08250f;background-image:repeating-linear-gradient(45deg,#
 .meld-row.drop-ok{border-radius:6px;background:#7ee08122;box-shadow:0 0 0 2px #7ee081aa,0 0 12px 3px #7ee08166;z-index:2}
 .meld-row.hot{background:#7ee08155;box-shadow:0 0 0 3px #fff,0 0 18px 6px #7ee081}
 .stage.cmp .np{flex-direction:row;align-items:center;justify-content:space-between}.stage.cmp .np .pl{flex:1;min-width:0}.stage.cmp .np .trow{width:96px;flex:none}
+/* v6: dokunmatik sürükleme */
+.stage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.stage .t.heap,.pile .t{touch-action:none}
+.pile.drop-pile{border-color:#ffd54f!important;box-shadow:0 0 16px 5px #ffd54f99}
 </style></head><body>
 <div id="vg"></div>
 <div id="app"></div><div id="toast"></div>
@@ -351,7 +355,9 @@ const views = {
       return bx(r, `${bubble(L.seats[i])}<div class="pl">${cam(i, org)}<div class="hn"><b>${esc(L.names[i])}${L.online[i] ? '' : ' ⚠'}</b><br><small>${sub}</small></div></div>${isT ? turnBar : ''}`, `seat np ${cls} ${isT ? 'turn' : ''}`);
     };
     const plate = (i, r, pos) => (pos === 'top' ? hbar(i, r, 'top', '50% 0', openedTxt(G.others[i])) : vbar(i, r, pos));
-    const camIcon = (i, r) => bx(r, '📷', `camicon ${hasVid(i) ? 'on' : ''}`, '', `data-act="camzoom" data-uid="${L.seats[i]}"`);
+    // Kendi simgen: kamerayı başlatır/açıp kapatır; başkasının simgesi: görüntüsünü 4 kat büyütür
+    const camIcon = (i, r) => bx(r, '📷', `camicon ${(i === me ? S.call && camOn : hasVid(i)) ? 'on' : ''}`, '', `data-act="${i === me ? 'mycam' : 'camzoom'}" data-uid="${L.seats[i]}"`);
+    const myCtl = S.call ? bx([P.ci.me[0] - 48, P.ci.me[1], P.ci.me[2], P.ci.me[3]], '🎤', 'camicon on', '', 'data-act="mic"') + bx([P.ci.me[0] - 96, P.ci.me[1], P.ci.me[2], P.ci.me[3]], '✖', 'camicon', '', 'data-act="endcall"') : '';
     const pile = (i, xy, corner) => {
       const d = G.others[i].lastDiscard, take = i === prev && canDraw && d;
       return box(xy[0], xy[1], P.pz[0], P.pz[1], d ? `<span class="${S.fresh[i] ? 'new' : ''}">${tile(d, { okey: ok, z: P.pc, act: take ? 'take' : '' })}</span>` : '', `pile ${corner}`);
@@ -369,14 +375,13 @@ const views = {
     const stakeOn = S.stakeAt && S.balance != null && !L.practice && Date.now() - S.stakeAt < 2800;
     const stake = stakeOn ? `<div class="stake" style="animation-delay:-${((Date.now() - S.stakeAt) / 1000).toFixed(2)}s">💰 −${fmt(L.stake)}</div>` : '';
     const stg = S.staged.map((g) => { const v = validateMeld(g.map((id) => byId.get(id)), ok); return `<span class="grp ${v.valid || g.length === 2 ? '' : 'bad'}">${g.map((id) => tile(byId.get(id), { z: 'xs', okey: ok })).join('')}</span>`; }).join('');
-    const call = S.call ? '<button class="btn alt sm" data-act="mic">🎤</button><button class="btn alt sm" data-act="cam">📷</button><button class="btn alt sm" data-act="endcall">✖</button>' : '<button class="btn alt sm" data-act="call">Görüntülü katıl</button>';
     return `<div id="stage" class="stage ${cmp ? 'cmp' : ''}">
       ${bx(P.info, `<small>Oda ${L.code} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'}${L.practice ? ' · antrenman (jetonsuz)' : S.balance != null ? ` · 💰 ${fmt(S.balance)} · masa ${fmt(L.stake)}` : ''}</small>`)}
       ${bx(P.chat, '<input id="ci" placeholder="Mesaj yaz" maxlength="300" style="flex:1"><button class="btn alt sm" data-act="chat">Gönder</button>', 'flex')}
-      ${bx(P.btns, `<button class="btn alt sm" data-act="invite">Davet et</button><button class="btn alt sm" data-act="full">⛶</button><button class="btn alt sm" data-act="mute">${store.mute === '1' ? '🔇' : '🔊'}</button>${call}${G.over ? '' : '<button class="btn alt sm" data-act="quit">Çık</button>'}`, 'flex')}
+      ${bx(P.btns, `<button class="btn alt sm" data-act="full">⛶</button><button class="btn alt sm" data-act="mute">${store.mute === '1' ? '🔇' : '🔊'}</button>${G.over ? '' : '<button class="btn alt sm" data-act="quit">Çık</button>'}`, 'flex')}
       ${plate(rel(3), P.left, 'left')}${plate(rel(1), P.right, 'right')}${plate(rel(2), P.top, 'top')}
       ${pile(rel(2), P.tl, 'tl')}${pile(rel(1), P.tr, 'tr')}${pile(rel(3), P.bl, 'bl')}${pile(me, P.br, 'br')}
-      ${camIcon(rel(3), P.ci.left)}${camIcon(rel(1), P.ci.right)}${camIcon(rel(2), P.ci.top)}${camIcon(me, P.ci.me)}
+      ${camIcon(rel(3), P.ci.left)}${camIcon(rel(1), P.ci.right)}${camIcon(rel(2), P.ci.top)}${camIcon(me, P.ci.me)}${myCtl}
       ${bx(P.b1, `${G.minMeld}<small> sayı</small>`, 'bdg')}${bx(P.b2, `${G.minPairs}<small> çift</small>`, 'bdg')}
       ${box(cx, clothY, 2 * sq, clothH, `${sqs(sq, 2)}${rows}`, 'cloth', vars)}
       ${box(px, clothY, 6 * CW, clothH, `${sqs(6 * CW, 1)}${prs}`, 'cloth', vars)}
@@ -474,7 +479,7 @@ function celebrate() {
 }
 
 function render() {
-  if (S.dragging) return; // sürüklerken ekran yenilenmez
+  if (S.dragging || S.hold) { S.pending = true; return; }   // basılıyken / sürüklerken ekran yenilenmez
   const inGame = !!(S.me && S.lobby && S.game);
   document.body?.classList.toggle('inGame', inGame);
   if (inGame) fit();
@@ -656,6 +661,7 @@ const A = {
     S.lastTap = { id, t: now };
     S.sel.has(id) ? S.sel.delete(id) : S.sel.add(id);
   },
+  mycam() { if (!S.call) send({ t: 'rtc' }); else A.cam(); },
   camzoom(d) {
     const t = vt.get(d.uid);
     if (!(t && t.querySelector('video') && !t.classList.contains('off'))) return toast('Bu oyuncunun kamerası kapalı.');
@@ -740,10 +746,16 @@ const A = {
   },
   chat() { const i = $('#ci'); if (i.value.trim()) { send({ t: 'chat', text: i.value }); i.value = ''; } },
 };
-$('#app').onclick = (e) => { if (S.justDragged) return; const b = e.target.closest('[data-act]'); if (b && A[b.dataset.act]) { A[b.dataset.act](b.dataset); render(); } };
+$('#app').onclick = (e) => { S.hold = false; if (S.justDragged) return; const b = e.target.closest('[data-act]'); if (b && A[b.dataset.act]) { A[b.dataset.act](b.dataset); render(); } };
 $('#app').onkeydown = (e) => { if (e.key === 'Enter' && e.target.id === 'ci') A.chat(); };
 
-// Sürüklerken taşın işlenebileceği perleri yeşil gölgeyle gösterir; üstüne gelince parlatır
+// ---- Sürükle-bırak (dokunmatik ve fare) ----
+// Hedefler parmakla vurulamayacak kadar küçük olabilir: bırakılan yere EN YAKIN uygun per / atık yığını seçilir.
+let drag = null;
+const distTo = (e, el) => { const r = el.getBoundingClientRect(); return Math.hypot(Math.max(r.left - e.clientX, 0, e.clientX - r.right), Math.max(r.top - e.clientY, 0, e.clientY - r.bottom)); };
+const nearest = (e, sel, max) => { let best = null, bd = max; document.querySelectorAll(sel).forEach((el) => { const d = distTo(e, el); if (d <= bd) { bd = d; best = el; } }); return best; };
+function releaseHold() { S.hold = false; if (S.pending && !S.dragging) { S.pending = false; render(); } }
+// Sürüklerken taşın işlenebileceği perleri yeşil gölgeyle gösterir; en yakın olanı parlatır
 function markDrops(tid) {
   const G = S.game, ok = okeyOf(G), t = G.hand.find((x) => x.id === tid);
   if (!t || !G.others[G.you].opened) return;
@@ -754,11 +766,8 @@ function markDrops(tid) {
 }
 function hotRow(e) {
   document.querySelectorAll('.meld-row.hot').forEach((el) => el.classList.remove('hot'));
-  document.elementFromPoint(e.clientX, e.clientY)?.closest('.meld-row.drop-ok')?.classList.add('hot');
+  nearest(e, '.meld-row.drop-ok', 80)?.classList.add('hot');
 }
-// Taşı sürükleyip istediğin yuvaya bırak (dokunmatik ve fare). Dolu yuvaya bırakırsan yer değiştirirler.
-// Yığından / soldaki atıktan çekerken de taşı sürükleyip ıstakada istediğin yuvaya bırakabilirsin.
-let drag = null;
 $('#app').onpointerdown = (e) => {
   unlockAudio();
   if (e.button > 0) return;
@@ -767,6 +776,8 @@ $('#app').onpointerdown = (e) => {
   const el = t || h;
   if (!el) return;
   drag = { el, kind: t ? 'rack' : 'draw', source: h?.classList.contains('heap') ? 'pile' : 'discard', from: t ? +t.closest('.slot').dataset.s : -1, x: e.clientX, y: e.clientY, on: false, ghost: null };
+  S.hold = true; clearTimeout(S.holdT); S.holdT = setTimeout(releaseHold, 8000);   // güvenlik: en fazla 8 sn donar
+  try { el.setPointerCapture(e.pointerId); } catch {}
 };
 document.onpointermove = (e) => {
   if (!drag) return;
@@ -774,21 +785,27 @@ document.onpointermove = (e) => {
     drag.on = true; S.dragging = true;
     const r = drag.el.getBoundingClientRect(); drag.w = r.width; drag.h = r.height;
     drag.ghost = drag.el.cloneNode(true);
-    Object.assign(drag.ghost.style, { position: 'fixed', pointerEvents: 'none', zIndex: 50, opacity: 0.9, width: r.width + 'px', height: r.height + 'px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: parseFloat(getComputedStyle(drag.el).fontSize) * (S.k || 1) + 'px' });
+    Object.assign(drag.ghost.style, { position: 'fixed', pointerEvents: 'none', zIndex: 50, opacity: 0.95, width: r.width + 'px', height: r.height + 'px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: parseFloat(getComputedStyle(drag.el).fontSize) * (S.k || 1) + 'px' });
     document.body.append(drag.ghost);
-    drag.el.style.visibility = 'hidden';
-    if (drag.kind === 'rack') markDrops(S.slots[drag.from]);
+    drag.el.style.opacity = 0;                                  // orijinal görünmez (elemanı gizlemeyiz: dokunma akışı kopmasın)
+    if (drag.kind === 'rack') {
+      markDrops(S.slots[drag.from]);
+      if (S.game?.turn === S.game?.you && S.game?.phase === 'discard') document.querySelector('.pile.br')?.classList.add('drop-pile');
+    }
   }
   if (drag.on) {
-    drag.ghost.style.left = e.clientX - drag.w / 2 + 'px'; drag.ghost.style.top = e.clientY - (e.pointerType === 'touch' ? drag.h * 1.15 : drag.h / 2) + 'px';   // dokunmatikte parmağın üstünde görünür
+    drag.ghost.style.left = e.clientX - drag.w / 2 + 'px'; drag.ghost.style.top = e.clientY - (e.pointerType === 'touch' ? drag.h * 1.15 : drag.h / 2) + 'px';   // dokunmatikte parmağın üstünde
     if (drag.kind === 'rack') hotRow(e);
   }
 };
 const endDrag = (e, drop) => {
-  if (!drag) return;
   const d = drag; drag = null;
-  if (!d.on) return;
-  d.ghost.remove(); S.dragging = false; S.justDragged = true; setTimeout(() => (S.justDragged = false), 80);
+  setTimeout(releaseHold, 40);                                  // tıklama olayı bitince bekleyen ekran yenilenir
+  if (!d || !d.on) return;
+  d.ghost.remove(); S.dragging = false; S.justDragged = true; setTimeout(() => (S.justDragged = false), 150);
+  const rowT = drop ? nearest(e, '.meld-row.drop-ok', 80) : null;
+  const pileEl = document.querySelector('.pile.br'), nearPile = drop && pileEl && distTo(e, pileEl) <= 110;
+  document.querySelectorAll('.drop-ok,.hot,.drop-pile').forEach((el) => el.classList.remove('drop-ok', 'hot', 'drop-pile'));
   const el = drop ? document.elementFromPoint(e.clientX, e.clientY) : null;
   if (d.kind === 'draw') {                                                          // çekilen taş bırakılan yuvaya gelir
     const to = el?.closest('.slot');
@@ -796,10 +813,10 @@ const endDrag = (e, drop) => {
     return;
   }
   const tid = S.slots[d.from], tl = S.game?.hand.find((x) => x.id === tid);
-  const md = el?.closest('[data-owner]');
-  if (md && tl) act({ type: 'addToMeld', ownerSeat: +md.dataset.owner, meldIndex: +md.dataset.idx, tileId: tid });   // pere sürükle: işle
-  else if (el?.closest('.pile.br') && tl) discardTile(tid);                                    // sağ alttaki atık yeri: at
-  else if ((el?.closest('.t.heap') || el?.closest('.ind')) && tl) {                                                  // gösterge/yığın: okey ile bitirme
+  const overRack = el?.closest('.rack');
+  if (tl && drop && !overRack && rowT) act({ type: 'addToMeld', ownerSeat: +rowT.dataset.owner, meldIndex: +rowT.dataset.idx, tileId: tid });   // yakındaki uygun pere işle
+  else if (tl && drop && !overRack && nearPile) discardTile(tid);                                                                              // atık yığınına yakın: at
+  else if ((el?.closest('.t.heap') || el?.closest('.ind')) && tl) {                                                                            // gösterge/yığın: okey ile bitirme
     if (isJoker(tl, okeyOf(S.game)) && S.game.hand.length === 1) act({ type: 'discard', tileId: tid });
     else toast('Okeyi sadece elindeki son taş olduğunda göstergeye veya yığına bırakıp bitirebilirsin.');
   } else {
