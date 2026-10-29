@@ -201,7 +201,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
     if (p < 0) return fail('Bu odada değilsin.');
     return {
       ok: true,
-      lobby: { code, host: room.hostId, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, stake: (room.game ? room.practice : hasBots(room)) ? 0 : stakeOf(room), practice: room.game ? !!room.practice : hasBots(room), bots: room.seats.map(isBot), ready: room.seats.map((id) => !!id && (isBot(id) || room.ready.has(id))), readyAt: room.readyAt, readyGrace: READY_GRACE_MS, lastPayout: room.lastPayout ?? null, nextAt: room.nextAt ?? null, balances: wallet ? room.seats.map((id) => (id && !isBot(id) ? wallet.balance(id) : null)) : null, seats: room.seats, started: !!room.game },
+      lobby: { code, host: room.hostId, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, stake: !wallet || (room.game ? room.practice : hasBots(room)) ? 0 : stakeOf(room), practice: wallet ? (room.game ? !!room.practice : hasBots(room)) : false, bots: room.seats.map(isBot), ready: room.seats.map((id) => !!id && (isBot(id) || room.ready.has(id))), readyAt: room.readyAt, readyGrace: READY_GRACE_MS, lastPayout: room.lastPayout ?? null, nextAt: room.nextAt ?? null, balances: wallet ? room.seats.map((id) => (id && !isBot(id) ? wallet.balance(id) : null)) : null, seats: room.seats, started: !!room.game },
       game: room.game ? viewFor(room.game, p) : null,
       balance: wallet ? wallet.balance(userId) : null,
     };

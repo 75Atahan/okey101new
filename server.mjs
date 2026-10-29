@@ -20,7 +20,7 @@ if (!rtc) console.log('LiveKit ayarlanmadı: dahili (eşler arası) görüntül�
 // Bazı ağlarda doğrudan bağlantı kurulamaz; istenirse TURN sunucusu eklenebilir (TURN_URL, TURN_USER, TURN_PASS).
 const iceServers = [{ urls: 'stun:stun.l.google.com:19302' }];
 if (process.env.TURN_URL) iceServers.push({ urls: process.env.TURN_URL, username: process.env.TURN_USER, credential: process.env.TURN_PASS });
-const hub = createHub({ rooms: createRoomManager({ wallet: createWallet() }), rtc, iceServers });
+const hub = createHub({ rooms: createRoomManager({ wallet: process.env.JETONLU === '1' ? createWallet() : null }), rtc, iceServers });
 // Arayüz dosyaları (istemci okey101.mjs'yi önizleme doğrulaması için kullanır)
 const FILES = {
   '/': ['index.html', 'text/html; charset=utf-8'],
