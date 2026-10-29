@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "test": "node okey101.test.mjs && node game101.test.mjs && node katlama-acilis.test.mjs && node rooms.test.mjs && node hub.test.mjs && node timer.test.mjs && node rtc.test.mjs && node wallet.test.mjs && node assist.test.mjs && node call.test.mjs && node layout.test.mjs && node next.test.mjs && node swap.test.mjs && node bot.test.mjs && node rooms-bot.test.mjs && node quit.test.mjs && node rank.test.mjs && node ace.test.mjs && node pair.test.mjs && node nowallet.test.mjs"
+    "test": "node okey101.test.mjs && node game101.test.mjs && node katlama-acilis.test.mjs && node rooms.test.mjs && node hub.test.mjs && node timer.test.mjs && node rtc.test.mjs && node wallet.test.mjs && node assist.test.mjs && node call.test.mjs && node layout.test.mjs && node next.test.mjs && node swap.test.mjs && node bot.test.mjs && node rooms-bot.test.mjs && node quit.test.mjs && node rank.test.mjs && node ace.test.mjs && node pair.test.mjs && node nowallet.test.mjs && node bot-weak.test.mjs && node rounds.test.mjs"
   },
   "dependencies": { "ws": "^8.18.0" }
 }

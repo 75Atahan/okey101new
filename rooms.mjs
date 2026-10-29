@@ -4,7 +4,7 @@ import {
   autoPlay, timedOut,
 } from './game101.mjs';
 import { GAME_STAKE } from './wallet.mjs';
-import { botStep } from './bot.mjs';
+import { botStep, BOT_MISS } from './bot.mjs';
 
 const MODES = ['single', 'pairs']; // tekli / eşli
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -36,13 +36,14 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
 
   // Oda açılırken seçenekler: mode ('single'|'pairs'), katlamali (true|false)
   function createRoom(hostId, options = {}) {
-    const { mode = 'single', katlamali = false, turnSeconds = 45, bots = 0 } = options;
+    const { mode = 'single', katlamali = false, turnSeconds = 45, bots = 0, rounds = 1 } = options;
     if (!MODES.includes(mode)) return fail('Geçersiz oyun modu.');
     if (typeof katlamali !== 'boolean') return fail('Katlamalı seçimi true/false olmalı.');
     if (!Number.isInteger(turnSeconds) || turnSeconds < 15 || turnSeconds > 120)
       return fail('Süre 15-120 saniye arasında olmalı.');
     if (!Number.isInteger(bots) || bots < 0 || bots > 3) return fail('Bot sayısı 0-3 olmalı.');
-    const room = { code: newCode(), hostId, mode, katlamali, turnSeconds, seats: [hostId, null, null, null], game: null, ready: new Set(), readyAt: null, botAt: null };
+    if (!Number.isInteger(rounds) || rounds < 1 || rounds > 11) return fail('Oyun sayısı 1-11 arasında olmalı.');
+    const room = { code: newCode(), hostId, mode, katlamali, turnSeconds, rounds, seats: [hostId, null, null, null], game: null, ready: new Set(), readyAt: null, botAt: null };
     for (let i = 1; i <= bots; i++) room.seats[i] = newBot(room);
     rooms.set(room.code, room);
     return { ok: true, code: room.code };
@@ -139,6 +140,14 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
     return { ok: true };
   }
 
+  // Yeni maç: puanlar sıfırlanır. Botlar biraz zayıflatılmış oynar (BOT_MISS).
+  function newGame(room) {
+    const g = createGame({ players: 4, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, clock, rnd });
+    g.botMiss = BOT_MISS;
+    return g;
+  }
+  const matchOver = (room) => !!room.game?.over && room.game.roundNo >= room.rounds;   // seçilen oyun sayısı tamamlandı
+
   function start(code, userId) {
     const room = get(code);
     if (!room) return fail('Oda bulunamadı.');
@@ -147,7 +156,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
     if (room.seats.some((s) => !s)) return fail('4 oyuncu gerekli.');
     const err = chargeRound(room);
     if (err) return fail(err);
-    room.game = createGame({ players: 4, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, clock, rnd });
+    room.game = newGame(room);
     return { ok: true };
   }
 
@@ -189,7 +198,8 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
   function beginNext(room) {
     const err = chargeRound(room);
     if (err) return fail(err);
-    startRound(room.game);
+    if (matchOver(room)) room.game = newGame(room);      // maç bitti: yeni maç, puanlar sıfırdan
+    else startRound(room.game);                          // sıradaki oyun: puanlar birikir
     return { ok: true, started: true };
   }
 
@@ -201,7 +211,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
     if (p < 0) return fail('Bu odada değilsin.');
     return {
       ok: true,
-      lobby: { code, host: room.hostId, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, stake: !wallet || (room.game ? room.practice : hasBots(room)) ? 0 : stakeOf(room), practice: wallet ? (room.game ? !!room.practice : hasBots(room)) : false, bots: room.seats.map(isBot), ready: room.seats.map((id) => !!id && (isBot(id) || room.ready.has(id))), readyAt: room.readyAt, readyGrace: READY_GRACE_MS, lastPayout: room.lastPayout ?? null, nextAt: room.nextAt ?? null, balances: wallet ? room.seats.map((id) => (id && !isBot(id) ? wallet.balance(id) : null)) : null, seats: room.seats, started: !!room.game },
+      lobby: { code, host: room.hostId, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, rounds: room.rounds, roundNo: room.game?.roundNo ?? 0, matchOver: matchOver(room), stake: !wallet || (room.game ? room.practice : hasBots(room)) ? 0 : stakeOf(room), practice: wallet ? (room.game ? !!room.practice : hasBots(room)) : false, bots: room.seats.map(isBot), ready: room.seats.map((id) => !!id && (isBot(id) || room.ready.has(id))), readyAt: room.readyAt, readyGrace: READY_GRACE_MS, lastPayout: room.lastPayout ?? null, nextAt: room.nextAt ?? null, balances: wallet ? room.seats.map((id) => (id && !isBot(id) ? wallet.balance(id) : null)) : null, seats: room.seats, started: !!room.game },
       game: room.game ? viewFor(room.game, p) : null,
       balance: wallet ? wallet.balance(userId) : null,
     };

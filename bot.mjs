@@ -4,6 +4,11 @@ import { draw, open, lay, addToMeld, discard, cancelDiscardDraw, autoPlay } from
 import { isJoker, canAddToMeld, jokerReplaceIndex, pairReplaceIndex, checkOpen } from './okey101.mjs';
 import { plan } from './assist.mjs';
 
+// Bot zayıflatma: odalarda g.botMiss ile açılır; değer = o hamleyi "kaçırma" olasılığı (0 = hiç hata yok).
+// Testler ve doğrudan çağrılar botMiss vermezse bot tam güçte oynar.
+export const BOT_MISS = { open: 0.3, lay: 0.3, joker: 0.4, add: 0.35, takeDiscard: 0.4, sloppyDiscard: 0.4 };
+const R = (g) => (g.rnd ?? Math.random)();
+const miss = (g, k) => !!g.botMiss && R(g) < g.botMiss[k];
 const face = (t, okey) => (t.fake ? { color: okey.color, num: okey.num } : { color: t.color, num: t.num });
 const ctxOf = (g, p) => {
   const s = g.seats[p];
@@ -25,7 +30,7 @@ function wantsDiscard(g, p) {
 function worstTile(g, p) {
   const seat = g.seats[p], ok = g.okey, hand = seat.hand;
   const keep = new Set(plan(hand, ok, ctxOf(g, p)).groups.flat());
-  let best = null, bestScore = Infinity;
+  const list = [];
   for (const t of hand) {
     if (isJoker(t, ok)) continue;
     const f = face(t, ok);
@@ -37,9 +42,12 @@ function worstTile(g, p) {
       else if (h.num === f.num) sc += 4;
     }
     sc += f.num / 20;
-    if (sc < bestScore) { best = t; bestScore = sc; }
+    list.push({ t, sc });
   }
-  return best ?? hand[0];
+  list.sort((a, c) => a.sc - c.sc);
+  // Dikkatsiz bot: bazen en kötü taş yerine sıradaki 2-4. taşı atar
+  const pick = list.length > 1 && miss(g, 'sloppyDiscard') ? list[Math.min(list.length - 1, 1 + Math.floor(R(g) * 3))] : list[0];
+  return pick?.t ?? hand[0];
 }
 
 function playDiscardPhase(g, p) {
@@ -48,6 +56,7 @@ function playDiscardPhase(g, p) {
     if (seat.opened) return;
     const pl = plan(seat.hand, ok, ctxOf(g, p));
     if (!pl.canOpen) return;
+    if (g.mustUse == null && miss(g, 'open')) return;               // açabilirken bazen açmayı kaçırır
     const tiles = pl.groups.map((grp) => grp.map((id) => seat.hand.find((t) => t.id === id)));
     if (!checkOpen(tiles, ok, { minMeld: g.minMeld, minPairs: g.minPairs }).canOpen) return;
     if (g.mustUse != null && !pl.groups.flat().includes(g.mustUse)) return;
@@ -61,16 +70,16 @@ function playDiscardPhase(g, p) {
   }
   if (seat.opened) {
     const pl2 = plan(seat.hand, ok, ctxOf(g, p));                // açtıktan sonra yeni grupları da serer
-    if (pl2.canOpen && pl2.groups.length) lay(g, p, pl2.groups);
+    if (pl2.canOpen && pl2.groups.length && !miss(g, 'lay')) lay(g, p, pl2.groups);
     const pass = () => {                                         // önce okeyleri geri alır (çift ve seri), sonra kalan taşları ekler
       let changed = false;
       const each = (fn) => { for (let s = 0; s < g.seats.length; s++) for (let k = 0; k < g.seats[s].melds.length; k++) if (fn(s, k, g.seats[s].melds[k])) return true; return false; };
       for (const t of [...seat.hand]) {
-        if (!seat.hand.includes(t) || isJoker(t, ok)) continue;
+        if (!seat.hand.includes(t) || isJoker(t, ok) || miss(g, 'joker')) continue;
         if (each((s, k, m) => (m.length >= 3 ? jokerReplaceIndex(m, t, ok) : pairReplaceIndex(m, t, ok)) >= 0 && addToMeld(g, p, s, k, t.id).ok)) changed = true;
       }
       for (const t of [...seat.hand]) {
-        if (!seat.hand.includes(t) || isJoker(t, ok) || seat.hand.length < 2) continue;
+        if (!seat.hand.includes(t) || isJoker(t, ok) || seat.hand.length < 2 || miss(g, 'add')) continue;
         if (each((s, k, m) => m.length >= 3 && canAddToMeld(m, t, ok) && addToMeld(g, p, s, k, t.id).ok)) changed = true;
       }
       return changed;
@@ -86,7 +95,7 @@ function playDiscardPhase(g, p) {
 export function botStep(g, p) {
   if (g.over || g.turn !== p) return;
   if (g.phase === 'draw') {
-    let r = draw(g, p, wantsDiscard(g, p) ? 'discard' : 'pile');
+    let r = draw(g, p, wantsDiscard(g, p) && !miss(g, 'takeDiscard') ? 'discard' : 'pile');
     if (!r.ok) r = draw(g, p, 'pile');
     if (!r.ok) autoPlay(g);
     return;

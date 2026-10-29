@@ -14,7 +14,7 @@ button,input,select{font:inherit}
 .btn{background:var(--gold);color:#222;border:0;border-radius:10px;padding:10px 14px;font-weight:600}
 .btn:disabled{opacity:.4}.btn.alt{background:#2f6f4a;color:#fff}
 .card{background:var(--felt);border-radius:14px;padding:12px;margin:8px 0}
-input,select{padding:10px;border-radius:10px;border:0;width:100%;margin:4px 0}
+input,select{padding:10px;border-radius:10px;border:0;width:100%;margin:4px 0;background:#fff;color:#111}
 input[type=checkbox]{width:auto}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .t{width:38px;height:54px;border-radius:7px;border:2px solid #d8cfb8;background:var(--card);font-size:20px;font-weight:700;padding:0;position:relative}
@@ -205,7 +205,7 @@ function toast(m) {
 }
 
 function on(m) {
-  if (m.t === 'welcome') { store.token = m.token; store.name = m.name; S.me = m.userId; S.off = false; S.balance = m.balance; const q = new URLSearchParams(location.search).get('oda'); if (q && !m.room) send({ t: 'join', code: q }); }
+  if (m.t === 'welcome') { store.token = m.token; store.name = m.name; S.me = m.userId; S.off = false; S.balance = m.balance; const q = new URLSearchParams(location.search).get('oda'); if (q && !m.room && !S.pending) send({ t: 'join', code: q }); if (S.pending) { const f = S.pending; S.pending = null; setTimeout(f, 0); } }
   else if (m.t === 'state') {
     const wasOver = S.game ? !!S.game.over : true;   // ilk yükleme/yeniden bağlanmada kutlama yapma
     S.lobby = m.lobby; S.game = m.game; if (m.balance != null) S.balance = m.balance;
@@ -254,15 +254,21 @@ function rack(hand) {
 }
 
 const views = {
-  login: () => `<div class="card"><h2>101 Okey</h2><input id="name" placeholder="Adın" maxlength="20" value="${esc(store.name)}"><button class="btn" data-act="login">Giriş</button></div>`,
-  menu: () => `<div class="card"><h3>Oda kur</h3><small>${S.balance != null ? `Jetonun: 💰 ${fmt(S.balance)} · masa 2.500 (katlamalıda 5.000)` : ''}</small>
+  menu: () => {
+    const invite = (new URLSearchParams(location.search).get('oda') || '').toUpperCase().slice(0, 6);
+    const opts = (n, f) => Array.from({ length: n }, (_, i) => `<option value="${i + 1}">${f(i + 1)}</option>`).join('');
+    return `<div class="card"><h2>101 Okey</h2><small>Adın (masada böyle görünürsün)</small>
+    <input id="name" placeholder="Adını yaz" maxlength="20" autocomplete="nickname" value="${esc(store.name)}"></div>
+    <div class="card"><h3>Oda kur</h3>
     <select id="mode"><option value="single">Tekli</option><option value="pairs">Eşli</option></select>
     <label><input type="checkbox" id="kat"> Katlamalı</label>
+    <select id="rounds">${opts(11, (n) => `Oyun sayısı: ${n}`)}</select>
     <select id="sec"><option value="30">30 sn / sıra</option><option value="45" selected>45 sn / sıra</option><option value="60">60 sn / sıra</option></select>
     <select id="bots"><option value="0">Bot yok</option><option value="1">1 bot</option><option value="2">2 bot</option><option value="3">3 bot</option></select>
-    <small>Az kişi varsa boş koltuklara bilgisayar oyuncu (bot) eklenir; yeni gelen oyuncu botun yerine geçer.</small>
+    <small>Az kişi varsa boş koltuklara bilgisayar oyuncu (bot) eklenir; yeni gelen oyuncu botun yerine geçer. Birden fazla oyun seçersen puanlar toplanır, en düşük toplam kazanır.</small>
     <button class="btn" data-act="create">Oda kur</button> <button class="btn alt" data-act="full">Tam ekran</button></div>
-    <div class="card"><h3>Odaya katıl</h3><input id="code" placeholder="Oda kodu" maxlength="6"><button class="btn alt" data-act="join">Katıl</button></div>`,
+    <div class="card"><h3>Odaya katıl</h3><input id="code" placeholder="Oda kodu" maxlength="6" value="${esc(invite)}"><button class="btn alt" data-act="join">Katıl</button></div>`;
+  },
   room: (L) => `<div class="card"><small>Oda kodu</small><h1 style="margin:0;letter-spacing:4px">${L.code}</h1>
     <p>${L.mode === 'pairs' ? 'Eşli' : 'Tekli'} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'} · ${L.turnSeconds} sn${L.stake > 0 ? ' · masa ' + fmt(L.stake) : ''}</p>
     ${L.seats.map((id, i) => `<div class="row" style="gap:6px">${i + 1}. ${id ? esc(L.names[i]) + (L.online[i] ? '' : ' ⚠') : '<small>boş</small>'}${L.bots?.[i] && L.host === S.me ? `<button class="btn alt sm" data-act="rmbot" data-seat="${i}">Çıkar</button>` : ''}</div>`).join('')}
@@ -386,7 +392,7 @@ const views = {
       ${bx(P.b1, `${G.minMeld}<small> sayı</small>`, 'bdg')}${bx(P.b2, `${G.minPairs}<small> çift</small>`, 'bdg')}
       ${box(cx, clothY, 2 * sq, clothH, `${sqs(sq, 2)}${rows}`, 'cloth', vars)}
       ${box(px, clothY, 6 * CW, clothH, `${sqs(6 * CW, 1)}${prs}`, 'cloth', vars)}
-      ${bx(P.tags, `<div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag g">Yardımlı</div><div class="tag ${L.katlamali ? 'r' : ''}">${L.katlamali ? 'Katlamalı' : 'Katlamasız'}</div><div class="tag">1 El</div>`)}
+      ${bx(P.tags, `<div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag g">Yardımlı</div><div class="tag ${L.katlamali ? 'r' : ''}">${L.katlamali ? 'Katlamalı' : 'Katlamasız'}</div><div class="tag">El ${L.roundNo || 1}/${L.rounds || 1}</div>`)}
       ${bx(P.ind, `<span class="ind">${tile(G.indicator, { okey: ok, z: P.mz })}</span>`)}
       ${bx(P.heap, `<button class="t heap ${canDraw ? 'go' : ''}" data-act="pile" ${canDraw ? '' : 'disabled'}><span>${G.pileCount}</span></button>`)}
       ${btn(0, canS ? '' : 'dim', 'seriac', 'Seri aç', canAct)}${btn(1, canC ? '' : 'dim', 'ciftac', 'Çift aç', canAct)}
@@ -403,24 +409,39 @@ const views = {
 
 // El sonu kartı: kazanan üstte, 1-2-3-4 alt alta (eşlide kazanan takım önde)
 function overHtml(G, L) {
-  const o = G.over, n = L.seats.length;
+  const o = G.over, n = L.seats.length, pairs = L.mode === 'pairs';
   if (S.hideOver) return '<button class="btn over-chip" data-act="showover">Sonucu göster</button>';
-  const w = o.rank[0];
-  const win = L.mode === 'pairs' ? [w, (w + 2) % n] : [w];
-  const order = L.mode === 'pairs' ? [...win, ...o.rank.filter((i) => !win.includes(i))] : o.rank;
-  const what = o.finisher != null ? (o.withOkey ? 'eli okeyle bitirdi' : 'eli bitirdi') : 'en az sayı kaldı';
-  const title = `${esc(L.names[w])} ${what}${o.bonus ? ' · büyük ödül' : ''}${o.byPairs ? ' · çift açtı' : ''}${o.withOkey && L.katlamali ? ' · okey ×2' : ''}`;
-  const rows = order.map((i, k) => {
-    const isW = win.includes(i), bal = L.balances?.[i];
-    return `<div class="rw ${isW ? 'win' : ''}"><div class="av">${esc(Array.from(L.names[i] || '?')[0].toUpperCase())}${k === 0 ? '<i class="crown">👑</i>' : ''}</div><div class="nm2"><b>${esc(L.names[i])}</b><small>${bal != null ? `💰 ${fmt(bal)}${L.lastPayout ? ` (${L.lastPayout[i] >= 0 ? '+' : ''}${fmt(L.lastPayout[i])})` : ''} · ` : ''}${o.points[i] > 0 ? '+' : ''}${o.points[i]} puan</small></div>${isW ? '<span class="kz">KAZANAN</span>' : ''}<span class="pt">${o.left[i]}<small> sayı</small></span></div>`;
-  }).join('');
+  const rounds = L.rounds || 1, final = !!L.matchOver && rounds > 1, tot = G.scores;
+  const av = (i, crown) => `<div class="av">${esc(Array.from(L.names[i] || '?')[0].toUpperCase())}${crown ? '<i class="crown">👑</i>' : ''}</div>`;
+  const sg = (v) => (v > 0 ? '+' : '') + v;
+  let head = 'OYUN SONUCU', title, rows;
+  if (final) {                                                // seçilen oyun sayısı bitti: toplam puanı en düşük kazanır
+    const key = (i) => (pairs ? G.teamScores[i % 2] : tot[i]);
+    const order = [...Array(n).keys()].sort((a, b) => key(a) - key(b) || a - b);
+    const best = key(order[0]), win = order.filter((i) => key(i) === best);
+    head = 'MAÇ SONUCU';
+    title = `${win.map((i) => esc(L.names[i])).join(' & ')} kazandı · ${best} puan`;
+    rows = order.map((i, k) => `<div class="rw ${win.includes(i) ? 'win' : ''}">${av(i, k === 0)}<div class="nm2"><b>${esc(L.names[i])}</b><small>${rounds} oyun toplamı · son oyun ${sg(o.points[i])}</small></div>${win.includes(i) ? '<span class="kz">KAZANAN</span>' : ''}<span class="pt">${key(i)}<small> puan</small></span></div>`).join('');
+  } else {
+    const w = o.rank[0];
+    const win = pairs ? [w, (w + 2) % n] : [w];
+    const order = pairs ? [...win, ...o.rank.filter((i) => !win.includes(i))] : o.rank;
+    const what = o.finisher != null ? (o.withOkey ? 'eli okeyle bitirdi' : 'eli bitirdi') : 'en az sayı kaldı';
+    title = `${esc(L.names[w])} ${what}${o.byPairs ? ' · çift açtı' : ''}${o.withOkey && L.katlamali ? ' · okey ×2' : ''}`;
+    if (rounds > 1) head = `OYUN ${L.roundNo}/${rounds} SONUCU`;
+    rows = order.map((i, k) => {
+      const isW = win.includes(i);
+      return `<div class="rw ${isW ? 'win' : ''}">${av(i, k === 0)}<div class="nm2"><b>${esc(L.names[i])}</b><small>${sg(o.points[i])} puan${rounds > 1 ? ` · toplam ${pairs ? G.teamScores[i % 2] : tot[i]}` : ''}</small></div>${isW ? '<span class="kz">KAZANAN</span>' : ''}<span class="pt">${o.left[i]}<small> sayı</small></span></div>`;
+    }).join('');
+  }
   const isHuman = L.seats.map((id, i) => !!id && !L.bots?.[i]), humanN = isHuman.filter(Boolean).length;
   const readyN = (L.ready || []).filter((r, i) => r && isHuman[i]).length, iReady = !!L.ready?.[G.you];
   const secs = L.readyAt ? Math.max(0, Math.ceil((L.readyAt + (L.readyGrace || 20000) - (Date.now() + S.skew)) / 1000)) : null;
-  return `<div class="over"><div class="res"><div class="res-h">OYUN SONUCU</div>
+  const teamLine = pairs ? (final ? `<small>Takım toplamları: ${G.teamScores.join(' / ')}</small>` : o.teams ? `<small>Takımlar: ${o.teams.join(' / ')}</small>` : '') : '';
+  return `<div class="over"><div class="res"><div class="res-h">${head}</div>
     <div class="res-c">Hazır: ${readyN}/${humanN}${secs != null ? ` · <b id="cd">${secs}</b> sn içinde başlar` : ''}</div>
-    <div class="res-t">🏆 ${title}</div>${rows}${o.teams ? `<small>Takımlar: ${o.teams.join(' / ')}</small>` : ''}
-    <div class="row" style="justify-content:space-between;margin-top:12px"><button class="rbtn red" data-act="leave">Masadan<br>ayrıl</button><button class="btn alt" data-act="hideover">Masaya göz at</button><button class="rbtn green" data-act="next" ${iReady ? 'disabled' : ''}>${iReady ? 'Hazır ✓' : 'Yeni oyuna<br>başla'}</button></div></div></div>`;
+    <div class="res-t">🏆 ${title}</div>${rows}${teamLine}
+    <div class="row" style="justify-content:space-between;margin-top:12px"><button class="rbtn red" data-act="leave">Masadan<br>ayrıl</button><button class="btn alt" data-act="hideover">Masaya göz at</button><button class="rbtn green" data-act="next" ${iReady ? 'disabled' : ''}>${iReady ? 'Hazır ✓' : final ? 'Yeni maç<br>başlat' : 'Yeni oyuna<br>başla'}</button></div></div></div>`;
 }
 // Taş sesi (dosyasız, WebAudio). İlk dokunuşta ses açılır; üst çubuktaki 🔊 ile kapatılır.
 let ac;
@@ -485,14 +506,17 @@ function render() {
   document.body?.classList.toggle('inGame', inGame);
   if (inGame) fit();
   const ci = $('#ci'), v = ci?.value, foc = ci && document.activeElement === ci;
+  const keep = ['#name', '#code', '#mode', '#rounds', '#sec', '#bots'].map((q) => [q, $(q)?.value]), katV = $('#kat')?.checked;   // yeniden çizimde yazılanlar kaybolmasın
   const inRoom = S.lobby;
   let h = S.off ? '<div class="card">Bağlantı koptu, yeniden bağlanılıyor…</div>' : '';
-  h += !S.me ? views.login() : !inRoom ? views.menu() : S.game ? views.table() : views.room(S.lobby);
+  h += !S.me || !inRoom ? views.menu() : S.game ? views.table() : views.room(S.lobby);
   if (inGame && typeof innerWidth !== 'undefined' && innerHeight > innerWidth * 1.15) h += '<div class="rot">↻ Daha büyük görmek için telefonu yan çevir</div>';
   $('#app').innerHTML = h;
   S.fresh = {};
   placeVideos();
   if ($('#ci') && v != null) { $('#ci').value = v; if (foc) $('#ci').focus(); }
+  keep.forEach(([q, val]) => { if (val != null && $(q)) $(q).value = val; });
+  if (katV != null && $('#kat')) $('#kat').checked = katV;
   const cl = $('#cl'); if (cl) cl.scrollTop = cl.scrollHeight;
 }
 
@@ -648,10 +672,19 @@ const ctxOf = () => {
   const G = S.game, o = G.others[G.you];
   return { opened: o.opened, openMode: o.openMode, pairsOnTable: G.others.some((x, i) => i !== G.you && x.openMode === 'pairs'), minMeld: G.minMeld, minPairs: G.minPairs };
 };
+// İsim masa kurulan/katılınan ekranda girilir. Bağlı değilse önce bağlanılır, sonra işlem sürer.
+function ensureName(then) {
+  const n = ($('#name')?.value ?? '').trim().slice(0, 20);
+  if (!n) { toast('Önce adını yaz.'); $('#name')?.focus(); return false; }
+  const changed = n !== store.name;
+  store.name = n;
+  if (!S.me) { S.pending = then; if (!ws || ws.readyState > 1) connect(); return false; }
+  if (changed) send({ t: 'rename', name: n });
+  return true;
+}
 const A = {
-  login() { const n = $('#name').value.trim(); if (n) { store.name = n; connect(); } },
-  create() { send({ t: 'createRoom', mode: $('#mode').value, katlamali: $('#kat').checked, turnSeconds: +$('#sec').value, bots: +$('#bots').value }); },
-  join() { send({ t: 'join', code: $('#code').value }); },
+  create() { if (ensureName(() => A.create())) send({ t: 'createRoom', mode: $('#mode').value, katlamali: $('#kat').checked, turnSeconds: +$('#sec').value, bots: +$('#bots').value, rounds: +$('#rounds').value }); },
+  join() { if (ensureName(() => A.join())) send({ t: 'join', code: $('#code').value }); },
   start() { send({ t: 'start' }); }, leave() { send({ t: 'leave' }); }, next() { send({ t: 'nextRound' }); },
   pile() { act({ type: 'draw', source: 'pile' }); },
   take() { act({ type: 'draw', source: 'discard' }); },
@@ -803,7 +836,7 @@ $('#app').onpointerdown = (e) => {
 };
 document.onpointermove = (e) => {
   if (!drag) return;
-  if (!drag.on && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 6) {
+  if (!drag.on && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > (e.pointerType === 'touch' ? 6 : 8)) {
     drag.on = true; S.dragging = true;
     const r = drag.el.getBoundingClientRect(); drag.w = r.width; drag.h = r.height;
     drag.ghost = drag.el.cloneNode(true);
@@ -818,7 +851,7 @@ document.onpointermove = (e) => {
   if (drag.on) {
     drag.ghost.style.left = e.clientX - drag.w / 2 + 'px'; drag.ghost.style.top = e.clientY - (e.pointerType === 'touch' ? drag.h * 1.15 : drag.h / 2) + 'px';   // dokunmatikte parmağın üstünde
     const pt = dropPt(e, drag.h);
-    slotHot(pt);
+    if (e.pointerType === 'touch') slotHot(pt);
     if (drag.kind === 'rack') hotRow(pt);
   }
 };
@@ -846,7 +879,11 @@ const endDrag = (e, drop) => {
     else toast('Okeyi sadece elindeki son taş olduğunda göstergeye veya yığına bırakıp bitirebilirsin.');
   } else {
     const to = el?.closest('.slot');
-    if (to) insertAt(d.from, +to.dataset.s);
+    if (to) {
+      const k = +to.dataset.s;
+      if (e.pointerType === 'touch') insertAt(d.from, k);                                // dokunmatik (iPad): araya sokar
+      else [S.slots[d.from], S.slots[k]] = [S.slots[k], S.slots[d.from]];                // fare: eskisi gibi yer değiştirir
+    }
   }
   render();
 };

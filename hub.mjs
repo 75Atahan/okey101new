@@ -88,11 +88,17 @@ export function createHub({ rooms = createRoomManager(), now = Date.now, rtc = n
         return sendTo(to, { t: 'sig', from: user.id, data: m.data });
       }
 
+      if (m.t === 'rename') {                                  // isim masa kurulan/katılınan ekranda girilir
+        const name = String(m.name ?? '').trim().slice(0, 20);
+        if (name) { user.name = name; if (user.room) pushState(user.room); }
+        return;
+      }
+
       let r;
       switch (m.t) {
         case 'createRoom':
           if (user.room) return err('Zaten bir odadasın.');
-          r = rooms.createRoom(user.id, { mode: m.mode, katlamali: m.katlamali, turnSeconds: m.turnSeconds, bots: m.bots ?? 0 });
+          r = rooms.createRoom(user.id, { mode: m.mode, katlamali: m.katlamali, turnSeconds: m.turnSeconds, bots: m.bots ?? 0, rounds: m.rounds ?? 1 });
           if (r.ok) user.room = r.code;
           break;
         case 'join': {
