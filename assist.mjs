@@ -122,10 +122,11 @@ export function plan(hand, okey, ctx = {}) {
   }
   groups = keepOne(groups, hand.length, okey);
   const total = mode === 'meld' ? groups.reduce((s, g) => s + pointsOf(g, okey), 0) : groups.length;
-  const canOpen = opened ? groups.length > 0 : mode === 'meld' ? total >= minMeld : total >= minPairs;
+  const goesOut = !opened && mode === 'meld' && groups.length > 0 && hand.length - groups.flat().length === 1;   // elden bitirme: sayı şartı yok
+  const canOpen = opened ? groups.length > 0 : mode === 'meld' ? total >= minMeld || goesOut : total >= minPairs;
   if (!opened)
     summary = mode === 'meld'
-      ? `Seri: ${total} sayı${canOpen ? ' (açılabilir)' : ` (en az ${minMeld} gerekli)`}`
+      ? `Seri: ${total} sayı${goesOut && total < minMeld ? ' (elden bitiyor)' : canOpen ? ' (açılabilir)' : ` (en az ${minMeld} gerekli)`}`
       : `${total} çift${canOpen ? ' (açılabilir)' : ` (en az ${minPairs} gerekli)`}`;
   const inGroups = new Set(groups.flat().map((t) => t.id));
   const rank = (t) => (t.fake || isJoker(t, okey) ? 999 : t.color * 20 + t.num);

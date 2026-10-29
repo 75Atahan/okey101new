@@ -38,7 +38,9 @@ assert.equal(pl.groups.length, 1); assert.equal(pl.total, 15); check(hand, pl);
 assert.equal(plan(hand, okey, { prefer: 'meld' }).mode, 'meld');   // Seri diz düğmesi seri kurgusunu zorlar
 // Katlamalı eşik yükselince açılamaz
 hand = [...a, ...b, ...c, T(3, 2)];
-assert.ok(!plan(hand, okey, { minMeld: 400 }).canOpen);
+assert.ok(plan(hand, okey, { minMeld: 400 }).canOpen);            // tüm taşlar perde + 1 atılacak taş: elden bitirme, sayı şartı yok
+hand = [...a, ...b, ...c, T(3, 2), T(2, 1)];
+assert.ok(!plan(hand, okey, { minMeld: 400 }).canOpen);           // geriye 2 taş kalıyorsa eşik aranır
 
 // Açmış oyuncu: çift açan sadece çift, seri açan çift de serer (masada çift varsa)
 hand = [...a, T(3, 7), T(3, 7), T(2, 2)];

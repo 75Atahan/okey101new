@@ -166,8 +166,11 @@ export function layoutMeld(tiles, okey) {
 
 // Perde okeyin yerine tam oturan taş varsa okeyin sırasını döndürür (yoksa -1).
 // Taş okeyin yerine konunca okey oyuncunun eline döner.
+// 3 taşlı aynı sayılı perde (ör. 13-13-okey): okeyin hangi renk yerine geçtiği belli olmadığı için okey alınamaz.
+// 4 taşlıda eksik renk belli olduğundan alınabilir. Seride okeyin yeri her zaman belli olduğu için alınabilir.
 export function jokerReplaceIndex(meld, tile, okey) {
   if (isJoker(tile, okey)) return -1;
+  if (meld.length === 3 && validateMeld(meld, okey).type === 'set') return -1;
   for (let i = 0; i < meld.length; i++) {
     if (!isJoker(meld[i], okey)) continue;
     const next = [...meld];

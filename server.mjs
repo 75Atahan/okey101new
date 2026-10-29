@@ -35,7 +35,7 @@ const server = http.createServer(async (req, res) => {
   if (!f) { res.writeHead(404); return res.end('Bulunamadı'); }
   try {
     const body = await readFile(new URL(f[0], import.meta.url));
-    res.writeHead(200, { 'content-type': f[1] });
+    res.writeHead(200, { 'content-type': f[1], 'cache-control': 'no-cache' });   // her açılışta yeni sürümü kontrol et
     res.end(body);
   } catch { res.writeHead(500); res.end('Dosya okunamadı'); }
 });

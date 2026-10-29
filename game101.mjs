@@ -115,16 +115,19 @@ export function open(g, p, groups) {
   if (g.mustUse != null && !ids.includes(g.mustUse))
     return fail('Aldığın atık taşla açmalısın.');
   const res = checkOpen(melds, g.okey, { minMeld: g.minMeld, minPairs: g.minPairs });
-  if (!res.canOpen)
+  // Elden bitirme: tüm taşlar geçerli perlerde ve geriye atılacak tek taş kalıyorsa sayı toplamı aranmaz
+  const goesOut = res.mode === 'meld' && seat.hand.length - ids.length === 1;
+  if (!res.canOpen && !goesOut)
   {
     g.openAttempt = p;   // denedi: tur açmadan biterse 101 ceza
-    return fail(`Açılamadı: en az ${g.minMeld} sayı ya da ${g.minPairs} çift gerekli. Turu açmadan bitirirsen ${RULES.WRONG_OPEN_PENALTY} ceza puanı yersin.`);
+    return fail(`Açılamadı: en az ${g.minMeld} sayı ya da ${g.minPairs} çift gerekli (tüm taşlarını dizip eli bitiriyorsan sayı şartı yok). Turu açmadan bitirirsen ${RULES.WRONG_OPEN_PENALTY} ceza puanı yersin.`);
   }
   ids.forEach((id) => takeFromHand(seat, id));
   seat.melds.push(...melds);
   melds.forEach(() => seat.meldSeq.push(g.meldCounter++));
   seat.opened = true;
   seat.openMode = res.mode;
+  seat.openTotal = res.total;     // "açtı" sayısı: yalnızca ilk açılış toplamı (sonradan işlenenler eklenmez)
   // Katlamalı: sonraki açan en az bir fazlasıyla açmalı (per ve çift ayrı sayılır).
   if (g.katlamali) {
     if (res.mode === 'meld') g.minMeld = res.total + 1;
@@ -288,6 +291,7 @@ export function viewFor(g, p) {
       seat: i,
       opened: s.opened,
       openMode: s.openMode,
+      openTotal: s.openTotal ?? 0,
       meldSeq: s.meldSeq,
       melds: s.melds,
       lastDiscard: g.discardPiles[i].at(-1) ?? null,

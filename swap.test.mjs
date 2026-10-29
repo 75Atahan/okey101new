@@ -27,11 +27,12 @@ r = addToMeld(g, 0, 0, 0, seven.id);
 assert.ok(r.ok && !r.swapped);
 assert.equal(g.seats[0].melds[0].length, 4); assert.equal(g.seats[0].hand.length, 1);
 
-// Set: 8 sarı, okey, 8 mavi -> elde 8 kırmızı okeyin yerine gelir; 8 sarı gelirse olmaz
+// Set: 3 taşlı (8, okey, 8) perdede okey alınamaz; 4 taşlıda (8, okey, 8, 8) eksik renk gelirse alınır, aynı renk gelirse olmaz
 const J2 = T(1, 5);
-assert.equal(jokerReplaceIndex([T(0, 8), J2, T(1, 8)], T(3, 8), okey), 1);
-assert.equal(jokerReplaceIndex([T(0, 8), J2, T(1, 8)], T(0, 8), okey), -1);
-g = setup([T(0, 8), J2, T(1, 8)], [T(0, 8), extra]);
+assert.equal(jokerReplaceIndex([T(0, 8), J2, T(1, 8)], T(3, 8), okey), -1);
+assert.equal(jokerReplaceIndex([T(0, 8), J2, T(1, 8), T(2, 8)], T(3, 8), okey), 1);
+assert.equal(jokerReplaceIndex([T(0, 8), J2, T(1, 8), T(2, 8)], T(0, 8), okey), -1);
+g = setup([T(0, 8), J2, T(1, 8), T(2, 8)], [T(0, 8), extra]);
 assert.ok(!addToMeld(g, 0, 0, 0, g.seats[0].hand[0].id).ok);
 
 // Okey değişiminde elde tek taş olsa bile yapılabilir (el sayısı değişmez)

@@ -171,6 +171,8 @@ body{background-color:#08250f;background-image:repeating-linear-gradient(45deg,#
 .stage .t.heap,.pile .t{touch-action:none}
 .pile.drop-pile{border-color:#ffd54f!important;box-shadow:0 0 16px 5px #ffd54f99}
 .slot.slot-hot{box-shadow:inset 0 0 0 3px #fff,0 0 12px 3px #ffd54f}
+.t:not(.heap):not(.xs):not(.s)::before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;opacity:.65;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2040%2014%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23a8935f%27%20stroke-width%3D%271.3%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M20%202C18%205%2015%205%2013%204%2010%203%208%205%2010%207%2012%209%2015%207%2014%205%27%2F%3E%3Cpath%20d%3D%27M20%202C22%205%2025%205%2027%204%2030%203%2032%205%2030%207%2028%209%2025%207%2026%205%27%2F%3E%3Cpath%20d%3D%27M20%206V9%27%2F%3E%3C%2Fg%3E%3Ccircle%20cx%3D%2720%27%20cy%3D%2711.5%27%20r%3D%271.1%27%20fill%3D%27%23a8935f%27%2F%3E%3C%2Fsvg%3E") top 5% center/64% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2040%2014%27%3E%3Cg%20transform%3D%27translate%280%2014%29%20scale%281%20-1%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23a8935f%27%20stroke-width%3D%271.3%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M20%202C18%205%2015%205%2013%204%2010%203%208%205%2010%207%2012%209%2015%207%2014%205%27%2F%3E%3Cpath%20d%3D%27M20%202C22%205%2025%205%2027%204%2030%203%2032%205%2030%207%2028%209%2025%207%2026%205%27%2F%3E%3Cpath%20d%3D%27M20%206V9%27%2F%3E%3C%2Fg%3E%3Ccircle%20cx%3D%2720%27%20cy%3D%2711.5%27%20r%3D%271.1%27%20fill%3D%27%23a8935f%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") bottom 8% center/64% auto no-repeat}
+.t:not(.heap){text-shadow:0 1px 0 #fffc,0 -1px 0 #0002}
 </style></head><body>
 <div id="vg"></div>
 <div id="app"></div><div id="toast"></div>
@@ -184,6 +186,7 @@ let plan = null; // Yardımlı: assist.mjs yüklenemezse oyun yine açılır
 import('./assist.mjs').then((m) => { plan = m.plan; }).catch(() => {});
 // Adrese ?test eklenirse her sekme ayrı oyuncu olur (tek bilgisayarda 4 kişilik deneme için).
 const store = (location.search || '').includes('test') ? sessionStorage : localStorage;
+const SURUM = 'sürüm 5';   // güncelleme geldi mi diye oda bilgisinde görünür
 const $ = (s) => document.querySelector(s);
 const COLORS = ['#c98f00', '#1f6fd1', '#222', '#d32f2f'];
 const fmt = (n) => (n ?? 0).toLocaleString('tr-TR');
@@ -267,7 +270,7 @@ const views = {
     <select id="bots"><option value="0">Bot yok</option><option value="1">1 bot</option><option value="2">2 bot</option><option value="3">3 bot</option></select>
     <small>Az kişi varsa boş koltuklara bilgisayar oyuncu (bot) eklenir; yeni gelen oyuncu botun yerine geçer. Birden fazla oyun seçersen puanlar toplanır, en düşük toplam kazanır.</small>
     <button class="btn" data-act="create">Oda kur</button> <button class="btn alt" data-act="full">Tam ekran</button></div>
-    <div class="card"><h3>Odaya katıl</h3><input id="code" placeholder="Oda kodu" maxlength="6" value="${esc(invite)}"><button class="btn alt" data-act="join">Katıl</button></div>`;
+    <div class="card"><h3>Odaya katıl</h3><input id="code" placeholder="Oda kodu" maxlength="6" value="${esc(invite)}"><button class="btn alt" data-act="join">Katıl</button></div><small style="opacity:.6">${SURUM}</small>`;
   },
   room: (L) => `<div class="card"><small>Oda kodu</small><h1 style="margin:0;letter-spacing:4px">${L.code}</h1>
     <p>${L.mode === 'pairs' ? 'Eşli' : 'Tekli'} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'} · ${L.turnSeconds} sn${L.stake > 0 ? ' · masa ' + fmt(L.stake) : ''}</p>
@@ -309,8 +312,9 @@ const views = {
     const pairsOnTable = G.others.some((x, i) => i !== me && x.openMode === 'pairs');
     let canS, canC;                                            // Seri aç / Çift aç: 101 ve üstü (ya da 5+ çift) bulununca açılır
     if (!myO.opened) {
-      if (co) { canS = co.mode === 'meld' && co.canOpen; canC = co.mode === 'pairs' && co.canOpen; }
-      else { canS = rg.total >= G.minMeld; canC = rg.pc >= G.minPairs; }
+      // Elden bitirme: tüm taşlar perde ve geriye atılacak tek taş kalıyorsa sayı şartı aranmaz
+      if (co) { canS = co.mode === 'meld' && (co.canOpen || G.hand.length - S.staged.flat().length === 1); canC = co.mode === 'pairs' && co.canOpen; }
+      else { canS = rg.total >= G.minMeld || (rg.series.length > 0 && G.hand.length - rg.series.flat().length === 1); canC = rg.pc >= G.minPairs; }
     } else { canS = myO.openMode === 'meld' && rg.series.length > 0; canC = (myO.openMode === 'pairs' || pairsOnTable) && rg.pc > 0; }
     const enough = rg.total >= G.minMeld || rg.pc >= G.minPairs;
     const mult = myO.openMode === 'pairs' ? 2 : 1;               // çift açanın elde kalan sayıları 2 katı sayılır
@@ -351,7 +355,7 @@ const views = {
     const rel = (k) => (me + k) % n;
     const box = (x, y, w, h, html, cls = '', extra = '', attrs = '') => `<div class="a ${cls}" ${attrs} style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;${extra}">${html}</div>`;
     const bx = (r, html, cls = '', extra = '', attrs = '') => box(r[0], r[1], r[2], r[3], html, cls, extra, attrs);
-    const openedTxt = (o) => { if (!o.opened) return ''; const ser = o.melds.filter((m) => m.length >= 3).reduce((t, m) => t + pts(m, ok), 0), pr = o.melds.filter((m) => m.length === 2).length; return `açtı${ser ? ' ' + ser : ''}${pr ? ` · ${pr} çift` : ''}`; };
+    const openedTxt = (o) => { if (!o.opened) return ''; return o.openMode === 'pairs' ? `açtı · ${o.openTotal} çift` : `açtı ${o.openTotal}`; };
     // Kenarlardaki oyuncular dikey isim çubuğu (referanstaki gibi); üst ve alttaki yatay plaka. Rakibin taş sayısı gösterilmez.
     const vbar = (i, r, pos) => {
       const o = G.others[i], isT = G.turn === i && !G.over, org = pos === 'left' ? '0 0' : '100% 0';
@@ -383,7 +387,7 @@ const views = {
     const stake = stakeOn ? `<div class="stake" style="animation-delay:-${((Date.now() - S.stakeAt) / 1000).toFixed(2)}s">💰 −${fmt(L.stake)}</div>` : '';
     const stg = S.staged.map((g) => { const v = validateMeld(g.map((id) => byId.get(id)), ok); return `<span class="grp ${v.valid || g.length === 2 ? '' : 'bad'}">${g.map((id) => tile(byId.get(id), { z: 'xs', okey: ok })).join('')}</span>`; }).join('');
     return `<div id="stage" class="stage ${cmp ? 'cmp' : ''}">
-      ${bx(P.info, `<small>Oda ${L.code} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'}${L.practice ? ' · antrenman (jetonsuz)' : S.balance != null ? ` · 💰 ${fmt(S.balance)} · masa ${fmt(L.stake)}` : ''}</small>`)}
+      ${bx(P.info, `<small>Oda ${L.code} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'} · ${SURUM}${L.practice ? ' · antrenman (jetonsuz)' : S.balance != null ? ` · 💰 ${fmt(S.balance)} · masa ${fmt(L.stake)}` : ''}</small>`)}
       ${bx(P.chat, '<input id="ci" placeholder="Mesaj yaz" maxlength="300" style="flex:1"><button class="btn alt sm" data-act="chat">Gönder</button>', 'flex')}
       ${bx(P.btns, `<button class="btn alt sm" data-act="full">⛶</button><button class="btn alt sm" data-act="mute">${store.mute === '1' ? '🔇' : '🔊'}</button>${G.over ? '' : '<button class="btn alt sm" data-act="quit">Çık</button>'}`, 'flex')}
       ${plate(rel(3), P.left, 'left')}${plate(rel(1), P.right, 'right')}${plate(rel(2), P.top, 'top')}
