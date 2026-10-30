@@ -34,12 +34,12 @@ function bestSeries(cnt0, jk0) {
     // Diziler: bu taşla başlayan, aynı renk ardışık (13'ten sonra 1 gelebilir)
     const taken = [i], faces = [i];
     let j = 0, pts = n;
-    for (let p = n + 1; p <= 14 && p - n + 1 <= 13; p++) {
-      const ix = IDX(c, p === 14 ? 1 : p);
+    for (let p = n + 1; p <= 13; p++) {
+      const ix = IDX(c, p);
       if (cnt[ix] > 0) { cnt[ix]--; taken.push(ix); faces.push(ix); }
       else if (j < jk) { j++; faces.push(-1); }
       else break;
-      pts += p === 14 ? RULES.ACE_AFTER_13 : p;
+      pts += p;
       if (faces.length >= 3) {
         const r = rec(cnt, jk - j);
         best = better({ pts: pts + r.pts, used: faces.length + r.used, melds: [{ faces: [...faces] }, ...r.melds] }, best);
@@ -122,10 +122,11 @@ export function plan(hand, okey, ctx = {}) {
   }
   groups = keepOne(groups, hand.length, okey);
   const total = mode === 'meld' ? groups.reduce((s, g) => s + pointsOf(g, okey), 0) : groups.length;
-  const canOpen = opened ? groups.length > 0 : mode === 'meld' ? total >= minMeld : total >= minPairs;
+  const goesOut = !opened && mode === 'meld' && groups.length > 0 && hand.length - groups.flat().length === 1;   // elden bitirme: sayı şartı yok
+  const canOpen = opened ? groups.length > 0 : mode === 'meld' ? total >= minMeld || goesOut : total >= minPairs;
   if (!opened)
     summary = mode === 'meld'
-      ? `Seri: ${total} sayı${canOpen ? ' (açılabilir)' : ` (en az ${minMeld} gerekli)`}`
+      ? `Seri: ${total} sayı${goesOut && total < minMeld ? ' (elden bitiyor)' : canOpen ? ' (açılabilir)' : ` (en az ${minMeld} gerekli)`}`
       : `${total} çift${canOpen ? ' (açılabilir)' : ` (en az ${minPairs} gerekli)`}`;
   const inGroups = new Set(groups.flat().map((t) => t.id));
   const rank = (t) => (t.fake || isJoker(t, okey) ? 999 : t.color * 20 + t.num);

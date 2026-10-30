@@ -29,8 +29,8 @@ export function createHub({ rooms = createRoomManager(), now = Date.now, rtc = n
     for (const u of members(code)) {
       const v = rooms.view(code, u.id);
       if (!v.ok) continue;
-      v.lobby.names = v.lobby.seats.map((id) => (id ? users.get(id)?.name ?? null : null));
-      v.lobby.online = v.lobby.seats.map((id) => !!id && (users.get(id)?.conns.size ?? 0) > 0);
+      v.lobby.names = v.lobby.seats.map((id) => (id ? users.get(id)?.name ?? rooms.botName(id) : null));
+      v.lobby.online = v.lobby.seats.map((id) => !!id && ((users.get(id)?.conns.size ?? 0) > 0 || rooms.isBot(id)));
       sendTo(u, { t: 'state', lobby: v.lobby, game: v.game, balance: v.balance });
     }
   }
@@ -88,11 +88,17 @@ export function createHub({ rooms = createRoomManager(), now = Date.now, rtc = n
         return sendTo(to, { t: 'sig', from: user.id, data: m.data });
       }
 
+      if (m.t === 'rename') {                                  // isim masa kurulan/katılınan ekranda girilir
+        const name = String(m.name ?? '').trim().slice(0, 20);
+        if (name) { user.name = name; if (user.room) pushState(user.room); }
+        return;
+      }
+
       let r;
       switch (m.t) {
         case 'createRoom':
           if (user.room) return err('Zaten bir odadasın.');
-          r = rooms.createRoom(user.id, { mode: m.mode, katlamali: m.katlamali, turnSeconds: m.turnSeconds });
+          r = rooms.createRoom(user.id, { mode: m.mode, katlamali: m.katlamali, turnSeconds: m.turnSeconds, bots: m.bots ?? 0, rounds: m.rounds ?? 1 });
           if (r.ok) user.room = r.code;
           break;
         case 'join': {
@@ -122,6 +128,12 @@ export function createHub({ rooms = createRoomManager(), now = Date.now, rtc = n
           break;
         case 'nextRound':
           r = user.room ? rooms.nextRound(user.room, user.id) : { ok: false, error: 'Bir odada değilsin.' };
+          break;
+        case 'addBot':
+          r = user.room ? rooms.addBot(user.room, user.id) : { ok: false, error: 'Bir odada değilsin.' };
+          break;
+        case 'removeBot':
+          r = user.room ? rooms.removeBot(user.room, user.id, m.seat) : { ok: false, error: 'Bir odada değilsin.' };
           break;
         default:
           return err('Bilinmeyen mesaj türü.');

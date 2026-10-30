@@ -32,7 +32,7 @@ assert.ok(c.every((x) => x.last('state').game));
 const s0 = c[0].last('state'), s1 = c[1].last('state');
 assert.equal(s0.game.hand.length, 22);
 assert.equal(s1.game.hand.length, 21);
-assert.equal(s1.game.others[0].handCount, 22);
+assert.ok(!('handCount' in s1.game.others[0]));   // rakibin taş sayısı gizli
 assert.ok(!('hand' in s1.game.others[0]));
 assert.deepEqual(s1.lobby.names, ['Ali', 'Veli', 'Ayşe', 'Fatma']);
 assert.equal(s1.lobby.katlamali, true);

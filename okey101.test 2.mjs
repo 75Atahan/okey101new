@@ -12,7 +12,7 @@ assert.deepEqual(r.hands.map((h) => h.length), [22, 21, 21, 21]);
 assert.equal(r.pile.length, 20);
 
 assert.equal(validateMeld([T(0,7), T(1,7), T(2,7)], okey).points, 21);
-assert.equal(validateMeld([T(0,12), T(0,13), T(0,1)], okey).points, 26);
+assert.ok(!validateMeld([T(0,12), T(0,13), T(0,1)], okey).valid);   // 13'ten sonra 1 gelmez
 assert.ok(validateMeld([T(0,4), J, T(0,6)], okey).valid);
 assert.ok(!validateMeld([T(0,7), T(0,7), T(1,7)], okey).valid);
 assert.ok(!validateMeld([T(0,13), T(0,1), T(0,2)], okey).valid);

@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="tr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#0b2c18">
+<link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icon-192.png">
 <title>101 Okey</title>
 <style>
 :root{--felt:#14532d;--felt2:#0f3d21;--card:#fffaf0;--gold:#f5c542}
@@ -11,7 +14,7 @@ button,input,select{font:inherit}
 .btn{background:var(--gold);color:#222;border:0;border-radius:10px;padding:10px 14px;font-weight:600}
 .btn:disabled{opacity:.4}.btn.alt{background:#2f6f4a;color:#fff}
 .card{background:var(--felt);border-radius:14px;padding:12px;margin:8px 0}
-input,select{padding:10px;border-radius:10px;border:0;width:100%;margin:4px 0}
+input,select{padding:10px;border-radius:10px;border:0;width:100%;margin:4px 0;background:#fff;color:#111}
 input[type=checkbox]{width:auto}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .t{width:38px;height:54px;border-radius:7px;border:2px solid #d8cfb8;background:var(--card);font-size:20px;font-weight:700;padding:0;position:relative}
@@ -113,19 +116,85 @@ body.inGame{overflow:hidden}
 .rw.win{background:linear-gradient(90deg,#1e6bff,#0b1e6b)}.av{position:relative;width:46px;height:46px;border-radius:50%;background:#2c3e66;border:2px solid #7db6ff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}
 .crown{position:absolute;top:-16px;left:-10px;font-style:normal;font-size:22px}.nm2{flex:1;display:flex;flex-direction:column}.kz{color:#7ee081;font-weight:800}.pt{font-size:26px;font-weight:800;min-width:64px;text-align:right}
 .rbtn{width:92px;height:92px;border-radius:50%;border:4px solid #1b3a7a;color:#fff;font-weight:800;font-size:14px;line-height:1.15}.rbtn.red{background:radial-gradient(#ff5252,#b71c1c)}.rbtn.green{background:radial-gradient(#5be26b,#1b8a2a)}
+.trow{display:flex;align-items:center;gap:6px}.trow .sb{flex:1;margin:3px 0}.trow b{min-width:48px;font-size:13px;text-align:right}
+.myplate small{font-size:13px}
+/* v2: uyarlanabilir sahne yüksekliği (telefon yan), kamera büyütme, işlenebilir taş çerçevesi */
+#stage{height:var(--sh,890px);margin:calc(var(--sh,890px) / -2) 0 0 -640px}
+.t.xs{width:var(--cw,28.46px);height:var(--ch,35.6px);font-size:calc(var(--ch,35.6px) * .45)}
+.t.c2{width:44px;height:56px;font-size:24px}.t.m2{width:50px;height:64px;font-size:28px}
+.t.fit{outline:2px solid #e53935;outline-offset:-3px}
+.cam{cursor:zoom-in}.cam.big{transform:scale(4);transform-origin:var(--o,50% 0);z-index:60;box-shadow:0 8px 24px #000a;cursor:zoom-out}
+.a:has(.cam.big){z-index:60}
+.cmp .orack{display:none}.stage.cmp .cam{width:52px;height:40px}.cmp .np{padding:3px 6px;gap:1px}.cmp .np b{font-size:13px}.cmp .np small{font-size:11px}
+.cmp .tag{padding:3px 0;font-size:12px;margin-bottom:3px}.stage.cmp .btn{font-size:12px;padding:3px 6px}.cmp input{padding:2px 6px;font-size:13px;margin:0}
+.stage.cmp .rack .slot .t{font-size:26px}.cmp .stg{max-height:24px}.cmp .tot{font-size:16px}.cmp .bdg{font-size:13px}
+.rot{position:fixed;top:0;left:0;right:0;z-index:80;background:#f5c542;color:#222;text-align:center;padding:6px;font-weight:700}
+.stage .btn.wide{padding:6px 4px;white-space:nowrap;font-size:14px}.stage.cmp .btn.wide{font-size:12px}
+/* v3: koyu desenli yeşil örtü, 3 boyutlu taş ve ıstaka */
+body{background-color:#08250f;background-image:repeating-linear-gradient(45deg,#ffffff08 0 2px,transparent 2px 24px),repeating-linear-gradient(-45deg,#ffffff08 0 2px,transparent 2px 24px),radial-gradient(ellipse at 50% 38%,#17592f 0%,#0b351c 50%,#051b0b 100%);background-attachment:fixed}
+.t{background:linear-gradient(180deg,#fffef9 0%,#f6efd9 65%,#eadfc2 100%);border:1px solid #dcd2b4;border-bottom:4px solid #b8a97f;border-radius:8px;box-shadow:0 3px 4px #0009,inset 0 1px 0 #fff,inset 0 0 7px #e8dcb9;text-shadow:0 1px 0 #fff8}
+.t.xs{border-bottom-width:2px;border-radius:4px;box-shadow:0 1px 2px #0008,inset 0 1px 0 #fff}
+.t.sel{box-shadow:0 10px 10px #000a,inset 0 1px 0 #fff}
+.rack{background:repeating-linear-gradient(90deg,#00000012 0 1px,transparent 1px 8px),linear-gradient(180deg,#f0b445 0%,#d9972b 45%,#c0801f 100%);border-radius:14px 14px 8px 8px;border-top:6px solid #f7d283;border-bottom:12px solid #86520f;box-shadow:0 12px 22px #000b,inset 0 8px 14px #ffffff40,inset 0 -10px 14px #00000050}
+.slot{background:#b97c1f;box-shadow:inset 0 4px 7px #000a,inset 0 -1px 0 #ffffff50;border-radius:7px}
+.stage.cmp .rack{border-top-width:4px;border-bottom-width:8px}
+.side{background:linear-gradient(180deg,#4a82e6,#1e4fa3);box-shadow:0 4px 0 #12306e,0 8px 10px #0008;border-radius:12px;text-shadow:0 1px 0 #0006}
+.btn{box-shadow:0 3px 0 #0006,0 6px 8px #0004}.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #0006}
+.seat,.card{box-shadow:0 4px 10px #0007}
+/* v4: video katmanı (titremesiz), soluk düğme */
+#vg{position:fixed;left:0;top:0;width:0;height:0;z-index:30}
+#vg .vt{position:fixed;inset:auto;overflow:hidden;border-radius:8px;display:none;cursor:zoom-in;box-shadow:0 4px 12px #000a}
+#vg .vt video{width:100%;height:100%;object-fit:cover}
+.cam.on{display:block}.btn.dim{opacity:.55}
+/* v5: referans düzen: dikey isim çubukları, kamera simgeleri, resimli diz düğmeleri, çizgisiz taşlar */
+.cam{display:flex!important;align-items:center;justify-content:center;border-radius:12px;background:linear-gradient(#27506b,#183447);border:2px solid #7db6ff55;font-weight:800;font-size:22px;color:#cfe8ff;flex:none;position:relative;cursor:zoom-in}
+.stage .vbar .cam{width:48px;height:48px}.stage .np .cam{width:64px;height:64px}
+.stage.cmp .vbar .cam,.stage.cmp .np .cam{width:40px;height:40px;font-size:18px}
+#vg .vt{border-radius:12px}
+.vbar{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 4px;background:linear-gradient(180deg,#143b27,#0d2a1b);border-radius:10px}
+.vname{writing-mode:vertical-rl;font-weight:700;font-size:16px;flex:1;min-height:0;overflow:hidden;white-space:nowrap}
+.vsub{writing-mode:vertical-rl;font-size:11px;opacity:.85;white-space:nowrap}
+.sb.v{width:40px;margin:0}.tlv{font-size:10px;min-width:0!important}
+.vbar.left .bub{left:72px;right:auto;width:170px;top:20px}.vbar.right .bub{right:72px;left:auto;width:170px;top:20px}
+.hn{text-align:left}.stage .np .pl{justify-content:flex-start}
+.camicon{border-radius:50%;background:radial-gradient(#2b3d4d,#141f29);border:2px solid #0008;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;box-shadow:0 3px 6px #000a;opacity:.55}
+.camicon.on{opacity:1;border-color:#5be26b;box-shadow:0 0 0 2px #5be26b66,0 3px 6px #000a}.stage.cmp .camicon{font-size:18px}
+.side{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#fff;font-weight:800;line-height:1.1}
+.mcs{display:flex;gap:2px;margin-bottom:2px}.mcs i{font-style:normal;width:22px;height:30px;background:linear-gradient(#fff,#e7e2d0);border-radius:3px;color:#d32f2f;font-weight:800;font-size:15px;display:flex;align-items:flex-start;justify-content:center;transform:rotate(-8deg);box-shadow:0 1px 2px #0006}
+.stage.cmp .mcs i{width:16px;height:22px;font-size:11px}
+.tot{white-space:nowrap}
+.meld-row.drop-ok{border-radius:6px;background:#7ee08122;box-shadow:0 0 0 2px #7ee081aa,0 0 12px 3px #7ee08166;z-index:2}
+.meld-row.hot{background:#7ee08155;box-shadow:0 0 0 3px #fff,0 0 18px 6px #7ee081}
+.stage.cmp .np{flex-direction:row;align-items:center;justify-content:space-between}.stage.cmp .np .pl{flex:1;min-width:0}.stage.cmp .np .trow{width:96px;flex:none}
+/* v6: dokunmatik sürükleme */
+.stage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.stage .t.heap,.pile .t{touch-action:none}
+.pile.drop-pile{border-color:#ffd54f!important;box-shadow:0 0 16px 5px #ffd54f99}
+.slot.slot-hot{box-shadow:inset 0 0 0 3px #fff,0 0 12px 3px #ffd54f}
+/* Süslemeli fildişi taş: rakamın renginde, kalın oyma süsler; üst/alt ve iki yan */
+.t:not(.heap):not(.xs):not(.s){isolation:isolate}
+.t:not(.heap):not(.xs):not(.s)::before,.t:not(.heap):not(.xs):not(.s)::after{content:"";display:block;position:absolute;left:0;top:0;right:0;bottom:0;width:auto;height:auto;margin:0;pointer-events:none;border-radius:inherit;-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fsvg%3E") top 4% center/58% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20transform%3D%27translate%280%2022%29%20scale%281%20-1%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") bottom 4% center/58% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2022%2064%27%3E%3Cg%20transform%3D%27translate%280%2064%29%20rotate%28-90%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") left 5% center/15% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2022%2064%27%3E%3Cg%20transform%3D%27translate%2822%200%29%20rotate%2890%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") right 5% center/15% auto no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fsvg%3E") top 4% center/58% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20transform%3D%27translate%280%2022%29%20scale%281%20-1%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") bottom 4% center/58% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2022%2064%27%3E%3Cg%20transform%3D%27translate%280%2064%29%20rotate%28-90%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") left 5% center/15% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2022%2064%27%3E%3Cg%20transform%3D%27translate%2822%200%29%20rotate%2890%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") right 5% center/15% auto no-repeat}
+.t:not(.heap):not(.xs):not(.s)::before{background:currentColor;opacity:.78}
+.t:not(.heap):not(.xs):not(.s)::after{background:#fff;opacity:.95;transform:translateY(1.4px);z-index:-1}
+.t.d2.t:not(.heap):not(.xs):not(.s)::before,.t.d2.t:not(.heap):not(.xs):not(.s)::after{-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fsvg%3E") top 4% center/58% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20transform%3D%27translate%280%2022%29%20scale%281%20-1%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") bottom 4% center/58% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2022%2064%27%3E%3Cg%20transform%3D%27translate%280%2064%29%20rotate%28-90%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") left 2% center/10% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2022%2064%27%3E%3Cg%20transform%3D%27translate%2822%200%29%20rotate%2890%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") right 2% center/10% auto no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fsvg%3E") top 4% center/58% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20transform%3D%27translate%280%2022%29%20scale%281%20-1%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") bottom 4% center/58% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2022%2064%27%3E%3Cg%20transform%3D%27translate%280%2064%29%20rotate%28-90%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") left 2% center/10% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2022%2064%27%3E%3Cg%20transform%3D%27translate%2822%200%29%20rotate%2890%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") right 2% center/10% auto no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fsvg%3E") top 4% center/58% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20transform%3D%27translate%280%2022%29%20scale%281%20-1%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") bottom 4% center/58% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2022%2064%27%3E%3Cg%20transform%3D%27translate%280%2064%29%20rotate%28-90%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") left 2% center/10% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2022%2064%27%3E%3Cg%20transform%3D%27translate%2822%200%29%20rotate%2890%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") right 2% center/10% auto no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fsvg%3E") top 4% center/58% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20transform%3D%27translate%280%2022%29%20scale%281%20-1%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") bottom 4% center/58% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2022%2064%27%3E%3Cg%20transform%3D%27translate%280%2064%29%20rotate%28-90%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") left 2% center/10% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2022%2064%27%3E%3Cg%20transform%3D%27translate%2822%200%29%20rotate%2890%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") right 2% center/10% auto no-repeat}
+.t.c.t:not(.heap):not(.xs):not(.s)::before,.t.c.t:not(.heap):not(.xs):not(.s)::after,.t.c2.t:not(.heap):not(.xs):not(.s)::before,.t.c2.t:not(.heap):not(.xs):not(.s)::after{-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fsvg%3E") top 4% center/66% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20transform%3D%27translate%280%2022%29%20scale%281%20-1%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") bottom 4% center/66% auto no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fsvg%3E") top 4% center/66% auto no-repeat,url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2022%27%3E%3Cg%20transform%3D%27translate%280%2022%29%20scale%281%20-1%29%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23000%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M32%2014C25%2014%2022%209%2016%2010%2011%2011%2010%2016%2014%2016%2017%2016%2018%2012%2015%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C39%2014%2042%209%2048%2010%2053%2011%2054%2016%2050%2016%2047%2016%2046%2012%2049%2012%27%2F%3E%3Cpath%20d%3D%27M32%2014C32%2016%2032%2018%2032%2020%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M32%200.5C27.5%205%2027.5%2010%2032%2014.5%2036.5%2010%2036.5%205%2032%200.5Z%27%20fill%3D%27%23000%27%2F%3E%3Cpath%20d%3D%27M25.5%209C23%205.5%2020%205.5%2018.5%207.5%2021%209.5%2023%2010%2025.5%209ZM38.5%209C41%205.5%2044%205.5%2045.5%207.5%2043%209.5%2041%2010%2038.5%209Z%27%20fill%3D%27%23000%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2719.2%27%20r%3D%272%27%20fill%3D%27%23000%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") bottom 4% center/66% auto no-repeat}
+.t:not(.heap){text-shadow:0 1px 0 #fffc,0 -1px 0 #0002}
+.foot{text-align:center;opacity:.65;font-size:12px;line-height:1.5;padding:16px 8px 24px}
 </style></head><body>
-<div id="vg" style="display:none"></div>
+<div id="vg"></div>
 <div id="app"></div><div id="toast"></div>
 <script>
 function showErr() { document.getElementById('app').innerHTML = '<div class="card"><b>Sayfa yüklenemedi.</b><br>Dosyalar eksik olabilir (özellikle okey101.mjs). Replit\'te tüm dosyaların aynı klasörde olduğundan ve sunucunun yeniden başlatıldığından emin ol, sonra sayfayı yenile.</div>'; }
 setTimeout(() => { if (!document.getElementById('app').innerHTML.trim()) showErr(); }, 4000);
 </script>
 <script type="module" onerror="showErr()">
-import { validateMeld, checkOpen, isJoker, isPair, canAddToMeld, layoutMeld, handPenalty } from './okey101.mjs';
+import { validateMeld, checkOpen, isJoker, isPair, canAddToMeld, layoutMeld, handPenalty, jokerReplaceIndex, pairReplaceIndex } from './okey101.mjs';
 let plan = null; // Yardımlı: assist.mjs yüklenemezse oyun yine açılır
 import('./assist.mjs').then((m) => { plan = m.plan; }).catch(() => {});
 // Adrese ?test eklenirse her sekme ayrı oyuncu olur (tek bilgisayarda 4 kişilik deneme için).
 const store = (location.search || '').includes('test') ? sessionStorage : localStorage;
+const SURUM = 'Sürüm 1.7';   // güncelleme geldi mi diye oda bilgisinde görünür
+const FOOT = `<div class="foot">Üretici: Luna Pazarlama İç ve Dış Ticaret Ltd.Şti.<br>${SURUM}</div>`;
 const $ = (s) => document.querySelector(s);
 const COLORS = ['#c98f00', '#1f6fd1', '#222', '#d32f2f'];
 const fmt = (n) => (n ?? 0).toLocaleString('tr-TR');
@@ -147,7 +216,7 @@ function toast(m) {
 }
 
 function on(m) {
-  if (m.t === 'welcome') { store.token = m.token; store.name = m.name; S.me = m.userId; S.off = false; S.balance = m.balance; const q = new URLSearchParams(location.search).get('oda'); if (q && !m.room) send({ t: 'join', code: q }); }
+  if (m.t === 'welcome') { store.token = m.token; store.name = m.name; S.me = m.userId; S.off = false; S.balance = m.balance; const q = new URLSearchParams(location.search).get('oda'); if (q && !m.room && !S.pending) send({ t: 'join', code: q }); if (S.pending) { const f = S.pending; S.pending = null; setTimeout(f, 0); } }
   else if (m.t === 'state') {
     const wasOver = S.game ? !!S.game.over : true;   // ilk yükleme/yeniden bağlanmada kutlama yapma
     S.lobby = m.lobby; S.game = m.game; if (m.balance != null) S.balance = m.balance;
@@ -155,21 +224,29 @@ function on(m) {
     else if (!wasOver && m.game.over.finisher != null) celebrate();
     if (wasOver && m.game && !m.game.over && S.balance != null) { S.stakeAt = Date.now(); setTimeout(render, 2800); }
     if (m.game) {
-      m.game.others.forEach((o, i) => { const id = o.lastDiscard?.id; if (id !== S.seen[i]) { S.fresh[i] = true; S.seen[i] = id; } });
+      const firstState = !S.seenInit; S.seenInit = true;
+      let hear = false;
+      m.game.others.forEach((o, i) => { const id = o.lastDiscard?.id; if (id !== S.seen[i]) { S.fresh[i] = true; if (id != null && !firstState) hear = true; S.seen[i] = id; } });
+      if (hear) clack();                                                          // biri taş attı
+      const pn = m.game.penaltyNote;                                              // ceza bildirimi (okey atma, hatalı açış)
+      if (pn && pn.seq !== S.penSeq) {
+        if (S.penSeq !== undefined && !(pn.seat === m.game.you && /açış/.test(pn.why))) toast(`${m.lobby.names[pn.seat] ?? 'Oyuncu'}: ${pn.why} (+101 ceza)`);
+        S.penSeq = pn.seq;
+      } else if (!pn && S.penSeq === undefined) S.penSeq = 0;
       S.skew = m.game.serverNow - Date.now();
       const ids = new Set(m.game.hand.map((t) => t.id));
       S.sel = new Set([...S.sel].filter((id) => ids.has(id)));
       S.staged = S.staged.map((g) => g.filter((id) => ids.has(id))).filter((g) => g.length);
     }
   }
-  else if (m.t === 'left') { S.balance = m.balance ?? S.balance; S.lobby = null; S.game = null; S.staged = []; S.sel.clear(); endCall(); }
+  else if (m.t === 'left') { S.penSeq = undefined; S.seenInit = false; S.balance = m.balance ?? S.balance; S.lobby = null; S.game = null; S.staged = []; S.sel.clear(); endCall(); }
   else if (m.t === 'chat') { m.at = Date.now(); S.chat = [...S.chat, m].slice(-40); setTimeout(render, 8100); }
   else if (m.t === 'rtc') startCall(m);
   else if (m.t === 'callPeers') startP2P(m);
   else if (m.t === 'sig') onSig(m);
   else if (m.t === 'callLeft') dropPeer(m.id);
   else if (m.t === 'timeout') toast(`${S.lobby?.names[m.seat] ?? 'Oyuncu'} süreyi aştı, taş otomatik atıldı.`);
-  else if (m.t === 'error') { toast(m.error); if (/Hatalı/.test(m.error)) { S.staged = []; S.sel.clear(); } }
+  else if (m.t === 'error') { toast(m.error); S.pendingSlot = null; if (/Hatalı/.test(m.error)) { S.staged = []; S.sel.clear(); } }
   render();
 }
 
@@ -177,7 +254,7 @@ const okeyOf = (g) => ({ color: g.indicator.color, num: (g.indicator.num % 13) +
 const tile = (t, o = {}) => {
   const j = o.okey && isJoker(t, o.okey);
   const face = t.fake ? '🍀' : j ? '' : t.num; // okey boş taş, sahte okey yonca
-  const cls = ['t', o.z, o.s && 's', o.sel && 'sel', j && 'joker', o.g != null && (o.g % 2 ? 'gb' : 'ga')].filter(Boolean).join(' ');
+  const cls = ['t', o.z, o.s && 's', o.sel && 'sel', j && 'joker', o.fit && 'fit', !t.fake && !j && t.num >= 10 && 'd2'].filter(Boolean).join(' ');
   return `<button class="${cls}"${o.act ? ` data-act="${o.act}" data-id="${t.id}"` : ''} style="color:${t.fake ? '#2e7d32' : COLORS[t.color]}">${face}</button>`;
 };
 function rack(hand) {
@@ -188,25 +265,53 @@ function rack(hand) {
 }
 
 const views = {
-  login: () => `<div class="card"><h2>101 Okey</h2><input id="name" placeholder="Adın" maxlength="20" value="${esc(store.name)}"><button class="btn" data-act="login">Giriş</button></div>`,
-  menu: () => `<div class="card"><h3>Oda kur</h3><small>${S.balance != null ? `Jetonun: 💰 ${fmt(S.balance)} · masa 2.500 (katlamalıda 5.000)` : ''}</small>
+  menu: () => {
+    const invite = (new URLSearchParams(location.search).get('oda') || '').toUpperCase().slice(0, 6);
+    const opts = (n, f) => Array.from({ length: n }, (_, i) => `<option value="${i + 1}">${f(i + 1)}</option>`).join('');
+    return `<div class="card"><h2>101 Okey</h2><small>Adın (masada böyle görünürsün)</small>
+    <input id="name" placeholder="Adını yaz" maxlength="20" autocomplete="nickname" value="${esc(store.name)}"></div>
+    <div class="card"><h3>Oda kur</h3>
     <select id="mode"><option value="single">Tekli</option><option value="pairs">Eşli</option></select>
     <label><input type="checkbox" id="kat"> Katlamalı</label>
+    <select id="rounds">${opts(11, (n) => `Oyun sayısı: ${n}`)}</select>
     <select id="sec"><option value="30">30 sn / sıra</option><option value="45" selected>45 sn / sıra</option><option value="60">60 sn / sıra</option></select>
-    <button class="btn" data-act="create">Oda kur</button></div>
-    <div class="card"><h3>Odaya katıl</h3><input id="code" placeholder="Oda kodu" maxlength="6"><button class="btn alt" data-act="join">Katıl</button></div>`,
+    <select id="bots"><option value="0">Bot yok</option><option value="1">1 bot</option><option value="2">2 bot</option><option value="3">3 bot</option></select>
+    <small>Az kişi varsa boş koltuklara bilgisayar oyuncu (bot) eklenir; yeni gelen oyuncu botun yerine geçer. Birden fazla oyun seçersen puanlar toplanır, en düşük toplam kazanır.</small>
+    <button class="btn" data-act="create">Oda kur</button> <button class="btn alt" data-act="full">Tam ekran</button></div>
+    <div class="card"><h3>Odaya katıl</h3><input id="code" placeholder="Oda kodu" maxlength="6" value="${esc(invite)}"><button class="btn alt" data-act="join">Katıl</button></div>${FOOT}`;
+  },
   room: (L) => `<div class="card"><small>Oda kodu</small><h1 style="margin:0;letter-spacing:4px">${L.code}</h1>
-    <p>${L.mode === 'pairs' ? 'Eşli' : 'Tekli'} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'} · ${L.turnSeconds} sn · masa ${fmt(L.stake)}</p>
-    ${L.seats.map((id, i) => `<div>${i + 1}. ${id ? esc(L.names[i]) + (L.online[i] ? '' : ' ⚠') : '<small>boş</small>'}</div>`).join('')}
-    <div class="row" style="margin-top:10px">${L.host === S.me ? `<button class="btn" data-act="start" ${L.seats.includes(null) ? 'disabled' : ''}>Başlat</button>` : '<small>Oda sahibi başlatacak…</small>'}
-    <button class="btn alt" data-act="invite">Davet et</button><button class="btn alt" data-act="leave">Ayrıl</button></div></div>`,
+    <p>${L.mode === 'pairs' ? 'Eşli' : 'Tekli'} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'} · ${L.turnSeconds} sn${L.stake > 0 ? ' · masa ' + fmt(L.stake) : ''}</p>
+    ${L.seats.map((id, i) => `<div class="row" style="gap:6px">${i + 1}. ${id ? esc(L.names[i]) + (L.online[i] ? '' : ' ⚠') : '<small>boş</small>'}${L.bots?.[i] && L.host === S.me ? `<button class="btn alt sm" data-act="rmbot" data-seat="${i}">Çıkar</button>` : ''}</div>`).join('')}
+    <div class="row" style="margin-top:10px">${L.seats.includes(null) ? '' : '<button class="btn" data-act="start">Başlat</button>'}
+    ${L.host === S.me && L.seats.includes(null) ? '<button class="btn alt" data-act="addbot">Bot ekle</button>' : ''}
+    <button class="btn alt" data-act="invite">Davet et</button><button class="btn alt" data-act="full">Tam ekran</button><button class="btn alt" data-act="leave">Ayrıl</button></div>
+    ${L.seats.includes(null) ? '<small>4 koltuk dolunca (oyuncu ya da bot) herkes Başlat\'a basabilir.</small>' : ''}</div>${FOOT}`,
   table() {
     const L = S.lobby, G = S.game, me = G.you, ok = okeyOf(G), myTurn = G.turn === me && !G.over;
     const n = L.seats.length, prev = (me + n - 1) % n, myO = G.others[me];
+    const H = S.H || 890, cmp = H < 800;               // geniş ekran (telefon yan / 16:9): sıkışık yerleşim
     const byId = new Map(G.hand.map((t) => [t.id, t]));
+    // Istaka yerleşimi: ilk dağıtımda/çekince Yardımlı dizer; sürükleyerek çekilen taş seçilen yuvaya,
+    // okey değişiminde gelen okey eksilen taşın yerine konur; sadece taş eksilirse elle diziliş korunur.
+    const handIds = new Set(G.hand.map((t) => t.id));
+    const before = new Set((S.slots || []).filter((x) => x != null));
+    const freed = (S.slots || []).map((id, i) => (id != null && !handIds.has(id) ? i : -1)).filter((i) => i >= 0);
     syncSlots(G.hand);
+    const added = G.hand.filter((t) => !before.has(t.id));
     const hk = G.hand.map((t) => t.id).sort((a, b) => a - b).join(',');
-    if (S.handKey !== hk) { S.handKey = hk; autoLayout(); }   // taş çekince/atınca Yardımlı kendiliğinden dizer
+    if (S.handKey !== hk) {
+      S.handKey = hk;
+      const move = (id, k) => { S.slots[S.slots.indexOf(id)] = null; S.slots[k] = id; };
+      if (before.size === 0 || added.length > 1) autoLayout();
+      else if (added.length === 1) {
+        const ps = S.pendingSlot;
+        if (ps != null) { const cur = S.slots.indexOf(added[0].id); if (cur !== ps) [S.slots[cur], S.slots[ps]] = [S.slots[ps], S.slots[cur]]; }   // bırakılan yuvaya (doluysa yer değiştirerek)
+        else if (freed.length === 1) move(added[0].id, freed[0]);
+        // başka durumda çekilen taş ortadaki boş yuvada kalır; oyuncunun düzeni bozulmaz
+      }
+      S.pendingSlot = null;
+    }
     const stagedIds = new Set(S.staged.flat());
     const rg = rackGroups(G, ok, stagedIds);                   // ıstakada gerçekten dizili perler
     const co = S.staged.length ? checkOpen(S.staged.map((g) => g.map((id) => byId.get(id))), ok, { minMeld: G.minMeld, minPairs: G.minPairs }) : null;
@@ -215,86 +320,176 @@ const views = {
     const pairsOnTable = G.others.some((x, i) => i !== me && x.openMode === 'pairs');
     let canS, canC;                                            // Seri aç / Çift aç: 101 ve üstü (ya da 5+ çift) bulununca açılır
     if (!myO.opened) {
-      if (co) { canS = co.mode === 'meld' && co.canOpen; canC = co.mode === 'pairs' && co.canOpen; }
-      else { canS = rg.total >= G.minMeld; canC = rg.pc >= G.minPairs; }
+      // Elden bitirme: tüm taşlar perde ve geriye atılacak tek taş kalıyorsa sayı şartı aranmaz
+      if (co) { canS = co.mode === 'meld' && (co.canOpen || G.hand.length - S.staged.flat().length === 1); canC = co.mode === 'pairs' && co.canOpen; }
+      else { canS = rg.total >= G.minMeld || (rg.series.length > 0 && G.hand.length - rg.series.flat().length === 1); canC = rg.pc >= G.minPairs; }
     } else { canS = myO.openMode === 'meld' && rg.series.length > 0; canC = (myO.openMode === 'pairs' || pairsOnTable) && rg.pc > 0; }
     const enough = rg.total >= G.minMeld || rg.pc >= G.minPairs;
-    const totTxt = myO.opened ? `Kalan ${handPenalty(G.hand, ok)}` : `${rg.total}${rg.pc ? ` · ${rg.pc} çift` : ''}`;
-    const hint = G.over ? 'El bitti' : !myTurn ? `Sıra: ${esc(L.names[G.turn])}` : G.phase === 'draw' ? 'Çek: ortadaki taşa veya soldaki atığa dokun' : G.mustUse != null ? 'Aldığın atık taşı kullanmalısın' : 'Taş at: sağ alttaki atığa sürükle (son taş okeyse göstergeye/yığına)';
-    const turnBar = '<div class="sb"><div id="bar"></div></div><b id="tl"></b>';
-    const bubble = (uid) => { const b = [...S.chat].reverse().find((c) => c.userId === uid && Date.now() - c.at < 8000); return b ? `<div class="bub">${esc(b.text)}</div>` : ''; };
-    const cam = (i) => `<div class="cam" id="vs-${L.seats[i]}"></div>`; // kamera açıksa isminin yanında sabit durur
-    const rel = (k) => (me + k) % n;
-    const box = (x, y, w, h, html, cls = '') => `<div class="a ${cls}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">${html}</div>`;
-    const plate = (i, x, y, w, h, pos) => {
-      const o = G.others[i], isT = G.turn === i && !G.over;
-      return box(x, y, w, h, `${bubble(L.seats[i])}<div class="pl">${cam(i)}<div><b>${esc(L.names[i])}${L.online[i] ? '' : ' ⚠'}</b><br><small>${o.handCount} taş${o.opened ? ' · açtı' : ''}</small></div></div>${isT ? turnBar : ''}<div class="orack">${'<i></i>'.repeat(o.handCount)}</div>`, `seat np ${pos} ${isT ? 'turn' : ''}`);
+    const mult = myO.openMode === 'pairs' ? 2 : 1;               // çift açanın elde kalan sayıları 2 katı sayılır
+    const totTxt = myO.opened ? `Kalan ${handPenalty(G.hand, ok) * mult}${mult > 1 ? ' (×2)' : ''}` : `${rg.total}${rg.pc ? ` · ${rg.pc} çift` : ''}`;
+    const hint = G.over ? 'El bitti' : !myTurn ? `Sıra: ${esc(L.names[G.turn])}` : G.phase === 'draw' ? 'Çek: ortadaki taşa dokun ya da ıstakaya sürükle' : G.mustUse != null ? 'Aldığın atık taşı kullanmalısın' : 'Taş at: çift dokun ya da sağ alttaki atığa sürükle';
+    // Açtıktan sonra elde kalan taşlardan işlenebilenler (ya da okey değiştirebilenler): kırmızı ince çerçeve
+    const fitSet = new Set(G.hand.filter((t) => isJoker(t, ok)).map((t) => t.id));   // okey her zaman kırmızı çerçeveli (atılırsa ceza)
+    S.fit = fitSet;
+    {   // masada per varken, herkes için işlek taşlar kırmızı (açmış olsun ya da olmasın)
+      const ms = G.others.flatMap((o) => o.melds);
+      for (const t of G.hand) if (!stagedIds.has(t.id) && !isJoker(t, ok) && ms.some((m) => (m.length >= 3 ? jokerReplaceIndex(m, t, ok) >= 0 || canAddToMeld(m, t, ok) : pairReplaceIndex(m, t, ok) >= 0))) fitSet.add(t.id);
+    }
+    // Yerleşim (sahne 1280 x H): normal (iPad) ve sıkışık (telefon yan / geniş ekran)
+    const R = cmp ? 150 : 182, rackY = cmp ? H - R - 2 : 706, meH = cmp ? 54 : 96, meY = cmp ? rackY - meH - 4 : 606;
+    const clothY = cmp ? 62 : 140, clothH = cmp ? meY - clothY - 4 : 463;
+    const CH = clothH / 13, CW = cmp ? Math.min(28.46, CH * 0.8) : 28.46, sq = 13 * CW, cx = cmp ? 96 + (740 - 2 * sq) / 2 : 96;
+    const px = cmp ? 946 + (170 - 6 * CW) / 2 : 946, vars = `--cw:${CW}px;--ch:${CH}px`;
+    const P = cmp ? {
+      info: [8, 6, 420, 24], chat: [895, 4, 375, 24], btns: [895, 30, 375, 26], top: [440, 2, 400, 56], left: [2, 96, 56, 230], right: [1224, 96, 54, 130],
+      tl: [28, 32], tr: [1194, 32], bl: [28, meY], br: [1194, meY], pz: [50, 60], pc: 'c2', mz: 'm2',
+      b1: [4, 330, 92, 26], b2: [1136, 96, 84, 26], tags: [846, 62, 90, 120], ind: [862, 188, 52, 68], heap: [862, 262, 52, 68],
+      by: [230, 262, 294, 326, 358, 390], bh: [28, 28, 28, 28, 28, 24],
+      me: [440, meY, 400, meH], tot: [860, meY + 10, 210, 32], rack: [102, rackY, 1076, R], sl: [14, rackY + 8, 80, R - 16], sr: [1186, rackY + 8, 80, R - 16],
+      ci: { left: [12, 362, 40, 40], right: [1160, 126, 40, 40], top: [848, 8, 40, 40], me: [394, meY + 6, 40, 40] },
+    } : {
+      info: [40, 10, 430, 28], chat: [480, 6, 380, 34], btns: [870, 6, 400, 34], top: [440, 50, 400, 84], left: [2, 150, 64, 270], right: [1216, 136, 62, 186],
+      tl: [28, 61], tr: [1194, 61], bl: [28, 612], br: [1194, 612], pz: [57, 74], pc: 'c', mz: 'm',
+      b1: [4, 426, 92, 30], b2: [1136, 136, 76, 28], tags: [846, 140, 90, 176], ind: [858, 330, 66, 86], heap: [858, 432, 66, 86],
+      by: [322, 372, 422, 472, 522, 572], bh: [44, 44, 44, 44, 44, 32],
+      me: [440, 606, 400, 96], tot: [860, 662, 210, 36], rack: [102, 706, 1076, 182], sl: [14, 730, 80, 130], sr: [1186, 730, 80, 130],
+      ci: { left: [10, 464, 44, 44], right: [1150, 172, 44, 44], top: [848, 56, 44, 44], me: [392, 616, 44, 44] },
     };
-    const pile = (i, x, y, corner) => {
+    const turnBar = '<div class="trow"><div class="sb"><div id="bar"></div></div><b id="tl"></b></div>';
+    const bubble = (uid) => { const b = [...S.chat].reverse().find((c) => c.userId === uid && Date.now() - c.at < 8000); return b ? `<div class="bub">${esc(b.text)}</div>` : ''; };
+    // Kamera açıksa isminin yanında sabit durur; dokununca 2 kat büyür/küçülür
+    const hasVid = (i) => { const d = vt.get(L.seats[i]); return !!(d && d.querySelector('video') && !d.classList.contains('off')); };
+    const cam = (i, org) => `<div class="cam${S.zoomCam === L.seats[i] ? ' big' : ''}" id="vs-${L.seats[i]}" data-act="camzoom" data-uid="${L.seats[i]}" style="--o:${org}">${esc(Array.from(L.names[i] || '?')[0].toUpperCase())}</div>`;
+    const rel = (k) => (me + k) % n;
+    const box = (x, y, w, h, html, cls = '', extra = '', attrs = '') => `<div class="a ${cls}" ${attrs} style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;${extra}">${html}</div>`;
+    const bx = (r, html, cls = '', extra = '', attrs = '') => box(r[0], r[1], r[2], r[3], html, cls, extra, attrs);
+    const openedTxt = (o) => { if (!o.opened) return ''; return o.openMode === 'pairs' ? `açtı · ${o.openTotal} çift` : `açtı ${o.openTotal}`; };
+    // Kenarlardaki oyuncular dikey isim çubuğu (referanstaki gibi); üst ve alttaki yatay plaka. Rakibin taş sayısı gösterilmez.
+    const vbar = (i, r, pos) => {
+      const o = G.others[i], isT = G.turn === i && !G.over, org = pos === 'left' ? '0 0' : '100% 0';
+      return bx(r, `${bubble(L.seats[i])}${cam(i, org)}<div class="vname">${esc(L.names[i])}${L.online[i] ? '' : ' ⚠'}</div><div class="vsub">${openedTxt(o)}</div>${isT ? '<div class="sb v"><div id="bar"></div></div><b id="tl" class="tlv"></b>' : ''}`, `seat vbar ${pos} ${isT ? 'turn' : ''}`);
+    };
+    const hbar = (i, r, cls, org, sub) => {
+      const isT = G.turn === i && !G.over;
+      return bx(r, `${bubble(L.seats[i])}<div class="pl">${cam(i, org)}<div class="hn"><b>${esc(L.names[i])}${L.online[i] ? '' : ' ⚠'}</b><br><small>${sub}</small></div></div>${isT ? turnBar : ''}`, `seat np ${cls} ${isT ? 'turn' : ''}`);
+    };
+    const plate = (i, r, pos) => (pos === 'top' ? hbar(i, r, 'top', '50% 0', openedTxt(G.others[i])) : vbar(i, r, pos));
+    // Kendi simgen: kamerayı başlatır/açıp kapatır; başkasının simgesi: görüntüsünü 4 kat büyütür
+    const camIcon = (i, r) => bx(r, '📷', `camicon ${(i === me ? S.call && camOn : hasVid(i)) ? 'on' : ''}`, '', `data-act="${i === me ? 'mycam' : 'camzoom'}" data-uid="${L.seats[i]}"`);
+    const myCtl = S.call ? bx([P.ci.me[0] - 48, P.ci.me[1], P.ci.me[2], P.ci.me[3]], '🎤', 'camicon on', '', 'data-act="mic"') + bx([P.ci.me[0] - 96, P.ci.me[1], P.ci.me[2], P.ci.me[3]], '✖', 'camicon', '', 'data-act="endcall"') : '';
+    const pile = (i, xy, corner) => {
       const d = G.others[i].lastDiscard, take = i === prev && canDraw && d;
-      return box(x, y, 57, 74, d ? `<span class="${S.fresh[i] ? 'new' : ''}">${tile(d, { okey: ok, z: 'c', act: take ? 'take' : '' })}</span>` : '', `pile ${corner}`);
+      return box(xy[0], xy[1], P.pz[0], P.pz[1], d ? `<span class="${S.fresh[i] ? 'new' : ''}">${tile(d, { okey: ok, z: P.pc, act: take ? 'take' : '' })}</span>` : '', `pile ${corner}`);
     };
     // Masa: iki adet 13x13 kare; seri perler sayılarına göre hizalanır, çiftler sağdaki alana dizilir
-    const CW = 28.46, CH = 35.6, place = tablePlacement(G, ok);
-    const rows = place.filter((p) => !p.pair).map((p) => `<div class="meld-row" data-act="meld" data-owner="${p.s}" data-idx="${p.k}" style="left:${(p.row >= 13 ? 370 : 0) + (p.cols[0] - 1) * CW}px;top:${(p.row % 13) * CH}px">${p.cells.map((c) => tile(c.tile, { z: 'xs', okey: ok })).join('')}</div>`).join('');
+    const place = tablePlacement(G, ok);
+    const rows = place.filter((p) => !p.pair).map((p) => `<div class="meld-row" data-act="meld" data-owner="${p.s}" data-idx="${p.k}" style="left:${(p.row >= 13 ? sq : 0) + (p.cols[0] - 1) * CW}px;top:${(p.row % 13) * CH}px">${p.cells.map((c) => tile(c.tile, { z: 'xs', okey: ok })).join('')}</div>`).join('');
     const prs = place.filter((p) => p.pair).map((p) => `<div class="meld-row" data-act="meld" data-owner="${p.s}" data-idx="${p.k}" style="left:${p.col * CW}px;top:${p.row * CH}px">${p.m.map((t) => tile(t, { z: 'xs', okey: ok })).join('')}</div>`).join('');
-    const btn = (y, h, cls, a, label, on) => box(1136, y, 127, h, `<button class="btn ${cls} wide" data-act="${a}" ${on ? '' : 'disabled'}>${label}</button>`);
+    const sqs = (w, k) => Array.from({ length: k }, (_, i) => `<div class="sq" style="left:${i * w}px;width:${w}px;height:${clothH}px;background-size:${CW}px ${CH}px"></div>`).join('');
+    const btn = (k, cls, a, label, on) => box(1136, P.by[k], 127, P.bh[k], `<button class="btn ${cls} wide" data-act="${a}" ${on ? '' : 'disabled'}>${label}</button>`);
     const rackHtml = S.slots.map((id, k) => {
       const t = id != null && !stagedIds.has(id) ? byId.get(id) : null;
-      return `<div class="slot" data-s="${k}"${t ? '' : ' data-act="slot"'}>${t ? tile(t, { act: 'tile', sel: S.sel.has(id), okey: ok, g: S.groupOf?.get(id) }) : ''}</div>`;
+      return `<div class="slot" data-s="${k}"${t ? '' : ' data-act="slot"'}>${t ? tile(t, { act: 'tile', sel: S.sel.has(id), okey: ok, fit: fitSet.has(id) }) : ''}</div>`;
     }).join('');
-    const stakeOn = S.stakeAt && S.balance != null && Date.now() - S.stakeAt < 2800;
+    const stakeOn = S.stakeAt && S.balance != null && !L.practice && Date.now() - S.stakeAt < 2800;
     const stake = stakeOn ? `<div class="stake" style="animation-delay:-${((Date.now() - S.stakeAt) / 1000).toFixed(2)}s">💰 −${fmt(L.stake)}</div>` : '';
     const stg = S.staged.map((g) => { const v = validateMeld(g.map((id) => byId.get(id)), ok); return `<span class="grp ${v.valid || g.length === 2 ? '' : 'bad'}">${g.map((id) => tile(byId.get(id), { z: 'xs', okey: ok })).join('')}</span>`; }).join('');
-    return `<div id="stage" class="stage">
-      ${box(40, 10, 430, 28, `<small>Oda ${L.code} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'}${S.balance != null ? ` · 💰 ${fmt(S.balance)} · masa ${fmt(L.stake)}` : ''}</small>`)}
-      ${box(480, 6, 420, 34, '<input id="ci" placeholder="Mesaj yaz" maxlength="300" style="flex:1"><button class="btn alt sm" data-act="chat">Gönder</button>', 'flex')}
-      ${box(910, 6, 340, 34, `<button class="btn alt sm" data-act="invite">Davet et</button>${S.call ? '<button class="btn alt sm" data-act="mic">🎤</button><button class="btn alt sm" data-act="cam">📷</button><button class="btn alt sm" data-act="endcall">✖</button>' : '<button class="btn alt sm" data-act="call">Görüntülü katıl</button>'}`, 'flex')}
-      ${plate(rel(3), 2, 150, 92, 205, 'left')}${plate(rel(1), 1136, 136, 127, 148, 'right')}${plate(rel(2), 440, 50, 400, 84, 'top')}
-      ${pile(rel(2), 28, 61, 'tl')}${pile(rel(1), 1194, 61, 'tr')}${pile(rel(3), 28, 612, 'bl')}${pile(me, 1194, 612, 'br')}
-      ${box(6, 372, 88, 32, `${G.minMeld}<small> sayı</small>`, 'bdg')}${box(1136, 288, 127, 30, `${G.minPairs}<small> çift</small>`, 'bdg')}
-      ${box(96, 140, 740, 463, `<div class="sq" style="left:0"></div><div class="sq" style="left:370px"></div>${rows}`, 'cloth')}
-      ${box(946, 140, 170, 463, `<div class="sq" style="left:0;width:170px"></div>${prs}`, 'cloth')}
-      ${box(846, 140, 90, 176, `<div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag g">Yardımlı</div><div class="tag ${L.katlamali ? 'r' : ''}">${L.katlamali ? 'Katlamalı' : 'Katlamasız'}</div><div class="tag">1 El</div>`)}
-      ${box(858, 330, 66, 86, `<span class="ind">${tile(G.indicator, { okey: ok, z: 'm' })}</span>`)}
-      ${box(858, 432, 66, 86, `<button class="t heap ${canDraw ? 'go' : ''}" data-act="pile" ${canDraw ? '' : 'disabled'}><span>${G.pileCount}</span></button>`)}
-      ${btn(323, 50, '', 'seriac', 'Seri aç', canAct && canS)}${btn(380, 50, '', 'ciftac', 'Çift aç', canAct && canC)}
-      ${btn(437, 50, 'alt', 'unstage', 'Geri topla', S.staged.length > 0)}${btn(494, 50, 'alt', 'isle', 'Taşları işle', canAct && myO.opened)}
-      ${btn(551, 44, '', 'discard', 'At', canAct)}${btn(601, 38, 'alt', 'cancel', 'Atığı geri ver', myTurn && G.mustUse != null)}
-      ${box(96, 610, 330, 92, `<div class="row" style="flex-wrap:nowrap;gap:6px"><button class="btn alt sm" data-act="stage">Per yap</button><small>${S.staged.length ? `Açılacak: ${sum}` : 'Taşları seç → Per yap'}</small></div><div class="stg">${stg}</div>`)}
-      ${box(440, 606, 400, 96, `${bubble(L.seats[me])}<div class="pl">${cam(me)}<div style="text-align:left"><b>${esc(L.names[me])}</b><br><small>${hint}</small></div></div>${myTurn ? turnBar : ''}`, `seat np myplate ${myTurn ? 'turn' : ''}`)}
-      ${box(860, 662, 150, 36, totTxt, `tot ${myO.opened ? '' : enough ? 'ok' : 'bad'}`)}
-      ${box(14, 730, 80, 130, `<button class="side ${S.mode === 'seri' ? 'on' : ''}" data-act="seri">Seri<br>diz</button>`)}
-      ${box(1186, 730, 80, 130, `<button class="side ${S.mode === 'cift' ? 'on' : ''}" data-act="cift">Çift<br>diz</button>`)}
-      ${box(102, 706, 1076, 182, rackHtml + stake, 'rack')}
+    return `<div id="stage" class="stage ${cmp ? 'cmp' : ''}">
+      ${bx(P.info, `<small>Oda ${L.code} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'} · ${SURUM}${L.practice ? ' · antrenman (jetonsuz)' : S.balance != null ? ` · 💰 ${fmt(S.balance)} · masa ${fmt(L.stake)}` : ''}</small>`)}
+      ${bx(P.chat, '<input id="ci" placeholder="Mesaj yaz" maxlength="300" style="flex:1"><button class="btn alt sm" data-act="chat">Gönder</button>', 'flex')}
+      ${bx(P.btns, `<button class="btn alt sm" data-act="full">⛶</button><button class="btn alt sm" data-act="mute">${store.mute === '1' ? '🔇' : '🔊'}</button>${G.over ? '' : '<button class="btn alt sm" data-act="quit">Çık</button>'}`, 'flex')}
+      ${plate(rel(3), P.left, 'left')}${plate(rel(1), P.right, 'right')}${plate(rel(2), P.top, 'top')}
+      ${pile(rel(2), P.tl, 'tl')}${pile(rel(1), P.tr, 'tr')}${pile(rel(3), P.bl, 'bl')}${pile(me, P.br, 'br')}
+      ${camIcon(rel(3), P.ci.left)}${camIcon(rel(1), P.ci.right)}${camIcon(rel(2), P.ci.top)}${camIcon(me, P.ci.me)}${myCtl}
+      ${bx(P.b1, `${G.minMeld}<small> sayı</small>`, 'bdg')}${bx(P.b2, `${G.minPairs}<small> çift</small>`, 'bdg')}
+      ${box(cx, clothY, 2 * sq, clothH, `${sqs(sq, 2)}${rows}`, 'cloth', vars)}
+      ${box(px, clothY, 6 * CW, clothH, `${sqs(6 * CW, 1)}${prs}`, 'cloth', vars)}
+      ${bx(P.tags, `<div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag g">Yardımlı</div><div class="tag ${L.katlamali ? 'r' : ''}">${L.katlamali ? 'Katlamalı' : 'Katlamasız'}</div><div class="tag">El ${L.roundNo || 1}/${L.rounds || 1}</div>`)}
+      ${bx(P.ind, `<span class="ind">${tile(G.indicator, { okey: ok, z: P.mz })}</span>`)}
+      ${bx(P.heap, `<button class="t heap ${canDraw ? 'go' : ''}" data-act="pile" ${canDraw ? '' : 'disabled'}><span>${G.pileCount}</span></button>`)}
+      ${btn(0, canS ? '' : 'dim', 'seriac', 'Seri aç', canAct)}${btn(1, canC ? '' : 'dim', 'ciftac', 'Çift aç', canAct)}
+      ${btn(2, 'alt', 'unstage', 'Geri topla', S.staged.length > 0)}${btn(3, 'alt', 'isle', 'Taşları işle', canAct && myO.opened)}
+      ${btn(4, '', 'discard', 'At', canAct)}${btn(5, 'alt', 'cancel', 'Atığı geri ver', myTurn && G.mustUse != null)}
+      ${hbar(me, P.me, 'myplate', '50% 100%', hint)}
+      ${bx(P.tot, totTxt, `tot ${myO.opened ? '' : enough ? 'ok' : 'bad'}`)}
+      ${bx(P.sl, `<button class="side" data-act="cift"><span class="mcs"><i>5</i><i>5</i></span>Çift<br>diz</button>`)}
+      ${bx(P.sr, `<button class="side" data-act="seri"><span class="mcs"><i>1</i><i>2</i><i>3</i></span>Seri<br>diz</button>`)}
+      ${bx(P.rack, rackHtml + stake, 'rack')}
     </div>${G.over ? overHtml(G, L) : ''}`;
   },
 };
 
 // El sonu kartı: kazanan üstte, 1-2-3-4 alt alta (eşlide kazanan takım önde)
 function overHtml(G, L) {
-  const o = G.over, n = L.seats.length;
+  const o = G.over, n = L.seats.length, pairs = L.mode === 'pairs';
   if (S.hideOver) return '<button class="btn over-chip" data-act="showover">Sonucu göster</button>';
-  const win = o.finisher == null ? [] : L.mode === 'pairs' ? [o.finisher, (o.finisher + 2) % n] : [o.finisher];
-  const rank = [...o.points.keys()].sort((a, b) => (win.includes(b) - win.includes(a)) || o.points[a] - o.points[b]);
-  const title = o.finisher == null ? 'Kimse bitiremedi (bedeller iade)' : `${esc(L.names[o.finisher])} kazandı${o.withOkey ? ' · okey ile bitirdi' : ''}`;
-  const secs = L.nextAt ? Math.max(0, Math.ceil((L.nextAt - (Date.now() + S.skew)) / 1000)) : null;
-  const rows = rank.map((i) => {
-    const w = win.includes(i), bal = L.balances?.[i];
-    return `<div class="rw ${w ? 'win' : ''}"><div class="av">${esc((L.names[i] || '?')[0].toUpperCase())}${w ? '<i class="crown">👑</i>' : ''}</div><div class="nm2"><b>${esc(L.names[i])}</b>${bal != null ? `<small>💰 ${fmt(bal)}${L.lastPayout ? ` (${L.lastPayout[i] >= 0 ? '+' : ''}${fmt(L.lastPayout[i])})` : ''}</small>` : ''}</div>${w ? '<span class="kz">KAZANAN</span>' : ''}<span class="pt">${o.points[i] > 0 ? '+' : ''}${o.points[i]}</span></div>`;
-  }).join('');
-  return `<div class="over"><div class="res"><div class="res-h">OYUN SONUCU</div>
-    ${secs != null ? `<div class="res-c"><b id="cd">${secs}</b> saniye içinde yeni el başlayacak</div>` : ''}
-    <div class="res-t">🏆 ${title}${o.byPairs ? ' · çift açtı: puan ve jeton ×2' : ''}${o.withOkey && L.katlamali ? ' · okey ×2' : ''}</div>${rows}${o.teams ? `<small>Takımlar: ${o.teams.join(' / ')}</small>` : ''}
-    <div class="row" style="justify-content:space-between;margin-top:12px"><button class="rbtn red" data-act="leave">Masadan<br>ayrıl</button><button class="btn alt" data-act="hideover">Masaya göz at</button><button class="rbtn green" data-act="next">Yeni oyuna<br>başla</button></div></div></div>`;
+  const rounds = L.rounds || 1, final = !!L.matchOver && rounds > 1, tot = G.scores;
+  const av = (i, crown) => `<div class="av">${esc(Array.from(L.names[i] || '?')[0].toUpperCase())}${crown ? '<i class="crown">👑</i>' : ''}</div>`;
+  const sg = (v) => (v > 0 ? '+' : '') + v;
+  let head = 'OYUN SONUCU', title, rows;
+  if (final) {                                                // seçilen oyun sayısı bitti: toplam puanı en düşük kazanır
+    const key = (i) => (pairs ? G.teamScores[i % 2] : tot[i]);
+    const order = [...Array(n).keys()].sort((a, b) => key(a) - key(b) || a - b);
+    const best = key(order[0]), win = order.filter((i) => key(i) === best);
+    head = 'MAÇ SONUCU';
+    title = `${win.map((i) => esc(L.names[i])).join(' & ')} kazandı · ${best} puan`;
+    rows = order.map((i, k) => `<div class="rw ${win.includes(i) ? 'win' : ''}">${av(i, k === 0)}<div class="nm2"><b>${esc(L.names[i])}</b><small>${rounds} oyun toplamı · son oyun ${sg(o.points[i])}</small></div>${win.includes(i) ? '<span class="kz">KAZANAN</span>' : ''}<span class="pt">${key(i)}<small> puan</small></span></div>`).join('');
+  } else {
+    const w = o.rank[0];
+    const win = pairs ? [w, (w + 2) % n] : [w];
+    const order = pairs ? [...win, ...o.rank.filter((i) => !win.includes(i))] : o.rank;
+    const what = o.finisher != null ? (o.withOkey ? 'eli okeyle bitirdi' : 'eli bitirdi') : 'en az sayı kaldı';
+    title = `${esc(L.names[w])} ${what}${o.byPairs ? ' · çift açtı' : ''}${o.withOkey && L.katlamali ? ' · okey ×2' : ''}`;
+    if (rounds > 1) head = `OYUN ${L.roundNo}/${rounds} SONUCU`;
+    rows = order.map((i, k) => {
+      const isW = win.includes(i);
+      return `<div class="rw ${isW ? 'win' : ''}">${av(i, k === 0)}<div class="nm2"><b>${esc(L.names[i])}</b><small>${sg(o.points[i])} puan${rounds > 1 ? ` · toplam ${pairs ? G.teamScores[i % 2] : tot[i]}` : ''}</small></div>${isW ? '<span class="kz">KAZANAN</span>' : ''}<span class="pt">${o.left[i]}<small> sayı</small></span></div>`;
+    }).join('');
+  }
+  const isHuman = L.seats.map((id, i) => !!id && !L.bots?.[i]), humanN = isHuman.filter(Boolean).length;
+  const readyN = (L.ready || []).filter((r, i) => r && isHuman[i]).length, iReady = !!L.ready?.[G.you];
+  const secs = L.readyAt ? Math.max(0, Math.ceil((L.readyAt + (L.readyGrace || 20000) - (Date.now() + S.skew)) / 1000)) : null;
+  const teamLine = pairs ? (final ? `<small>Takım toplamları: ${G.teamScores.join(' / ')}</small>` : o.teams ? `<small>Takımlar: ${o.teams.join(' / ')}</small>` : '') : '';
+  return `<div class="over"><div class="res"><div class="res-h">${head}</div>
+    <div class="res-c">Hazır: ${readyN}/${humanN}${secs != null ? ` · <b id="cd">${secs}</b> sn içinde başlar` : ''}</div>
+    <div class="res-t">🏆 ${title}</div>${rows}${teamLine}
+    <div class="row" style="justify-content:space-between;margin-top:12px"><button class="rbtn red" data-act="leave">Masadan<br>ayrıl</button><button class="btn alt" data-act="hideover">Masaya göz at</button><button class="rbtn green" data-act="next" ${iReady ? 'disabled' : ''}>${iReady ? 'Hazır ✓' : final ? 'Yeni maç<br>başlat' : 'Yeni oyuna<br>başla'}</button></div></div></div>`;
 }
-// Sahne 1280x890 sabit oranlı; ekrana sığacak şekilde ölçeklenir
+// Taş sesi (dosyasız, WebAudio). İlk dokunuşta ses açılır; üst çubuktaki 🔊 ile kapatılır.
+let ac;
+function unlockAudio() { try { ac ??= new (globalThis.AudioContext || globalThis.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); } catch {} }
+function clack() {
+  if (store.mute === '1') return;
+  try {
+    unlockAudio(); if (!ac) return;
+    const t0 = ac.currentTime;
+    const tap = (when, freq, gain, thud) => {                    // kısa, tiz bir çıtırtı (+ istenirse hafif tok)
+      const n = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.025), ac.sampleRate), d = n.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 4);
+      const src = ac.createBufferSource(), bp = ac.createBiquadFilter(), g = ac.createGain();
+      src.buffer = n; bp.type = 'bandpass'; bp.frequency.value = freq; bp.Q.value = 4; g.gain.value = gain;
+      src.connect(bp).connect(g).connect(ac.destination); src.start(when);
+      if (thud) {
+        const o = ac.createOscillator(), og = ac.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(190, when); o.frequency.exponentialRampToValueAtTime(95, when + 0.05);
+        og.gain.setValueAtTime(0.3, when); og.gain.exponentialRampToValueAtTime(0.001, when + 0.06);
+        o.connect(og).connect(ac.destination); o.start(when); o.stop(when + 0.07);
+      }
+    };
+    tap(t0, 3400, 1.1, true);          // çık
+    tap(t0 + 0.05, 2300, 0.7, false);  // çık (ikinci küçük vuruş)
+  } catch {}
+}
+// Sahne 1280 genişlikte; yükseklik ekran oranına göre uyarlanır (geniş ekranda 640-799, diğerlerinde 890) ve ekrana sığacak şekilde ölçeklenir
 function fit() {
   if (typeof innerWidth === 'undefined') return;
-  S.k = Math.min(innerWidth / 1280, innerHeight / 890);
-  document.documentElement.style.setProperty('--sc', S.k);
+  const h0 = (1280 * innerHeight) / innerWidth;
+  S.H = h0 < 800 ? Math.max(640, Math.round(h0)) : 890;
+  S.k = Math.min(innerWidth / 1280, innerHeight / S.H);
+  const st = document.documentElement.style;
+  st.setProperty('--sc', S.k); st.setProperty('--sh', S.H + 'px');
 }
-globalThis.onresize = () => { if (S.game) fit(); };
+globalThis.onresize = () => { if (S.game) { fit(); render(); } };
 // Kazanan için masaya havai fişek + konfeti (kütüphanesiz, canvas)
 function celebrate() {
   if (typeof requestAnimationFrame !== 'function') return;
@@ -318,19 +513,22 @@ function celebrate() {
 }
 
 function render() {
-  if (S.dragging) return; // sürüklerken ekran yenilenmez
+  if (S.dragging || S.hold) { S.pending = true; return; }   // basılıyken / sürüklerken ekran yenilenmez
   const inGame = !!(S.me && S.lobby && S.game);
   document.body?.classList.toggle('inGame', inGame);
   if (inGame) fit();
-  for (const d of vt.values()) $('#vg').append(d); // yeniden çizimde videolar bozulmasın
   const ci = $('#ci'), v = ci?.value, foc = ci && document.activeElement === ci;
+  const keep = ['#name', '#code', '#mode', '#rounds', '#sec', '#bots'].map((q) => [q, $(q)?.value]), katV = $('#kat')?.checked;   // yeniden çizimde yazılanlar kaybolmasın
   const inRoom = S.lobby;
   let h = S.off ? '<div class="card">Bağlantı koptu, yeniden bağlanılıyor…</div>' : '';
-  h += !S.me ? views.login() : !inRoom ? views.menu() : S.game ? views.table() : views.room(S.lobby);
+  h += !S.me || !inRoom ? views.menu() : S.game ? views.table() : views.room(S.lobby);
+  if (inGame && typeof innerWidth !== 'undefined' && innerHeight > innerWidth * 1.15) h += '<div class="rot">↻ Daha büyük görmek için telefonu yan çevir</div>';
   $('#app').innerHTML = h;
   S.fresh = {};
   placeVideos();
   if ($('#ci') && v != null) { $('#ci').value = v; if (foc) $('#ci').focus(); }
+  keep.forEach(([q, val]) => { if (val != null && $(q)) $(q).value = val; });
+  if (katV != null && $('#kat')) $('#kat').checked = katV;
   const cl = $('#cl'); if (cl) cl.scrollTop = cl.scrollHeight;
 }
 
@@ -341,7 +539,13 @@ function syncSlots(hand) {
   if (!S.slots || S.slots.length !== NS) S.slots = Array(NS).fill(null);
   S.slots = S.slots.map((id) => (ids.has(id) ? id : null));
   const have = new Set(S.slots);
-  hand.forEach((t) => { if (!have.has(t.id)) { const f = S.slots.indexOf(null); if (f >= 0) S.slots[f] = t.id; } });
+  hand.forEach((t) => { if (!have.has(t.id)) { const f = centerEmpty(); if (f >= 0) S.slots[f] = t.id; } });
+}
+// Yeni taş için ıstakanın ortasına en yakın boş yuva
+function centerEmpty() {
+  let best = -1, bd = 1e9;
+  S.slots.forEach((id, i) => { if (id == null) { const d = Math.abs((i % COLS) - (COLS - 1) / 2) + Math.floor(i / COLS) * 0.2; if (d < bd) { bd = d; best = i; } } });
+  return best;
 }
 // Grupları aralarında birer boşlukla yerleştirir; sığmazsa bitişik dizer.
 function setLayout(groups, rest = []) {
@@ -435,20 +639,36 @@ function openWith(kind) {
   if (!groups.length) return toast('Istakada açılacak dizili grup yok.');
   act({ type: opened ? 'lay' : 'open', groups });
 }
-// Taşları işle: eldeki taşları masadaki perlere sırayla ekler (okey ve son taş hariç)
+// Okeyi ya da işlenebilen (kırmızı çerçeveli) taşı son taş değilken atmak 101 ceza yedirir; uyarı sorulmaz, kırmızı çerçeve yeter
+function discardTile(id) {
+  act({ type: 'discard', tileId: id });
+}
+// Taşları işle: önce okeyleri geri alır (okey ıstakaya döner; çift ve seri perlerde), sonra kalan taşları perlere ekler (okey ve son taş hariç).
 function isleHepsi() {
   const G = S.game, ok = okeyOf(G), me = G.you;
   if (!G.others[me].opened) return toast('Önce açmalısın.');
   const staged = new Set(S.staged.flat());
   const melds = G.others.map((o) => o.melds.map((m) => [...m]));
+  const tiles = [...G.hand].filter((x) => !staged.has(x.id) && !isJoker(x, ok)).sort((a, b) => a.num - b.num);
+  const sends = [], used = new Set();
+  const find = (fn) => { for (let s = 0; s < melds.length; s++) for (let k = 0; k < melds[s].length; k++) if (fn(melds[s][k], s, k)) return true; return false; };
+  for (const t of tiles) {                                      // 1) önce okeyleri al
+    find((m, s, k) => {
+      const ji = m.length >= 3 ? jokerReplaceIndex(m, t, ok) : pairReplaceIndex(m, t, ok);
+      if (ji < 0) return false;
+      m[ji] = t; sends.push({ type: 'addToMeld', ownerSeat: s, meldIndex: k, tileId: t.id }); used.add(t.id);
+      return true;
+    });
+  }
   let left = G.hand.length;
-  const sends = [];
-  for (const t of [...G.hand].filter((x) => !staged.has(x.id) && !isJoker(x, ok)).sort((a, b) => a.num - b.num)) {
-    if (left <= 1) break;
-    outer: for (let s = 0; s < melds.length; s++) for (let k = 0; k < melds[s].length; k++) {
-      const m = melds[s][k];
-      if (m.length >= 3 && canAddToMeld(m, t, ok)) { m.push(t); sends.push({ type: 'addToMeld', ownerSeat: s, meldIndex: k, tileId: t.id }); left--; break outer; }
-    }
+  for (const t of tiles) {                                      // 2) sonra kalan taşları ekle
+    if (used.has(t.id) || left <= 1) continue;
+    const done = find((m, s, k) => {
+      if (m.length < 3 || !canAddToMeld(m, t, ok)) return false;
+      m.push(t); sends.push({ type: 'addToMeld', ownerSeat: s, meldIndex: k, tileId: t.id });
+      return true;
+    });
+    if (done) left--;
   }
   if (!sends.length) return toast('İşlenecek taş yok.');
   sends.forEach((a) => act(a));
@@ -464,14 +684,35 @@ const ctxOf = () => {
   const G = S.game, o = G.others[G.you];
   return { opened: o.opened, openMode: o.openMode, pairsOnTable: G.others.some((x, i) => i !== G.you && x.openMode === 'pairs'), minMeld: G.minMeld, minPairs: G.minPairs };
 };
+// İsim masa kurulan/katılınan ekranda girilir. Bağlı değilse önce bağlanılır, sonra işlem sürer.
+function ensureName(then) {
+  const n = ($('#name')?.value ?? '').trim().slice(0, 20);
+  if (!n) { toast('Önce adını yaz.'); $('#name')?.focus(); return false; }
+  const changed = n !== store.name;
+  store.name = n;
+  if (!S.me) { S.pending = then; if (!ws || ws.readyState > 1) connect(); return false; }
+  if (changed) send({ t: 'rename', name: n });
+  return true;
+}
 const A = {
-  login() { const n = $('#name').value.trim(); if (n) { store.name = n; connect(); } },
-  create() { send({ t: 'createRoom', mode: $('#mode').value, katlamali: $('#kat').checked, turnSeconds: +$('#sec').value }); },
-  join() { send({ t: 'join', code: $('#code').value }); },
+  create() { if (ensureName(() => A.create())) send({ t: 'createRoom', mode: $('#mode').value, katlamali: $('#kat').checked, turnSeconds: +$('#sec').value, bots: +$('#bots').value, rounds: +$('#rounds').value }); },
+  join() { if (ensureName(() => A.join())) send({ t: 'join', code: $('#code').value }); },
   start() { send({ t: 'start' }); }, leave() { send({ t: 'leave' }); }, next() { send({ t: 'nextRound' }); },
   pile() { act({ type: 'draw', source: 'pile' }); },
   take() { act({ type: 'draw', source: 'discard' }); },
-  tile(d) { const id = +d.id; S.sel.has(id) ? S.sel.delete(id) : S.sel.add(id); },
+  // Taşa çift dokun: sağdaki atığa atılır
+  tile(d) {
+    const id = +d.id, now = Date.now();
+    if (S.lastTap && S.lastTap.id === id && now - S.lastTap.t < 380) { S.lastTap = null; S.sel.delete(id); discardTile(id); return; }
+    S.lastTap = { id, t: now };
+    S.sel.has(id) ? S.sel.delete(id) : S.sel.add(id);
+  },
+  mycam() { if (!S.call) send({ t: 'rtc' }); else A.cam(); },
+  camzoom(d) {
+    const t = vt.get(d.uid);
+    if (!(t && t.querySelector('video') && !t.classList.contains('off'))) return toast('Bu oyuncunun kamerası kapalı.');
+    S.zoomCam = S.zoomCam === d.uid ? null : d.uid;
+  },
   stage() { if (S.sel.size) { S.staged.push([...S.sel]); S.sel.clear(); } else toast('Önce taşları seç.'); },
   unstage() { S.staged = []; },
   // Aç / Yere ser: elle gruplanmış (Per yap) taşlar varsa onları, yoksa Yardımlı planını yere açar
@@ -500,16 +741,32 @@ const A = {
     if (!pl.canOpen) return toast(pl.summary);
     act({ type: ctxOf().opened ? 'lay' : 'open', groups: pl.groups });
   },
-  discard() { if (S.sel.size === 1) { act({ type: 'discard', tileId: [...S.sel][0] }); S.sel.clear(); } else toast('Atmak için tek taş seç.'); },
+  discard() { if (S.sel.size === 1) { discardTile([...S.sel][0]); S.sel.clear(); } else toast('Atmak için tek taş seç.'); },
   cancel() { act({ type: 'cancelDiscardDraw' }); },
   meld(d) { if (S.sel.size === 1) { act({ type: 'addToMeld', ownerSeat: +d.owner, meldIndex: +d.idx, tileId: [...S.sel][0] }); S.sel.clear(); } else toast('Önce işlenecek tek taşı seç.'); },
+  addbot() { send({ t: 'addBot' }); },
+  rmbot(d) { send({ t: 'removeBot', seat: +d.seat }); },
+  // Tam ekran: adres çubuğu gizlenir, oyun büyür (iPhone'da Safari desteklemez: Ana Ekrana Ekle)
+  full() {
+    const el = document.documentElement, d = document, hint = "Tam ekran açılamadı. iPhone'da: Paylaş → Ana Ekrana Ekle, sonra oradan aç.";
+    if (d.fullscreenElement || d.webkitFullscreenElement) { (d.exitFullscreen || d.webkitExitFullscreen)?.call(d); return; }
+    const req = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (!req) return toast(hint);
+    Promise.resolve(req.call(el)).catch(() => toast(hint));
+  },
+  mute() { store.mute = store.mute === '1' ? '0' : '1'; toast(store.mute === '1' ? 'Ses kapalı' : 'Ses açık'); },
+  // Oyun sırasında çıkış: yerine bot geçer
+  quit() {
+    const money = !S.lobby?.practice && S.balance != null;
+    if (confirm(`Oyundan çıkarsan ${money ? 'yatırdığın jeton kaybolur ve ' : ''}yerine bot oynar. Çıkılsın mı?`)) send({ t: 'leave' });
+  },
   seriac() { openWith('meld'); },
   ciftac() { openWith('pairs'); },
   isle() { isleHepsi(); },
   hideover() { S.hideOver = true; },
   showover() { S.hideOver = false; },
-  seri() { S.mode = S.mode === 'seri' ? 'auto' : 'seri'; S.sel.clear(); autoLayout(); },
-  cift() { S.mode = S.mode === 'cift' ? 'auto' : 'cift'; S.sel.clear(); autoLayout(); },
+  seri() { S.sel.clear(); S.mode = 'seri'; autoLayout(); S.mode = 'auto'; },   // bir kez dizer
+  cift() { S.sel.clear(); S.mode = 'cift'; autoLayout(); S.mode = 'auto'; },
   // Boş yuvaya dokun: seçili taşlar oraya (ve sağındaki boş yuvalara) taşınır
   slot(d) {
     if (!S.sel.size) return;
@@ -535,44 +792,110 @@ const A = {
   },
   chat() { const i = $('#ci'); if (i.value.trim()) { send({ t: 'chat', text: i.value }); i.value = ''; } },
 };
-$('#app').onclick = (e) => { if (S.justDragged) return; const b = e.target.closest('[data-act]'); if (b && A[b.dataset.act]) { A[b.dataset.act](b.dataset); render(); } };
+$('#app').onclick = (e) => { S.hold = false; if (S.justDragged) return; const b = e.target.closest('[data-act]'); if (b && A[b.dataset.act]) { A[b.dataset.act](b.dataset); render(); } };
 $('#app').onkeydown = (e) => { if (e.key === 'Enter' && e.target.id === 'ci') A.chat(); };
 
-// Taşı sürükleyip istediğin yuvaya bırak (dokunmatik ve fare). Dolu yuvaya bırakırsan yer değiştirirler.
+// ---- Sürükle-bırak (dokunmatik ve fare) ----
+// Hedefler parmakla vurulamayacak kadar küçük olabilir: bırakılan yere EN YAKIN uygun per / atık yığını seçilir.
 let drag = null;
+const distTo = (e, el) => { const r = el.getBoundingClientRect(); return Math.hypot(Math.max(r.left - e.clientX, 0, e.clientX - r.right), Math.max(r.top - e.clientY, 0, e.clientY - r.bottom)); };
+const nearest = (e, sel, max) => { let best = null, bd = max; document.querySelectorAll(sel).forEach((el) => { const d = distTo(e, el); if (d <= bd) { bd = d; best = el; } }); return best; };
+function releaseHold() { S.hold = false; if (S.pending && !S.dragging) { S.pending = false; render(); } }
+// Sürüklerken taşın işlenebileceği perleri yeşil gölgeyle gösterir; en yakın olanı parlatır
+function markDrops(tid) {
+  const G = S.game, ok = okeyOf(G), t = G.hand.find((x) => x.id === tid);
+  if (!t || !G.others[G.you].opened) return;
+  document.querySelectorAll('.meld-row').forEach((el) => {
+    const m = G.others[+el.dataset.owner]?.melds[+el.dataset.idx];
+    if (m && (m.length >= 3 ? jokerReplaceIndex(m, t, ok) >= 0 || canAddToMeld(m, t, ok) : pairReplaceIndex(m, t, ok) >= 0)) el.classList.add('drop-ok');
+  });
+}
+function hotRow(e) {
+  document.querySelectorAll('.meld-row.hot').forEach((el) => el.classList.remove('hot'));
+  nearest(e, '.meld-row.drop-ok', 80)?.classList.add('hot');
+}
+// Dokunmatikte taş parmağın üstünde görünür; bırakma noktası da taşın görünen merkezi sayılır (gördüğün yere bırakırsın)
+const dropPt = (e, h) => ({ clientX: e.clientX, clientY: e.clientY - (e.pointerType === 'touch' ? h * 0.65 : 0) });
+function slotHot(pt) {
+  document.querySelectorAll('.slot-hot').forEach((el) => el.classList.remove('slot-hot'));
+  document.elementFromPoint(pt.clientX, pt.clientY)?.closest('.slot')?.classList.add('slot-hot');
+}
+// Taşı k yuvasına koyar; doluysa komşuları kaydırıp araya sokar (yer değiştirme yok), satır doluysa yer değiştirir
+function insertAt(from, k) {
+  const slots = S.slots, id = slots[from];
+  if (from === k) return;
+  slots[from] = null;
+  if (slots[k] == null) { slots[k] = id; return; }
+  const lo = Math.floor(k / COLS) * COLS, hi = lo + COLS - 1;
+  let r = -1, l = -1;
+  for (let i = k + 1; i <= hi; i++) if (slots[i] == null) { r = i; break; }
+  for (let i = k - 1; i >= lo; i--) if (slots[i] == null) { l = i; break; }
+  if (r >= 0 && (l < 0 || r - k <= k - l)) for (let i = r; i > k; i--) slots[i] = slots[i - 1];
+  else if (l >= 0) for (let i = l; i < k; i++) slots[i] = slots[i + 1];
+  else slots[from] = slots[k];
+  slots[k] = id;
+}
 $('#app').onpointerdown = (e) => {
+  unlockAudio();
+  if (e.button > 0) return;
   const t = e.target.closest('.slot .t');
-  if (!t || e.button > 0) return;
-  drag = { el: t, from: +t.closest('.slot').dataset.s, x: e.clientX, y: e.clientY, on: false, ghost: null };
+  const h = t ? null : e.target.closest('.t.heap:not(:disabled), .pile.bl .t[data-act="take"]');
+  const el = t || h;
+  if (!el) return;
+  drag = { el, kind: t ? 'rack' : 'draw', source: h?.classList.contains('heap') ? 'pile' : 'discard', from: t ? +t.closest('.slot').dataset.s : -1, x: e.clientX, y: e.clientY, on: false, ghost: null };
+  S.hold = true; clearTimeout(S.holdT); S.holdT = setTimeout(releaseHold, 8000);   // güvenlik: en fazla 8 sn donar
+  try { el.setPointerCapture(e.pointerId); } catch {}
 };
 document.onpointermove = (e) => {
   if (!drag) return;
-  if (!drag.on && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 8) {
+  if (!drag.on && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > (e.pointerType === 'touch' ? 6 : 8)) {
     drag.on = true; S.dragging = true;
     const r = drag.el.getBoundingClientRect(); drag.w = r.width; drag.h = r.height;
     drag.ghost = drag.el.cloneNode(true);
-    Object.assign(drag.ghost.style, { position: 'fixed', pointerEvents: 'none', zIndex: 50, opacity: 0.9, width: r.width + 'px', height: r.height + 'px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: parseFloat(getComputedStyle(drag.el).fontSize) * (S.k || 1) + 'px' });
+    Object.assign(drag.ghost.style, { position: 'fixed', pointerEvents: 'none', zIndex: 50, opacity: 0.95, width: r.width + 'px', height: r.height + 'px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: parseFloat(getComputedStyle(drag.el).fontSize) * (S.k || 1) + 'px' });
     document.body.append(drag.ghost);
-    drag.el.style.opacity = 0.25;
+    drag.el.style.opacity = 0;                                  // orijinal görünmez (elemanı gizlemeyiz: dokunma akışı kopmasın)
+    if (drag.kind === 'rack') {
+      markDrops(S.slots[drag.from]);
+      if (S.game?.turn === S.game?.you && S.game?.phase === 'discard') document.querySelector('.pile.br')?.classList.add('drop-pile');
+    }
   }
-  if (drag.on) { drag.ghost.style.left = e.clientX - drag.w / 2 + 'px'; drag.ghost.style.top = e.clientY - drag.h / 2 + 'px'; }
+  if (drag.on) {
+    drag.ghost.style.left = e.clientX - drag.w / 2 + 'px'; drag.ghost.style.top = e.clientY - (e.pointerType === 'touch' ? drag.h * 1.15 : drag.h / 2) + 'px';   // dokunmatikte parmağın üstünde
+    const pt = dropPt(e, drag.h);
+    if (e.pointerType === 'touch') slotHot(pt);
+    if (drag.kind === 'rack') hotRow(pt);
+  }
 };
 const endDrag = (e, drop) => {
-  if (!drag) return;
   const d = drag; drag = null;
-  if (!d.on) return;
-  d.ghost.remove(); S.dragging = false; S.justDragged = true; setTimeout(() => (S.justDragged = false), 80);
-  const el = drop ? document.elementFromPoint(e.clientX, e.clientY) : null;
+  setTimeout(releaseHold, 40);                                  // tıklama olayı bitince bekleyen ekran yenilenir
+  if (!d || !d.on) return;
+  d.ghost.remove(); S.dragging = false; S.justDragged = true; setTimeout(() => (S.justDragged = false), 150);
+  const pt = dropPt(e, d.h);
+  const rowT = drop ? nearest(pt, '.meld-row.drop-ok', 80) : null;
+  const pileEl = document.querySelector('.pile.br'), nearPile = drop && pileEl && distTo(pt, pileEl) <= 110;
+  document.querySelectorAll('.drop-ok,.hot,.drop-pile,.slot-hot').forEach((el) => el.classList.remove('drop-ok', 'hot', 'drop-pile', 'slot-hot'));
+  const el = drop ? document.elementFromPoint(pt.clientX, pt.clientY) : null;
+  if (d.kind === 'draw') {                                                          // çekilen taş bırakılan yuvaya gelir
+    const to = el?.closest('.slot');
+    if (to) { S.pendingSlot = +to.dataset.s; act({ type: 'draw', source: d.source }); } else render();
+    return;
+  }
   const tid = S.slots[d.from], tl = S.game?.hand.find((x) => x.id === tid);
-  const md = el?.closest('[data-owner]');
-  if (md && tl) act({ type: 'addToMeld', ownerSeat: +md.dataset.owner, meldIndex: +md.dataset.idx, tileId: tid });   // pere sürükle: işle
-  else if (el?.closest('.pile.br') && tl) act({ type: 'discard', tileId: tid });           // sağ alttaki atık yeri: taşı at
-  else if ((el?.closest('.t.heap') || el?.closest('.ind')) && tl) {                   // gösterge/yığın: okey ile bitirme
+  const overRack = el?.closest('.rack');
+  if (tl && drop && !overRack && rowT) act({ type: 'addToMeld', ownerSeat: +rowT.dataset.owner, meldIndex: +rowT.dataset.idx, tileId: tid });   // yakındaki uygun pere işle
+  else if (tl && drop && !overRack && nearPile) discardTile(tid);                                                                              // atık yığınına yakın: at
+  else if ((el?.closest('.t.heap') || el?.closest('.ind')) && tl) {                                                                            // gösterge/yığın: okey ile bitirme
     if (isJoker(tl, okeyOf(S.game)) && S.game.hand.length === 1) act({ type: 'discard', tileId: tid });
     else toast('Okeyi sadece elindeki son taş olduğunda göstergeye veya yığına bırakıp bitirebilirsin.');
   } else {
     const to = el?.closest('.slot');
-    if (to) { const k = +to.dataset.s; [S.slots[d.from], S.slots[k]] = [S.slots[k], S.slots[d.from]]; }
+    if (to) {
+      const k = +to.dataset.s;
+      if (e.pointerType === 'touch') insertAt(d.from, k);                                // dokunmatik (iPad): araya sokar
+      else [S.slots[d.from], S.slots[k]] = [S.slots[k], S.slots[d.from]];                // fare: eskisi gibi yer değiştirir
+    }
   }
   render();
 };
@@ -582,8 +905,17 @@ document.onpointercancel = (e) => endDrag(e, false);
 // Görüntülü/sesli sohbet (LiveKit). Video alanı #app dışında; yeniden çizimde bozulmaz.
 let lk, lkRoom;
 const vt = new Map(); // kimlik -> video karesi (masada oyuncunun koltuğuna yerleşir)
+// Videolar sabit bir katmanda (#vg) durur; her çizimde yuvanın konumuna hizalanır, DOM'da taşınmaz (titreme yok).
 function placeVideos() {
-  for (const [id, d] of vt) { const sl = document.getElementById('vs-' + id); if (sl && d.parentNode !== sl) { sl.append(d); d.querySelector('video')?.play?.().catch(() => {}); } }
+  for (const [id, d] of vt) {
+    const sl = document.getElementById('vs-' + id);
+    const show = sl && d.querySelector('video') && !d.classList.contains('off');
+    if (!show) { d.style.display = 'none'; sl?.classList.remove('on'); continue; }
+    sl.classList.add('on');
+    const r = sl.getBoundingClientRect();
+    Object.assign(d.style, { display: 'block', left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+    d.onclick = () => { S.zoomCam = S.zoomCam === id ? null : id; render(); };   // dokun: 4 kat büyüt / küçült
+  }
 }
 async function startCall({ url, token }) {
   try {
@@ -677,7 +1009,7 @@ function endCall() {
 // Sıra süresi çubuğu
 setInterval(() => {
   const g = S.game, bar = $('#bar'), cd = $('#cd');
-  if (cd && S.lobby?.nextAt) cd.textContent = Math.max(0, Math.ceil((S.lobby.nextAt - (Date.now() + S.skew)) / 1000));
+  if (cd && S.lobby?.readyAt) cd.textContent = Math.max(0, Math.ceil((S.lobby.readyAt + (S.lobby.readyGrace || 20000) - (Date.now() + S.skew)) / 1000));
   if (!g || !bar || g.over || g.deadline == null) return;
   const left = Math.max(0, (g.deadline - (Date.now() + S.skew)) / 1000);
   bar.style.width = Math.min(100, (left / S.lobby.turnSeconds) * 100) + '%';
