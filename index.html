@@ -187,7 +187,7 @@ let plan = null; // Yardımlı: assist.mjs yüklenemezse oyun yine açılır
 import('./assist.mjs').then((m) => { plan = m.plan; }).catch(() => {});
 // Adrese ?test eklenirse her sekme ayrı oyuncu olur (tek bilgisayarda 4 kişilik deneme için).
 const store = (location.search || '').includes('test') ? sessionStorage : localStorage;
-const SURUM = 'Sürüm 1.8';   // güncelleme geldi mi diye oda bilgisinde görünür
+const SURUM = 'Sürüm 1.9';   // güncelleme geldi mi diye oda bilgisinde görünür
 const FOOT = `<div class="foot">Üretici: Luna Pazarlama İç ve Dış Ticaret Ltd.Şti.<br>${SURUM}</div>`;
 const $ = (s) => document.querySelector(s);
 const COLORS = ['#c98f00', '#1f6fd1', '#222', '#d32f2f'];
@@ -437,7 +437,7 @@ function overHtml(G, L) {
     if (rounds > 1) head = `OYUN ${L.roundNo}/${rounds} SONUCU`;
     rows = order.map((i, k) => {
       const isW = win.includes(i);
-      return `<div class="rw ${isW ? 'win' : ''}">${av(i, k === 0)}<div class="nm2"><b>${esc(L.names[i])}</b><small>${sg(o.points[i])} puan${rounds > 1 ? ` · toplam ${pairs ? G.teamScores[i % 2] : tot[i]}` : ''}</small></div>${isW ? '<span class="kz">KAZANAN</span>' : ''}<span class="pt">${o.left[i]}<small> sayı</small></span></div>`;
+      return `<div class="rw ${isW ? 'win' : ''}">${av(i, k === 0)}<div class="nm2"><b>${esc(L.names[i])}</b><small>${rounds > 1 ? `toplam ${pairs ? G.teamScores[i % 2] : tot[i]} puan` : ''}</small></div>${isW ? '<span class="kz">KAZANAN</span>' : ''}<span class="pt">${sg(o.points[i])}<small> puan</small></span></div>`;
     }).join('');
   }
   const isHuman = L.seats.map((id, i) => !!id && !L.bots?.[i]), humanN = isHuman.filter(Boolean).length;
