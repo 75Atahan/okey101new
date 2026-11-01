@@ -1,6 +1,6 @@
 // Bilgisayar oyuncu: motorun hamleleriyle insan gibi oynar (çek, aç, ser, işle, at).
 // Sunucu tarafında çalışır; her hamle motorun kurallarından geçer (ceza yemez).
-import { draw, open, lay, addToMeld, discard, cancelDiscardDraw, autoPlay } from './game101.mjs';
+import { draw, open, lay, addToMeld, discard, cancelDiscardDraw, autoPlay, canProcess } from './game101.mjs';
 import { isJoker, canAddToMeld, jokerReplaceIndex, pairReplaceIndex, checkOpen } from './okey101.mjs';
 import { plan } from './assist.mjs';
 
@@ -45,8 +45,11 @@ function worstTile(g, p) {
     list.push({ t, sc });
   }
   list.sort((a, c) => a.sc - c.sc);
-  // Dikkatsiz bot: bazen en kötü taş yerine sıradaki 2-4. taşı atar
-  const pick = list.length > 1 && miss(g, 'sloppyDiscard') ? list[Math.min(list.length - 1, 1 + Math.floor(R(g) * 3))] : list[0];
+  // İşlek taş (masadaki bir pere eklenebilen ya da okey yerine geçebilen) atılmaz; başka taş varsa onu atar
+  const safe = list.filter((x) => !canProcess(g, x.t));
+  const pool = safe.length ? safe : list;
+  // Dikkatsiz bot: bazen en kötü taş yerine sıradaki 2-4. taşı atar (yine işlek olmayanlar arasından)
+  const pick = pool.length > 1 && miss(g, 'sloppyDiscard') ? pool[Math.min(pool.length - 1, 1 + Math.floor(R(g) * 3))] : pool[0];
   return pick?.t ?? hand[0];
 }
 

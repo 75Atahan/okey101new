@@ -1,16 +1,24 @@
 import assert from 'node:assert/strict';
-import { createGame } from './game101.mjs';
+import { createGame, canProcess } from './game101.mjs';
+import { isJoker } from './okey101.mjs';
 import { botStep, BOT_MISS } from './bot.mjs';
 
 // Sabit tohumlu rastgele sayı: test her çalıştırmada aynı sonucu verir
 const seeded = (seed) => () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
 const play = (n, miss) => {
-  let finished = 0;
+  let finished = 0, bad = 0;
   for (let i = 0; i < n; i++) {
     const g = createGame({ katlamali: i % 2 === 0, clock: () => 0, rnd: seeded(i + 7) });
     if (miss) g.botMiss = miss;
     let steps = 0;
-    while (!g.over && steps++ < 3000) botStep(g, g.turn);
+    while (!g.over && steps++ < 3000) {
+      const p = g.turn, before = g.discardPiles[p].length;
+      botStep(g, p);
+      const t = g.discardPiles[p].length > before ? g.discardPiles[p].at(-1) : null;
+      // işlek taş atıldıysa, elde işlek olmayan başka (okey dışı) taş kalmamalıydı
+      if (t && canProcess(g, t) && g.seats[p].hand.some((u) => !isJoker(u, g.okey) && !canProcess(g, u))) bad++;
+    }
+    assert.equal(bad, 0, `oyun ${i}: bot işlek taş attı`);
     assert.ok(g.over, `oyun ${i} bitmedi`);
     assert.ok(g.seats.every((s) => s.penalty === 0), `oyun ${i}: bot ceza yedi`);
     if (g.over.finisher !== null) finished++;

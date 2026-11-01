@@ -191,6 +191,14 @@ body[data-tema=klasik]{--felt:#14532d;--felt2:#0f3d21;--g1:#17592f;--g2:#0b351c;
 .act.giveback{background:linear-gradient(#ff9aaa,#e0314f);color:#fff;text-shadow:0 1px 2px #5a0b22;font-size:17px;padding:9px 14px;box-shadow:0 3px 0 #8f1632,0 8px 14px #0006,inset 0 1px 0 #ffffffaa}
 .act.giveback::after{content:"";position:absolute;left:50%;bottom:-9px;margin-left:-9px;border:9px solid transparent;border-top-color:#e0314f;border-bottom:0}
 .cmp .act{font-size:15px;padding:7px 12px;border-radius:11px}.cmp .act.giveback{font-size:14px;padding:6px 10px}
+.tbar{display:flex;gap:10px;align-items:center;justify-content:flex-end}
+.tbtn{border:0;border-radius:13px;min-width:48px;height:44px;padding:0 12px;background:var(--alt,#2f6f4a);color:#fff;cursor:pointer;
+  font:700 22px/1 ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold",system-ui,sans-serif;box-shadow:0 3px 0 #0006,0 6px 12px #0004,inset 0 1px 0 #ffffff55}
+.tbtn:active{transform:translateY(2px)}
+.tbtn.on{box-shadow:0 0 0 3px #62f59a,0 3px 0 #0006,0 6px 12px #0004}
+.tbtn.txt{font-size:17px;padding:0 18px}
+.chin{height:44px;font-size:17px;border-radius:13px;padding:0 12px;margin:0 8px 0 0;min-width:0}
+.cmp .tbtn{height:36px;min-width:40px;font-size:19px;padding:0 9px;border-radius:11px}.cmp .tbtn.txt{font-size:14px}.cmp .chin{height:36px;font-size:15px}
 .foot{text-align:center;opacity:.65;font-size:12px;line-height:1.5;padding:16px 8px 24px}
 </style></head><body>
 <div id="vg"></div>
@@ -205,7 +213,7 @@ let plan = null; // Yardımlı: assist.mjs yüklenemezse oyun yine açılır
 import('./assist.mjs').then((m) => { plan = m.plan; }).catch(() => {});
 // Adrese ?test eklenirse her sekme ayrı oyuncu olur (tek bilgisayarda 4 kişilik deneme için).
 const store = (location.search || '').includes('test') ? sessionStorage : localStorage;
-const SURUM = 'Sürüm 2.1';   // güncelleme geldi mi diye oda bilgisinde görünür
+const SURUM = 'Sürüm 2.2';   // güncelleme geldi mi diye oda bilgisinde görünür
 const FOOT = `<div class="foot">Üretici: Luna Pazarlama İç ve Dış Ticaret Ltd.Şti.<br>${SURUM}</div>`;
 const $ = (s) => document.querySelector(s);
 const COLORS = ['#c98f00', '#1f6fd1', '#222', '#d32f2f'];
@@ -242,6 +250,9 @@ function on(m) {
       let hear = false;
       m.game.others.forEach((o, i) => { const id = o.lastDiscard?.id; if (id !== S.seen[i]) { S.fresh[i] = true; if (id != null && !firstState) hear = true; S.seen[i] = id; } });
       if (hear) clack();                                                          // biri taş attı
+      const mine = !m.game.over && m.game.turn === m.game.you;                    // sıra sana geçti: farklı bir ses
+      if (mine && !S.wasMine) chime();
+      S.wasMine = mine;
       const pn = m.game.penaltyNote;                                              // ceza bildirimi (okey atma, hatalı açış)
       if (pn && pn.seq !== S.penSeq) {
         if (S.penSeq !== undefined && !(pn.seat === m.game.you && /açış/.test(pn.why))) toast(`${m.lobby.names[pn.seat] ?? 'Oyuncu'}: ${pn.why} (+101 ceza)`);
@@ -363,19 +374,19 @@ const views = {
     const CH = clothH / 13, CW = cmp ? Math.min(28.46, CH * 0.8) : 28.46, sq = 13 * CW, cx = cmp ? 96 + (740 - 2 * sq) / 2 : 96;
     const px = cmp ? 946 + (170 - 6 * CW) / 2 : 946, vars = `--cw:${CW}px;--ch:${CH}px`;
     const P = cmp ? {
-      info: [8, 6, 420, 24], chat: [895, 4, 375, 24], btns: [895, 30, 375, 26], top: [440, 2, 400, 56], left: [2, 96, 56, 230], right: [1224, 96, 54, 130],
+      info: [8, 6, 420, 24], chat: [100, meY + 10, 336, 36], btns: [890, 2, 382, 40], top: [440, 2, 400, 54], left: [2, 96, 56, 230], right: [1222, 96, 56, 230],
       tl: [28, 32], tr: [1194, 32], bl: [28, meY], br: [1194, meY], pz: [50, 60], pc: 'c2', mz: 'm2',
-      b1: [4, 330, 92, 26], b2: [1136, 96, 84, 26], tags: [846, 62, 90, 120], ind: [862, 188, 52, 68], heap: [862, 262, 52, 68],
+      b1: [4, 330, 92, 26], b2: [1184, 330, 92, 26], tags: [846, 62, 90, 120], ind: [862, 188, 52, 68], heap: [862, 262, 52, 68],
       by: [230, 262, 294, 326, 358, 390], bh: [28, 28, 28, 28, 28, 24], act: [846, meY - 52, 340, 46], gb: [2, meY - 46, 116, 40],
       me: [440, meY, 400, meH], tot: [860, meY + 10, 210, 32], rack: [102, rackY, 1076, R], sl: [14, rackY + 8, 80, R - 16], sr: [1186, rackY + 8, 80, R - 16],
-      ci: { left: [12, 362, 40, 40], right: [1160, 126, 40, 40], top: [848, 8, 40, 40], me: [394, meY + 6, 40, 40] },
+      ci: { left: [12, 362, 40, 40], right: [1228, 362, 40, 40], top: [848, 8, 40, 40] },
     } : {
-      info: [40, 10, 430, 28], chat: [480, 6, 380, 34], btns: [870, 6, 400, 34], top: [440, 50, 400, 84], left: [2, 150, 64, 270], right: [1216, 136, 62, 186],
+      info: [40, 10, 430, 28], chat: [100, 654, 336, 44], btns: [560, 4, 712, 46], top: [440, 50, 400, 88], left: [2, 150, 64, 270], right: [1214, 150, 64, 270],
       tl: [28, 61], tr: [1194, 61], bl: [28, 612], br: [1194, 612], pz: [57, 74], pc: 'c', mz: 'm',
-      b1: [4, 426, 92, 30], b2: [1136, 136, 76, 28], tags: [846, 140, 90, 176], ind: [858, 330, 66, 86], heap: [858, 432, 66, 86],
+      b1: [4, 426, 92, 30], b2: [1184, 426, 92, 30], tags: [846, 140, 90, 176], ind: [858, 330, 66, 86], heap: [858, 432, 66, 86],
       by: [322, 372, 422, 472, 522, 572], bh: [44, 44, 44, 44, 44, 32], act: [846, 560, 340, 94], gb: [2, 558, 116, 46],
-      me: [440, 606, 400, 96], tot: [860, 662, 210, 36], rack: [102, 706, 1076, 182], sl: [14, 730, 80, 130], sr: [1186, 730, 80, 130],
-      ci: { left: [10, 464, 44, 44], right: [1150, 172, 44, 44], top: [848, 56, 44, 44], me: [392, 616, 44, 44] },
+      me: [440, 610, 400, 88], tot: [860, 662, 210, 36], rack: [102, 706, 1076, 182], sl: [14, 730, 80, 130], sr: [1186, 730, 80, 130],
+      ci: { left: [10, 464, 44, 44], right: [1226, 464, 44, 44], top: [848, 56, 44, 44] },
     };
     const turnBar = '<div class="trow"><div class="sb"><div id="bar"></div></div><b id="tl"></b></div>';
     const bubble = (uid) => { const b = [...S.chat].reverse().find((c) => c.userId === uid && Date.now() - c.at < 8000); return b ? `<div class="bub">${esc(b.text)}</div>` : ''; };
@@ -398,7 +409,6 @@ const views = {
     const plate = (i, r, pos) => (pos === 'top' ? hbar(i, r, 'top', '50% 0', openedTxt(G.others[i])) : vbar(i, r, pos));
     // Kendi simgen: kamerayı başlatır/açıp kapatır; başkasının simgesi: görüntüsünü 4 kat büyütür
     const camIcon = (i, r) => bx(r, '📷', `camicon ${(i === me ? S.call && camOn : hasVid(i)) ? 'on' : ''}`, '', `data-act="${i === me ? 'mycam' : 'camzoom'}" data-uid="${L.seats[i]}"`);
-    const myCtl = S.call ? bx([P.ci.me[0] - 48, P.ci.me[1], P.ci.me[2], P.ci.me[3]], '🎤', 'camicon on', '', 'data-act="mic"') + bx([P.ci.me[0] - 96, P.ci.me[1], P.ci.me[2], P.ci.me[3]], '✖', 'camicon', '', 'data-act="endcall"') : '';
     const pile = (i, xy, corner) => {
       const d = G.others[i].lastDiscard, take = i === prev && canDraw && d;
       return box(xy[0], xy[1], P.pz[0], P.pz[1], d ? `<span class="${S.fresh[i] ? 'new' : ''}">${tile(d, { okey: ok, z: P.pc, act: take ? 'take' : '' })}</span>` : '', `pile ${corner}`);
@@ -418,11 +428,11 @@ const views = {
     const stg = S.staged.map((g) => { const v = validateMeld(g.map((id) => byId.get(id)), ok); return `<span class="grp ${v.valid || g.length === 2 ? '' : 'bad'}">${g.map((id) => tile(byId.get(id), { z: 'xs', okey: ok })).join('')}</span>`; }).join('');
     return `<div id="stage" class="stage ${cmp ? 'cmp' : ''}">
       ${bx(P.info, `<small>Oda ${L.code} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'} · ${SURUM} · © Luna Pazarlama${L.practice ? ' · antrenman (jetonsuz)' : S.balance != null ? ` · 💰 ${fmt(S.balance)} · masa ${fmt(L.stake)}` : ''}</small>`)}
-      ${bx(P.chat, '<input id="ci" placeholder="Mesaj yaz" maxlength="300" style="flex:1"><button class="btn alt sm" data-act="chat">Gönder</button>', 'flex')}
-      ${bx(P.btns, `<button class="btn alt sm" data-act="tema">🎨</button><button class="btn alt sm" data-act="full">⛶</button><button class="btn alt sm" data-act="mute">${store.mute === '1' ? '🔇' : '🔊'}</button>${G.over ? '' : '<button class="btn alt sm" data-act="quit">Çık</button>'}`, 'flex')}
+      ${bx(P.chat, '<input id="ci" class="chin" placeholder="Mesaj yaz" maxlength="300" style="flex:1"><button class="tbtn txt" data-act="chat">Gönder</button>', 'flex')}
+      ${bx(P.btns, `${S.call ? '<button class="tbtn on" data-act="mic">🎤</button><button class="tbtn" data-act="endcall">✖</button>' : ''}<button class="tbtn ${S.call && camOn ? 'on' : ''}" data-act="mycam" data-uid="${L.seats[me]}">📷</button><button class="tbtn" data-act="tema">🎨</button><button class="tbtn" data-act="full">⛶</button><button class="tbtn" data-act="mute">${store.mute === '1' ? '🔇' : '🔊'}</button>${G.over ? '' : '<button class="tbtn txt" data-act="quit">Çık</button>'}`, 'tbar')}
       ${plate(rel(3), P.left, 'left')}${plate(rel(1), P.right, 'right')}${plate(rel(2), P.top, 'top')}
       ${pile(rel(2), P.tl, 'tl')}${pile(rel(1), P.tr, 'tr')}${pile(rel(3), P.bl, 'bl')}${pile(me, P.br, 'br')}
-      ${camIcon(rel(3), P.ci.left)}${camIcon(rel(1), P.ci.right)}${camIcon(rel(2), P.ci.top)}${camIcon(me, P.ci.me)}${myCtl}
+      ${camIcon(rel(3), P.ci.left)}${camIcon(rel(1), P.ci.right)}${camIcon(rel(2), P.ci.top)}
       ${bx(P.b1, `${G.minMeld}<small> sayı</small>`, 'bdg')}${bx(P.b2, `${G.minPairs}<small> çift</small>`, 'bdg')}
       ${box(cx, clothY, 2 * sq, clothH, `${sqs(sq, 2)}<div class="wm">Luna101</div>${rows}`, 'cloth', vars)}
       ${box(px, clothY, 6 * CW, clothH, `${sqs(6 * CW, 1)}${prs}`, 'cloth', vars)}
@@ -479,6 +489,20 @@ function overHtml(G, L) {
 // Taş sesi (dosyasız, WebAudio). İlk dokunuşta ses açılır; üst çubuktaki 🔊 ile kapatılır.
 let ac;
 function unlockAudio() { try { ac ??= new (globalThis.AudioContext || globalThis.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); } catch {} }
+function chime() {   // sıra sana geçti: iki notalı yumuşak "ding-dong" (taş sesinden farklı)
+  if (store.mute === '1') return;
+  try {
+    unlockAudio(); if (!ac) return;
+    const t0 = ac.currentTime;
+    [[784, 0], [1175, 0.17]].forEach(([f, dt]) => {
+      const g = ac.createGain(), g2 = ac.createGain(), o = ac.createOscillator(), o2 = ac.createOscillator();
+      o.type = 'sine'; o.frequency.value = f; o2.type = 'triangle'; o2.frequency.value = f * 2; g2.gain.value = 0.25;
+      g.gain.setValueAtTime(0.0001, t0 + dt); g.gain.exponentialRampToValueAtTime(0.3, t0 + dt + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + 0.6);
+      o.connect(g); o2.connect(g2); g2.connect(g); g.connect(ac.destination);
+      o.start(t0 + dt); o2.start(t0 + dt); o.stop(t0 + dt + 0.65); o2.stop(t0 + dt + 0.65);
+    });
+  } catch {}
+}
 function clack() {
   if (store.mute === '1') return;
   try {
