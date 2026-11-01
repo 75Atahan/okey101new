@@ -88,6 +88,8 @@ export function createHub({ rooms = createRoomManager(), now = Date.now, rtc = n
         return sendTo(to, { t: 'sig', from: user.id, data: m.data });
       }
 
+      if (m.t === 'ping') return;                              // istemci kalp atışı: Render'ın boşta uyku sayacını sıfırlar
+
       if (m.t === 'rename') {                                  // isim masa kurulan/katılınan ekranda girilir
         const name = String(m.name ?? '').trim().slice(0, 20);
         if (name) { user.name = name; if (user.room) pushState(user.room); }

@@ -6,13 +6,13 @@
 <link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icon-192.png">
 <title>101 Okey</title>
 <style>
-:root{--felt:#14532d;--felt2:#0f3d21;--card:#fffaf0;--gold:#f5c542}
+:root{--felt:#0d7a57;--felt2:#064534;--g1:#22c58a;--g2:#0c8060;--g3:#04382f;--alt:#1f8a63;--card:#fffaf0;--gold:#f5c542}
 *{box-sizing:border-box}
 body{margin:0;background:var(--felt2);color:#fff;font:15px system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 #app{max-width:720px;margin:0 auto;padding:10px}
 button,input,select{font:inherit}
 .btn{background:var(--gold);color:#222;border:0;border-radius:10px;padding:10px 14px;font-weight:600}
-.btn:disabled{opacity:.4}.btn.alt{background:#2f6f4a;color:#fff}
+.btn:disabled{opacity:.4}.btn.alt{background:var(--alt,#2f6f4a);color:#fff}
 .card{background:var(--felt);border-radius:14px;padding:12px;margin:8px 0}
 input,select{padding:10px;border-radius:10px;border:0;width:100%;margin:4px 0;background:#fff;color:#111}
 input[type=checkbox]{width:auto}
@@ -131,7 +131,7 @@ body.inGame{overflow:hidden}
 .rot{position:fixed;top:0;left:0;right:0;z-index:80;background:#f5c542;color:#222;text-align:center;padding:6px;font-weight:700}
 .stage .btn.wide{padding:6px 4px;white-space:nowrap;font-size:14px}.stage.cmp .btn.wide{font-size:12px}
 /* v3: koyu desenli yeşil örtü, 3 boyutlu taş ve ıstaka */
-body{background-color:#08250f;background-image:repeating-linear-gradient(45deg,#ffffff08 0 2px,transparent 2px 24px),repeating-linear-gradient(-45deg,#ffffff08 0 2px,transparent 2px 24px),radial-gradient(ellipse at 50% 38%,#17592f 0%,#0b351c 50%,#051b0b 100%);background-attachment:fixed}
+body{background-color:var(--g3);background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2780%27%20height%3D%2780%27%20viewBox%3D%270%200%2080%2080%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271.4%27%3E%3Cpath%20d%3D%27M40%206L74%2040L40%2074L6%2040Z%27%2F%3E%3Cpath%20d%3D%27M40%2018L62%2040L40%2062L18%2040Z%27%2F%3E%3Ccircle%20cx%3D%2740%27%20cy%3D%2740%27%20r%3D%276%27%2F%3E%3Cpath%20d%3D%27M0%200Q10%2010%200%2020M80%200Q70%2010%2080%2020M0%2060Q10%2070%200%2080M80%2060Q70%2070%2080%2080%27%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%27%23fff%27%20fill-opacity%3D%27.12%27%3E%3Ccircle%20cx%3D%2740%27%20cy%3D%2740%27%20r%3D%272.2%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%270%27%20r%3D%273%27%2F%3E%3Ccircle%20cx%3D%2780%27%20cy%3D%270%27%20r%3D%273%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%2780%27%20r%3D%273%27%2F%3E%3Ccircle%20cx%3D%2780%27%20cy%3D%2780%27%20r%3D%273%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"),radial-gradient(ellipse at 50% 35%,var(--g1) 0%,var(--g2) 52%,var(--g3) 100%);background-size:80px 80px,auto;background-attachment:fixed}
 .t{background:linear-gradient(180deg,#fffef9 0%,#f6efd9 65%,#eadfc2 100%);border:1px solid #dcd2b4;border-bottom:4px solid #b8a97f;border-radius:8px;box-shadow:0 3px 4px #0009,inset 0 1px 0 #fff,inset 0 0 7px #e8dcb9;text-shadow:0 1px 0 #fff8}
 .t.xs{border-bottom-width:2px;border-radius:4px;box-shadow:0 1px 2px #0008,inset 0 1px 0 #fff}
 .t.sel{box-shadow:0 10px 10px #000a,inset 0 1px 0 #fff}
@@ -151,7 +151,7 @@ body{background-color:#08250f;background-image:repeating-linear-gradient(45deg,#
 .stage .vbar .cam{width:48px;height:48px}.stage .np .cam{width:64px;height:64px}
 .stage.cmp .vbar .cam,.stage.cmp .np .cam{width:40px;height:40px;font-size:18px}
 #vg .vt{border-radius:12px}
-.vbar{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 4px;background:linear-gradient(180deg,#143b27,#0d2a1b);border-radius:10px}
+.vbar{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 4px;background:linear-gradient(180deg,var(--felt),var(--felt2));border-radius:10px}
 .vname{writing-mode:vertical-rl;font-weight:700;font-size:16px;flex:1;min-height:0;overflow:hidden;white-space:nowrap}
 .vsub{writing-mode:vertical-rl;font-size:11px;opacity:.85;white-space:nowrap}
 .sb.v{width:40px;margin:0}.tlv{font-size:10px;min-width:0!important}
@@ -173,6 +173,24 @@ body{background-color:#08250f;background-image:repeating-linear-gradient(45deg,#
 .slot.slot-hot{box-shadow:inset 0 0 0 3px #fff,0 0 12px 3px #ffd54f}
 .wm{position:absolute;left:0;top:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font:900 118px/1 system-ui,sans-serif;letter-spacing:6px;color:#fff;opacity:.07;transform:rotate(-8deg);pointer-events:none;-webkit-user-select:none;user-select:none}
 .cmp .wm{font-size:78px}
+body[data-tema=safir]{--felt:#244aa8;--felt2:#0a1a55;--g1:#3d7cff;--g2:#1a3fa8;--g3:#0a1a55;--alt:#3a63c9}
+body[data-tema=yakut]{--felt:#9a2142;--felt2:#4a0a1d;--g1:#e8445f;--g2:#a01e3d;--g3:#4a0a1d;--alt:#bd4560}
+body[data-tema=ametist]{--felt:#62309f;--felt2:#2b0f5c;--g1:#a65eff;--g2:#6a2bc2;--g3:#2b0f5c;--alt:#8355d4}
+body[data-tema=klasik]{--felt:#14532d;--felt2:#0f3d21;--g1:#17592f;--g2:#0b351c;--g3:#051b0b;--alt:#2f6f4a}
+/* Eylem düğmeleri: yalnızca uygun olunca çıkar */
+.act-row{display:flex;flex-wrap:wrap;justify-content:flex-end;align-content:flex-end;gap:8px;pointer-events:none}
+.act-gb{display:flex;align-items:flex-end;justify-content:flex-start;pointer-events:none}
+.act{position:relative;pointer-events:auto;border:0;border-radius:14px;padding:10px 18px;white-space:nowrap;cursor:pointer;
+  font:800 20px/1 ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;letter-spacing:.4px;
+  color:#3a2400;background:linear-gradient(#ffe88a,#f3b21f);text-shadow:0 1px 0 #fff8;
+  box-shadow:0 3px 0 #9a6700,0 8px 14px #0006,inset 0 1px 0 #fffa}
+.act:active{transform:translateY(2px);box-shadow:0 1px 0 #9a6700,0 3px 8px #0006,inset 0 1px 0 #fffa}
+.act.orange{background:linear-gradient(#ffc28a,#ee7a1a);color:#4a2100;box-shadow:0 3px 0 #9a4a00,0 8px 14px #0006,inset 0 1px 0 #fffa}
+.act.green{background:linear-gradient(#8af5b0,#1fb85a);color:#04331a;box-shadow:0 3px 0 #0b7a38,0 8px 14px #0006,inset 0 1px 0 #fffa}
+.act.blue{background:linear-gradient(#a9cbff,#4a82e6);color:#08224f;box-shadow:0 3px 0 #1f4fa3,0 8px 14px #0006,inset 0 1px 0 #fffa}
+.act.giveback{background:linear-gradient(#ff9aaa,#e0314f);color:#fff;text-shadow:0 1px 2px #5a0b22;font-size:17px;padding:9px 14px;box-shadow:0 3px 0 #8f1632,0 8px 14px #0006,inset 0 1px 0 #ffffffaa}
+.act.giveback::after{content:"";position:absolute;left:50%;bottom:-9px;margin-left:-9px;border:9px solid transparent;border-top-color:#e0314f;border-bottom:0}
+.cmp .act{font-size:15px;padding:7px 12px;border-radius:11px}.cmp .act.giveback{font-size:14px;padding:6px 10px}
 .foot{text-align:center;opacity:.65;font-size:12px;line-height:1.5;padding:16px 8px 24px}
 </style></head><body>
 <div id="vg"></div>
@@ -187,7 +205,7 @@ let plan = null; // Yardımlı: assist.mjs yüklenemezse oyun yine açılır
 import('./assist.mjs').then((m) => { plan = m.plan; }).catch(() => {});
 // Adrese ?test eklenirse her sekme ayrı oyuncu olur (tek bilgisayarda 4 kişilik deneme için).
 const store = (location.search || '').includes('test') ? sessionStorage : localStorage;
-const SURUM = 'Sürüm 1.9';   // güncelleme geldi mi diye oda bilgisinde görünür
+const SURUM = 'Sürüm 2.1';   // güncelleme geldi mi diye oda bilgisinde görünür
 const FOOT = `<div class="foot">Üretici: Luna Pazarlama İç ve Dış Ticaret Ltd.Şti.<br>${SURUM}</div>`;
 const $ = (s) => document.querySelector(s);
 const COLORS = ['#c98f00', '#1f6fd1', '#222', '#d32f2f'];
@@ -198,11 +216,13 @@ let ws, toastTimer;
 
 function connect() {
   ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host);
+  clearTimeout(S.wakeT); S.wakeT = setTimeout(() => { if (!S.me) { S.waking = true; render(); } }, 3000);   // 3 sn'de bağlanamazsa: sunucu uyanıyor bilgisi
   ws.onopen = () => send({ t: 'hello', name: store.name, token: store.token });
   ws.onmessage = (e) => on(JSON.parse(e.data));
   ws.onclose = () => { S.off = true; render(); setTimeout(connect, 1500); };
 }
 const send = (o) => ws?.readyState === 1 && ws.send(JSON.stringify(o));
+setInterval(() => send({ t: 'ping' }), 240000);   // sayfa açıkken 4 dakikada bir sunucuya mesaj: ücretsiz sunucu uyumasın
 const act = (action) => send({ t: 'act', action });
 function toast(m) {
   const el = $('#toast'); el.textContent = m; el.style.display = 'block';
@@ -210,7 +230,7 @@ function toast(m) {
 }
 
 function on(m) {
-  if (m.t === 'welcome') { store.token = m.token; store.name = m.name; S.me = m.userId; S.off = false; S.balance = m.balance; const q = new URLSearchParams(location.search).get('oda'); if (q && !m.room && !S.pending) send({ t: 'join', code: q }); if (S.pending) { const f = S.pending; S.pending = null; setTimeout(f, 0); } }
+  if (m.t === 'welcome') { S.waking = false; store.token = m.token; store.name = m.name; S.me = m.userId; S.off = false; S.balance = m.balance; const q = new URLSearchParams(location.search).get('oda'); if (q && !m.room && !S.pending) send({ t: 'join', code: q }); if (S.pending) { const f = S.pending; S.pending = null; setTimeout(f, 0); } }
   else if (m.t === 'state') {
     const wasOver = S.game ? !!S.game.over : true;   // ilk yükleme/yeniden bağlanmada kutlama yapma
     S.lobby = m.lobby; S.game = m.game; if (m.balance != null) S.balance = m.balance;
@@ -329,6 +349,14 @@ const views = {
       const ms = G.others.flatMap((o) => o.melds);
       for (const t of G.hand) if (!stagedIds.has(t.id) && !isJoker(t, ok) && ms.some((m) => (m.length >= 3 ? jokerReplaceIndex(m, t, ok) >= 0 || canAddToMeld(m, t, ok) : pairReplaceIndex(m, t, ok) >= 0))) fitSet.add(t.id);
     }
+    // Eylem düğmeleri yalnızca uygun olduğunda, ıstakanın hemen üstünde çıkar (At düğmesi kalktı: çift dokun ya da sürükle)
+    const canProc = canAct && myO.opened && G.hand.length > 1 && G.hand.some((t) => fitSet.has(t.id) && !isJoker(t, ok) && !stagedIds.has(t.id));
+    const acts = [
+      canAct && canS && ['gold', 'seriac', myO.opened ? 'Seri ser' : 'Seri aç'],
+      canAct && canC && ['orange', 'ciftac', myO.opened ? 'Çift ser' : 'Çift aç'],
+      canProc && ['green', 'isle', 'Taşları işle'],
+      S.staged.length > 0 && ['blue', 'unstage', 'Geri topla'],
+    ].filter(Boolean);
     // Yerleşim (sahne 1280 x H): normal (iPad) ve sıkışık (telefon yan / geniş ekran)
     const R = cmp ? 150 : 182, rackY = cmp ? H - R - 2 : 706, meH = cmp ? 54 : 96, meY = cmp ? rackY - meH - 4 : 606;
     const clothY = cmp ? 62 : 140, clothH = cmp ? meY - clothY - 4 : 463;
@@ -338,14 +366,14 @@ const views = {
       info: [8, 6, 420, 24], chat: [895, 4, 375, 24], btns: [895, 30, 375, 26], top: [440, 2, 400, 56], left: [2, 96, 56, 230], right: [1224, 96, 54, 130],
       tl: [28, 32], tr: [1194, 32], bl: [28, meY], br: [1194, meY], pz: [50, 60], pc: 'c2', mz: 'm2',
       b1: [4, 330, 92, 26], b2: [1136, 96, 84, 26], tags: [846, 62, 90, 120], ind: [862, 188, 52, 68], heap: [862, 262, 52, 68],
-      by: [230, 262, 294, 326, 358, 390], bh: [28, 28, 28, 28, 28, 24],
+      by: [230, 262, 294, 326, 358, 390], bh: [28, 28, 28, 28, 28, 24], act: [846, meY - 52, 340, 46], gb: [2, meY - 46, 116, 40],
       me: [440, meY, 400, meH], tot: [860, meY + 10, 210, 32], rack: [102, rackY, 1076, R], sl: [14, rackY + 8, 80, R - 16], sr: [1186, rackY + 8, 80, R - 16],
       ci: { left: [12, 362, 40, 40], right: [1160, 126, 40, 40], top: [848, 8, 40, 40], me: [394, meY + 6, 40, 40] },
     } : {
       info: [40, 10, 430, 28], chat: [480, 6, 380, 34], btns: [870, 6, 400, 34], top: [440, 50, 400, 84], left: [2, 150, 64, 270], right: [1216, 136, 62, 186],
       tl: [28, 61], tr: [1194, 61], bl: [28, 612], br: [1194, 612], pz: [57, 74], pc: 'c', mz: 'm',
       b1: [4, 426, 92, 30], b2: [1136, 136, 76, 28], tags: [846, 140, 90, 176], ind: [858, 330, 66, 86], heap: [858, 432, 66, 86],
-      by: [322, 372, 422, 472, 522, 572], bh: [44, 44, 44, 44, 44, 32],
+      by: [322, 372, 422, 472, 522, 572], bh: [44, 44, 44, 44, 44, 32], act: [846, 560, 340, 94], gb: [2, 558, 116, 46],
       me: [440, 606, 400, 96], tot: [860, 662, 210, 36], rack: [102, 706, 1076, 182], sl: [14, 730, 80, 130], sr: [1186, 730, 80, 130],
       ci: { left: [10, 464, 44, 44], right: [1150, 172, 44, 44], top: [848, 56, 44, 44], me: [392, 616, 44, 44] },
     };
@@ -391,7 +419,7 @@ const views = {
     return `<div id="stage" class="stage ${cmp ? 'cmp' : ''}">
       ${bx(P.info, `<small>Oda ${L.code} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'} · ${SURUM} · © Luna Pazarlama${L.practice ? ' · antrenman (jetonsuz)' : S.balance != null ? ` · 💰 ${fmt(S.balance)} · masa ${fmt(L.stake)}` : ''}</small>`)}
       ${bx(P.chat, '<input id="ci" placeholder="Mesaj yaz" maxlength="300" style="flex:1"><button class="btn alt sm" data-act="chat">Gönder</button>', 'flex')}
-      ${bx(P.btns, `<button class="btn alt sm" data-act="full">⛶</button><button class="btn alt sm" data-act="mute">${store.mute === '1' ? '🔇' : '🔊'}</button>${G.over ? '' : '<button class="btn alt sm" data-act="quit">Çık</button>'}`, 'flex')}
+      ${bx(P.btns, `<button class="btn alt sm" data-act="tema">🎨</button><button class="btn alt sm" data-act="full">⛶</button><button class="btn alt sm" data-act="mute">${store.mute === '1' ? '🔇' : '🔊'}</button>${G.over ? '' : '<button class="btn alt sm" data-act="quit">Çık</button>'}`, 'flex')}
       ${plate(rel(3), P.left, 'left')}${plate(rel(1), P.right, 'right')}${plate(rel(2), P.top, 'top')}
       ${pile(rel(2), P.tl, 'tl')}${pile(rel(1), P.tr, 'tr')}${pile(rel(3), P.bl, 'bl')}${pile(me, P.br, 'br')}
       ${camIcon(rel(3), P.ci.left)}${camIcon(rel(1), P.ci.right)}${camIcon(rel(2), P.ci.top)}${camIcon(me, P.ci.me)}${myCtl}
@@ -401,9 +429,8 @@ const views = {
       ${bx(P.tags, `<div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag g">Yardımlı</div><div class="tag ${L.katlamali ? 'r' : ''}">${L.katlamali ? 'Katlamalı' : 'Katlamasız'}</div><div class="tag">El ${L.roundNo || 1}/${L.rounds || 1}</div>`)}
       ${bx(P.ind, `<span class="ind">${tile(G.indicator, { okey: ok, z: P.mz })}</span>`)}
       ${bx(P.heap, `<button class="t heap ${canDraw ? 'go' : ''}" data-act="pile" ${canDraw ? '' : 'disabled'}><span>${G.pileCount}</span></button>`)}
-      ${btn(0, canS ? '' : 'dim', 'seriac', 'Seri aç', canAct)}${btn(1, canC ? '' : 'dim', 'ciftac', 'Çift aç', canAct)}
-      ${btn(2, 'alt', 'unstage', 'Geri topla', S.staged.length > 0)}${btn(3, 'alt', 'isle', 'Taşları işle', canAct && myO.opened)}
-      ${btn(4, '', 'discard', 'At', canAct)}${btn(5, 'alt', 'cancel', 'Atığı geri ver', myTurn && G.mustUse != null)}
+      ${acts.length ? bx(P.act, acts.map(([c, a, t]) => `<button class="act ${c}" data-act="${a}">${t}</button>`).join(''), 'act-row') : ''}
+      ${myTurn && G.mustUse != null ? bx(P.gb, '<button class="act giveback" data-act="cancel">↩ Geri bırak</button>', 'act-gb') : ''}
       ${hbar(me, P.me, 'myplate', '50% 100%', hint)}
       ${bx(P.tot, totTxt, `tot ${myO.opened ? '' : enough ? 'ok' : 'bad'}`)}
       ${bx(P.sl, `<button class="side" data-act="cift"><span class="mcs"><i>5</i><i>5</i></span>Çift<br>diz</button>`)}
@@ -514,7 +541,7 @@ function render() {
   const ci = $('#ci'), v = ci?.value, foc = ci && document.activeElement === ci;
   const keep = ['#name', '#code', '#mode', '#rounds', '#sec', '#bots'].map((q) => [q, $(q)?.value]), katV = $('#kat')?.checked;   // yeniden çizimde yazılanlar kaybolmasın
   const inRoom = S.lobby;
-  let h = S.off ? '<div class="card">Bağlantı koptu, yeniden bağlanılıyor…</div>' : '';
+  let h = S.off ? '<div class="card">Bağlantı koptu, yeniden bağlanılıyor…</div>' : S.waking && !S.me ? '<div class="card">Sunucu uyanıyor… ilk açılışta 30-60 saniye sürebilir, lütfen bekle.</div>' : '';
   h += !S.me || !inRoom ? views.menu() : S.game ? views.table() : views.room(S.lobby);
   if (inGame && typeof innerWidth !== 'undefined' && innerHeight > innerWidth * 1.15) h += '<div class="rot">↻ Daha büyük görmek için telefonu yan çevir</div>';
   $('#app').innerHTML = h;
@@ -709,6 +736,11 @@ const A = {
   },
   stage() { if (S.sel.size) { S.staged.push([...S.sel]); S.sel.clear(); } else toast('Önce taşları seç.'); },
   unstage() { S.staged = []; },
+  tema() {   // masa rengi: sırayla değişir ve hatırlanır
+    const T = ['zumrut', 'safir', 'yakut', 'ametist', 'klasik'], AD = { zumrut: 'Zümrüt', safir: 'Safir', yakut: 'Yakut', ametist: 'Ametist', klasik: 'Klasik' };
+    const n = T[(T.indexOf(document.body.dataset.tema || 'zumrut') + 1) % T.length];
+    document.body.dataset.tema = n; store.tema = n; toast('Masa rengi: ' + AD[n]);
+  },
   // Aç / Yere ser: elle gruplanmış (Per yap) taşlar varsa onları, yoksa Yardımlı planını yere açar
   open() {
     const G = S.game;
@@ -1011,5 +1043,6 @@ setInterval(() => {
   $('#tl').textContent = Math.ceil(left) + ' sn';
 }, 250);
 
+document.body.dataset.tema = store.tema || 'zumrut';
 if (store.token) connect(); else render();
 </script></body></html>

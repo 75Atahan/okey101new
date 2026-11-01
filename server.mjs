@@ -31,6 +31,7 @@ const FILES = {
   '/icon-512.png': ['icon-512.png', 'image/png'],
 };
 const server = http.createServer(async (req, res) => {
+  if (req.url.split('?')[0] === '/health') { res.writeHead(200, { 'content-type': 'text/plain', 'cache-control': 'no-store' }); return res.end('ok'); }
   const f = FILES[req.url.split('?')[0]];
   if (!f) { res.writeHead(404); return res.end('Bulunamadı'); }
   try {
