@@ -215,10 +215,10 @@ let plan = null; // Yardımlı: assist.mjs yüklenemezse oyun yine açılır
 import('./assist.mjs').then((m) => { plan = m.plan; }).catch(() => {});
 // Adrese ?test eklenirse her sekme ayrı oyuncu olur (tek bilgisayarda 4 kişilik deneme için).
 const store = (location.search || '').includes('test') ? sessionStorage : localStorage;
-const SURUM = 'Sürüm 2.3';
+const SURUM = 'Sürüm 2.5';
 // Telif koruması: oyun yalnızca resmî adreslerde çalışır; kopyalanıp başka sitede açılırsa uyarı gösterir (ve sunucu da bağlantıyı reddeder).
-const IZINLI = ['luna101.com.tr', 'www.luna101.com.tr', 'okey101new.onrender.com', 'localhost', '127.0.0.1'];
-if (location.protocol !== 'file:' && !IZINLI.includes(location.hostname) && !/^\d{1,3}(\.\d{1,3}){3}$/.test(location.hostname)) {
+const IZINLI = ['luna101.com.tr', 'www.luna101.com.tr', 'okey101new.onrender.com', 'okey101new-iiz3.onrender.com', 'localhost', '127.0.0.1'];
+if (location.protocol !== 'file:' && !IZINLI.includes(location.hostname) && !location.hostname.endsWith('.onrender.com') && !/^\d{1,3}(\.\d{1,3}){3}$/.test(location.hostname)) {
   document.body.innerHTML = '<div style="padding:40px 20px;text-align:center;font:600 20px/1.6 system-ui,sans-serif">Bu oyun yalnızca <a style="color:#ffd54f" href="https://luna101.com.tr">luna101.com.tr</a> adresinde oynanır.<br><small style="font-weight:400;opacity:.7">© Luna Pazarlama İç ve Dış Ticaret Ltd.Şti.</small></div>';
   throw new Error('izinsiz alan adı');
 }
