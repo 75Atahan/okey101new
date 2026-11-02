@@ -1,4 +1,5 @@
 // WebSocket sunucusu. Çalıştır: npm install && npm start
+import { originOk } from './origin.mjs';
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { WebSocketServer } from 'ws';
@@ -43,7 +44,7 @@ const server = http.createServer(async (req, res) => {
 const wss = new WebSocketServer({ server, maxPayload: 20000 });
 
 wss.on('connection', (ws, req) => {
-  if (ALLOWED.length && !ALLOWED.includes(req.headers.origin)) return ws.close(1008, 'origin');
+  if (!originOk(req.headers.origin, req.headers.host, ALLOWED)) return ws.close(1008, 'origin');   // başka sitedeki kopya arayüz bağlanamaz
   ws.isAlive = true;
   ws.on('pong', () => (ws.isAlive = true));
   const conn = hub.connect((data) => ws.readyState === ws.OPEN && ws.send(data));
