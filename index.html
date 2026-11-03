@@ -201,6 +201,9 @@ body[data-tema=klasik]{--felt:#14532d;--felt2:#0f3d21;--g1:#17592f;--g2:#0b351c;
 .tbtn.txt{font-size:17px;padding:0 18px}
 .chin{height:44px;font-size:17px;border-radius:13px;padding:0 12px;margin:0 8px 0 0;min-width:0}
 .cmp .tbtn{height:36px;min-width:40px;font-size:19px;padding:0 9px;border-radius:11px}.cmp .tbtn.txt{font-size:14px}.cmp .chin{height:36px;font-size:15px}
+.okeytable{border-radius:22px;background:radial-gradient(ellipse at 50% 38%,var(--g2) 0%,var(--g3) 100%);box-shadow:inset 0 0 0 4px #ffffff22,inset 0 0 70px #0008,0 6px 20px #0006;outline:3px solid #ffffff2a;outline-offset:-14px}
+.t.win{box-shadow:0 0 0 3px #ffd54f,0 0 18px 6px #ffb300aa;animation:winpulse 1s ease-in-out infinite alternate}
+@keyframes winpulse{from{box-shadow:0 0 0 3px #ffd54f,0 0 10px 2px #ffb30088}to{box-shadow:0 0 0 3px #fff3b0,0 0 24px 9px #ffb300cc}}
 .foot{text-align:center;opacity:.65;font-size:12px;line-height:1.5;padding:16px 8px 24px}
 </style></head><body>
 <div id="vg"></div>
@@ -211,11 +214,12 @@ setTimeout(() => { if (!document.getElementById('app').innerHTML.trim()) showErr
 </script>
 <script type="module" onerror="showErr()">
 import { validateMeld, checkOpen, isJoker, isPair, canAddToMeld, layoutMeld, handPenalty, jokerReplaceIndex, pairReplaceIndex } from './okey101.mjs';
+import { finishTiles } from './okeyrules.mjs';
 let plan = null; // Yardımlı: assist.mjs yüklenemezse oyun yine açılır
 import('./assist.mjs').then((m) => { plan = m.plan; }).catch(() => {});
 // Adrese ?test eklenirse her sekme ayrı oyuncu olur (tek bilgisayarda 4 kişilik deneme için).
 const store = (location.search || '').includes('test') ? sessionStorage : localStorage;
-const SURUM = 'Sürüm 2.5';
+const SURUM = 'Sürüm 2.6';
 // Telif koruması: oyun yalnızca resmî adreslerde çalışır; kopyalanıp başka sitede açılırsa uyarı gösterir (ve sunucu da bağlantıyı reddeder).
 const IZINLI = ['luna101.com.tr', 'www.luna101.com.tr', 'okey101new.onrender.com', 'okey101new-iiz3.onrender.com', 'localhost', '127.0.0.1'];
 if (location.protocol !== 'file:' && !IZINLI.includes(location.hostname) && !location.hostname.endsWith('.onrender.com') && !/^\d{1,3}(\.\d{1,3}){3}$/.test(location.hostname)) {
@@ -293,11 +297,12 @@ function on(m) {
   render();
 }
 
+const gt = (L) => (L.kind === 'okey' ? 'Okey' : L.katlamali ? 'Katlamalı' : 'Katlamasız');   // oyun türü / katlamalı etiketi
 const okeyOf = (g) => ({ color: g.indicator.color, num: (g.indicator.num % 13) + 1 });
 const tile = (t, o = {}) => {
   const j = o.okey && isJoker(t, o.okey);
   const face = t.fake ? '🍀' : j ? '' : t.num; // okey boş taş, sahte okey yonca
-  const cls = ['t', o.z, o.s && 's', o.sel && 'sel', j && 'joker', o.fit && 'fit'].filter(Boolean).join(' ');
+  const cls = ['t', o.z, o.s && 's', o.sel && 'sel', j && 'joker', o.fit && 'fit', o.win && 'win'].filter(Boolean).join(' ');
   return `<button class="${cls}"${o.act ? ` data-act="${o.act}" data-id="${t.id}"` : ''} style="color:${t.fake ? '#2e7d32' : COLORS[t.color]}">${face}</button>`;
 };
 function rack(hand) {
@@ -314,24 +319,25 @@ const views = {
     return `<div class="card"><h2>101 Okey</h2><small>Adın (masada böyle görünürsün)</small>
     <input id="name" placeholder="Adını yaz" maxlength="20" autocomplete="nickname" value="${esc(store.name)}"></div>
     <div class="card"><h3>Oda kur</h3>
+    <select id="kind"><option value="okey101">Oyun: 101 Okey</option><option value="okey">Oyun: Okey (klasik)</option></select>
     <select id="mode"><option value="single">Tekli</option><option value="pairs">Eşli</option></select>
-    <label><input type="checkbox" id="kat"> Katlamalı</label>
+    <label><input type="checkbox" id="kat"> Katlamalı (yalnız 101)</label>
     <select id="rounds">${opts(11, (n) => `Oyun sayısı: ${n}`)}</select>
     <select id="sec"><option value="30">30 sn / sıra</option><option value="45" selected>45 sn / sıra</option><option value="60">60 sn / sıra</option></select>
     <select id="bots"><option value="0">Bot yok</option><option value="1">1 bot</option><option value="2">2 bot</option><option value="3">3 bot</option></select>
-    <small>Az kişi varsa boş koltuklara bilgisayar oyuncu (bot) eklenir; yeni gelen oyuncu botun yerine geçer. Birden fazla oyun seçersen puanlar toplanır, en düşük toplam kazanır.</small>
+    <small>Az kişi varsa boş koltuklara bilgisayar oyuncu (bot) eklenir; yeni gelen oyuncu botun yerine geçer. Birden fazla oyun seçersen puanlar toplanır: 101'de en düşük, Okey'de en yüksek toplam kazanır.</small>
     <button class="btn" data-act="create">Oda kur</button> <button class="btn alt" data-act="full">Tam ekran</button></div>
     <div class="card"><h3>Odaya katıl</h3><input id="code" placeholder="Oda kodu" maxlength="6" value="${esc(invite)}"><button class="btn alt" data-act="join">Katıl</button></div>${FOOT}`;
   },
   room: (L) => `<div class="card"><small>Oda kodu</small><h1 style="margin:0;letter-spacing:4px">${L.code}</h1>
-    <p>${L.mode === 'pairs' ? 'Eşli' : 'Tekli'} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'} · ${L.turnSeconds} sn${L.stake > 0 ? ' · masa ' + fmt(L.stake) : ''}</p>
+    <p>${L.kind === 'okey' ? 'Okey' : '101 Okey'} · ${L.mode === 'pairs' ? 'Eşli' : 'Tekli'}${L.kind === 'okey' ? '' : ' · ' + gt(L)} · ${L.turnSeconds} sn${L.stake > 0 ? ' · masa ' + fmt(L.stake) : ''}</p>
     ${L.seats.map((id, i) => `<div class="row" style="gap:6px">${i + 1}. ${id ? esc(L.names[i]) + (L.online[i] ? '' : ' ⚠') : '<small>boş</small>'}${L.bots?.[i] && L.host === S.me ? `<button class="btn alt sm" data-act="rmbot" data-seat="${i}">Çıkar</button>` : ''}</div>`).join('')}
     <div class="row" style="margin-top:10px">${L.seats.includes(null) ? '' : '<button class="btn" data-act="start">Başlat</button>'}
     ${L.host === S.me && L.seats.includes(null) ? '<button class="btn alt" data-act="addbot">Bot ekle</button>' : ''}
     <button class="btn alt" data-act="invite">Davet et</button><button class="btn alt" data-act="full">Tam ekran</button><button class="btn alt" data-act="leave">Ayrıl</button></div>
     ${L.seats.includes(null) ? '<small>4 koltuk dolunca (oyuncu ya da bot) herkes Başlat\'a basabilir.</small>' : ''}</div>${FOOT}`,
   table() {
-    const L = S.lobby, G = S.game, me = G.you, ok = okeyOf(G), myTurn = G.turn === me && !G.over;
+    const L = S.lobby, G = S.game, me = G.you, ok = okeyOf(G), myTurn = G.turn === me && !G.over, isOkey = L.kind === 'okey';
     const n = L.seats.length, prev = (me + n - 1) % n, myO = G.others[me];
     const H = S.H || 890, cmp = H < 800;               // geniş ekran (telefon yan / 16:9): sıkışık yerleşim
     const byId = new Map(G.hand.map((t) => [t.id, t]));
@@ -370,7 +376,11 @@ const views = {
     const enough = rg.total >= G.minMeld || rg.pc >= G.minPairs;
     const mult = myO.openMode === 'pairs' ? 2 : 1;               // çift açanın elde kalan sayıları 2 katı sayılır
     const totTxt = myO.opened ? `Kalan ${handPenalty(G.hand, ok) * mult}${mult > 1 ? ' (×2)' : ''}` : `${rg.total}${rg.pc ? ` · ${rg.pc} çift` : ''}`;
-    const hint = G.over ? 'El bitti' : !myTurn ? `Sıra: ${esc(L.names[G.turn])}` : G.phase === 'draw' ? 'Çek: ortadaki taşa dokun ya da ıstakaya sürükle' : G.mustUse != null ? 'Aldığın atık taşı kullanmalısın' : 'Taş at: çift dokun ya da sağ alttaki atığa sürükle';
+    // Klasik Okey ipucu: atınca eli bitiren taş(lar) parlar
+    const wantWin = isOkey && myTurn && G.phase === 'discard' && G.hand.length === 15, wk = hk + (wantWin ? 'd' : 'x');
+    if (S.winKey !== wk) { S.winKey = wk; S.winIds = wantWin ? new Set(finishTiles(G.hand, ok)) : new Set(); }
+    const winIds = S.winIds;
+    const hint = G.over ? 'El bitti' : !myTurn ? `Sıra: ${esc(L.names[G.turn])}` : G.phase === 'draw' ? 'Çek: ortadaki taşa dokun ya da ıstakaya sürükle' : G.mustUse != null ? 'Aldığın atık taşı kullanmalısın' : winIds.size ? 'Bitirebilirsin! Parlayan taşı at 🎉' : 'Taş at: çift dokun ya da sağ alttaki atığa sürükle';
     // Açtıktan sonra elde kalan taşlardan işlenebilenler (ya da okey değiştirebilenler): kırmızı ince çerçeve
     const fitSet = new Set(G.hand.filter((t) => isJoker(t, ok)).map((t) => t.id));   // okey her zaman kırmızı çerçeveli (atılırsa ceza)
     S.fit = fitSet;
@@ -378,9 +388,10 @@ const views = {
       const ms = G.others.flatMap((o) => o.melds);
       for (const t of G.hand) if (!stagedIds.has(t.id) && !isJoker(t, ok) && ms.some((m) => (m.length >= 3 ? jokerReplaceIndex(m, t, ok) >= 0 || canAddToMeld(m, t, ok) : pairReplaceIndex(m, t, ok) >= 0))) fitSet.add(t.id);
     }
+    if (isOkey) fitSet.clear();                                  // klasik okeyde işlek taş / okey cezası yok
     // Eylem düğmeleri yalnızca uygun olduğunda, ıstakanın hemen üstünde çıkar (At düğmesi kalktı: çift dokun ya da sürükle)
     const canProc = canAct && myO.opened && G.hand.length > 1 && G.hand.some((t) => fitSet.has(t.id) && !isJoker(t, ok) && !stagedIds.has(t.id));
-    const acts = [
+    const acts = isOkey ? [] : [
       canAct && canS && ['gold', 'seriac', myO.opened ? 'Seri ser' : 'Seri aç'],
       canAct && canC && ['orange', 'ciftac', myO.opened ? 'Çift ser' : 'Çift aç'],
       canProc && ['green', 'isle', 'Taşları işle'],
@@ -439,28 +450,27 @@ const views = {
     const btn = (k, cls, a, label, on) => box(1136, P.by[k], 127, P.bh[k], `<button class="btn ${cls} wide" data-act="${a}" ${on ? '' : 'disabled'}>${label}</button>`);
     const rackHtml = S.slots.map((id, k) => {
       const t = id != null && !stagedIds.has(id) ? byId.get(id) : null;
-      return `<div class="slot" data-s="${k}"${t ? '' : ' data-act="slot"'}>${t ? tile(t, { act: 'tile', sel: S.sel.has(id), okey: ok, fit: fitSet.has(id) }) : ''}</div>`;
+      return `<div class="slot" data-s="${k}"${t ? '' : ' data-act="slot"'}>${t ? tile(t, { act: 'tile', sel: S.sel.has(id), okey: ok, fit: fitSet.has(id), win: winIds.has(id) }) : ''}</div>`;
     }).join('');
     const stakeOn = S.stakeAt && S.balance != null && !L.practice && Date.now() - S.stakeAt < 2800;
     const stake = stakeOn ? `<div class="stake" style="animation-delay:-${((Date.now() - S.stakeAt) / 1000).toFixed(2)}s">💰 −${fmt(L.stake)}</div>` : '';
     const stg = S.staged.map((g) => { const v = validateMeld(g.map((id) => byId.get(id)), ok); return `<span class="grp ${v.valid || g.length === 2 ? '' : 'bad'}">${g.map((id) => tile(byId.get(id), { z: 'xs', okey: ok })).join('')}</span>`; }).join('');
     return `<div id="stage" class="stage ${cmp ? 'cmp' : ''}">
-      ${bx(P.info, `<small>Oda ${L.code} · ${L.katlamali ? 'Katlamalı' : 'Katlamasız'} · ${SURUM} · © Luna Pazarlama${L.practice ? ' · antrenman (jetonsuz)' : S.balance != null ? ` · 💰 ${fmt(S.balance)} · masa ${fmt(L.stake)}` : ''}</small>`)}
+      ${bx(P.info, `<small>Oda ${L.code} · ${gt(L)} · ${SURUM} · © Luna Pazarlama${L.practice ? ' · antrenman (jetonsuz)' : S.balance != null ? ` · 💰 ${fmt(S.balance)} · masa ${fmt(L.stake)}` : ''}</small>`)}
       ${bx(P.chat, '<input id="ci" class="chin" placeholder="Mesaj yaz" maxlength="300" style="flex:1"><button class="tbtn txt" data-act="chat">Gönder</button>', 'flex')}
       ${bx(P.btns, `${S.call ? '<button class="tbtn on" data-act="mic">🎤</button><button class="tbtn" data-act="endcall">✖</button>' : ''}<button class="tbtn ${S.call && camOn ? 'on' : ''}" data-act="mycam" data-uid="${L.seats[me]}">📷</button><button class="tbtn" data-act="tema">🎨</button><button class="tbtn" data-act="full">⛶</button><button class="tbtn" data-act="mute">${store.mute === '1' ? '🔇' : '🔊'}</button>${G.over ? '' : '<button class="tbtn txt" data-act="quit">Çık</button>'}`, 'tbar')}
       ${plate(rel(3), P.left, 'left')}${plate(rel(1), P.right, 'right')}${plate(rel(2), P.top, 'top')}
       ${pile(rel(2), P.tl, 'tl')}${pile(rel(1), P.tr, 'tr')}${pile(rel(3), P.bl, 'bl')}${pile(me, P.br, 'br')}
       ${camIcon(rel(3), P.ci.left)}${camIcon(rel(1), P.ci.right)}${camIcon(rel(2), P.ci.top)}
-      ${bx(P.b1, `${G.minMeld}<small> sayı</small>`, 'bdg')}${bx(P.b2, `${G.minPairs}<small> çift</small>`, 'bdg')}
-      ${box(cx, clothY, 2 * sq, clothH, `${sqs(sq, 2)}<div class="wm">Luna101</div>${rows}`, 'cloth', vars)}
-      ${box(px, clothY, 6 * CW, clothH, `${sqs(6 * CW, 1)}${prs}`, 'cloth', vars)}
-      ${bx(P.tags, `<div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag g">Yardımlı</div><div class="tag ${L.katlamali ? 'r' : ''}">${L.katlamali ? 'Katlamalı' : 'Katlamasız'}</div><div class="tag">El ${L.roundNo || 1}/${L.rounds || 1}</div>`)}
+      ${isOkey ? '' : `${bx(P.b1, `${G.minMeld}<small> sayı</small>`, 'bdg')}${bx(P.b2, `${G.minPairs}<small> çift</small>`, 'bdg')}`}
+      ${isOkey ? box(cx, clothY, px + 6 * CW - cx, clothH, '<div class="wm">Luna101</div>', 'okeytable', vars) : `${box(cx, clothY, 2 * sq, clothH, `${sqs(sq, 2)}<div class="wm">Luna101</div>${rows}`, 'cloth', vars)}${box(px, clothY, 6 * CW, clothH, `${sqs(6 * CW, 1)}${prs}`, 'cloth', vars)}`}
+      ${bx(P.tags, isOkey ? `<div class="tag g">Okey</div><div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag">El ${L.roundNo || 1}/${L.rounds || 1}</div>` : `<div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag g">Yardımlı</div><div class="tag ${L.katlamali ? 'r' : ''}">${L.katlamali ? 'Katlamalı' : 'Katlamasız'}</div><div class="tag">El ${L.roundNo || 1}/${L.rounds || 1}</div>`)}
       ${bx(P.ind, `<span class="ind">${tile(G.indicator, { okey: ok, z: P.mz })}</span>`)}
       ${bx(P.heap, `<button class="t heap ${canDraw ? 'go' : ''}" data-act="pile" ${canDraw ? '' : 'disabled'}><span>${G.pileCount}</span></button>`)}
       ${acts.length ? bx(P.act, acts.map(([c, a, t]) => `<button class="act ${c}" data-act="${a}">${t}</button>`).join(''), 'act-row') : ''}
       ${myTurn && G.mustUse != null ? bx(P.gb, '<button class="act giveback" data-act="cancel">↩ Geri bırak</button>', 'act-gb') : ''}
       ${hbar(me, P.me, 'myplate', '50% 100%', hint)}
-      ${bx(P.tot, totTxt, `tot ${myO.opened ? '' : enough ? 'ok' : 'bad'}`)}
+      ${isOkey ? bx(P.tot, `Puan ${L.mode === 'pairs' ? (G.teamScores?.[me % 2] ?? 0) : G.scores[me]}`, 'tot ok') : bx(P.tot, totTxt, `tot ${myO.opened ? '' : enough ? 'ok' : 'bad'}`)}
       ${bx(P.sl, `<button class="side" data-act="cift"><span class="mcs"><i>5</i><i>5</i></span>Çift<br>diz</button>`)}
       ${bx(P.sr, `<button class="side" data-act="seri"><span class="mcs"><i>1</i><i>2</i><i>3</i></span>Seri<br>diz</button>`)}
       ${bx(P.rack, rackHtml + stake, 'rack')}
@@ -478,17 +488,19 @@ function overHtml(G, L) {
   let head = 'OYUN SONUCU', title, rows;
   if (final) {                                                // seçilen oyun sayısı bitti: toplam puanı en düşük kazanır
     const key = (i) => (pairs ? G.teamScores[i % 2] : tot[i]);
-    const order = [...Array(n).keys()].sort((a, b) => key(a) - key(b) || a - b);
+    const hi = L.kind === 'okey' ? -1 : 1;                    // Okey'de en yüksek, 101'de en düşük toplam kazanır
+    const order = [...Array(n).keys()].sort((a, b) => hi * (key(a) - key(b)) || a - b);
     const best = key(order[0]), win = order.filter((i) => key(i) === best);
     head = 'MAÇ SONUCU';
     title = `${win.map((i) => esc(L.names[i])).join(' & ')} kazandı · ${best} puan`;
     rows = order.map((i, k) => `<div class="rw ${win.includes(i) ? 'win' : ''}">${av(i, k === 0)}<div class="nm2"><b>${esc(L.names[i])}</b><small>${rounds} oyun toplamı · son oyun ${sg(o.points[i])}</small></div>${win.includes(i) ? '<span class="kz">KAZANAN</span>' : ''}<span class="pt">${key(i)}<small> puan</small></span></div>`).join('');
   } else {
+    const noWin = L.kind === 'okey' && o.finisher === null;     // yığın bitti, kimse bitirmedi
     const w = o.rank[0];
-    const win = pairs ? [w, (w + 2) % n] : [w];
-    const order = pairs ? [...win, ...o.rank.filter((i) => !win.includes(i))] : o.rank;
-    const what = o.finisher != null ? (o.withOkey ? 'eli okeyle bitirdi' : 'eli bitirdi') : 'en az sayı kaldı';
-    title = `${esc(L.names[w])} ${what}${o.byPairs ? ' · çift açtı' : ''}${o.withOkey && L.katlamali ? ' · okey ×2' : ''}`;
+    const win = noWin ? [] : pairs ? [w, (w + 2) % n] : [w];
+    const order = pairs && !noWin ? [...win, ...o.rank.filter((i) => !win.includes(i))] : o.rank;
+    const what = L.kind === 'okey' ? (o.byPairs ? 'çiftle bitirdi' : 'eli bitirdi') : o.finisher != null ? (o.withOkey ? 'eli okeyle bitirdi' : 'eli bitirdi') : 'en az sayı kaldı';
+    title = noWin ? 'Yığın bitti, kazanan yok' : L.kind === 'okey' ? `${esc(L.names[w])} ${what}${o.withOkey ? ' · okey attı ×2' : ''}${o.byPairs && o.withOkey ? ' · toplam ×4' : o.byPairs ? ' · ×2' : ''}` : `${esc(L.names[w])} ${what}${o.byPairs ? ' · çift açtı' : ''}${o.withOkey && L.katlamali ? ' · okey ×2' : ''}`;
     if (rounds > 1) head = `OYUN ${L.roundNo}/${rounds} SONUCU`;
     rows = order.map((i, k) => {
       const isW = win.includes(i);
@@ -581,7 +593,7 @@ function render() {
   document.body?.classList.toggle('inGame', inGame);
   if (inGame) fit();
   const ci = $('#ci'), v = ci?.value, foc = ci && document.activeElement === ci;
-  const keep = ['#name', '#code', '#mode', '#rounds', '#sec', '#bots'].map((q) => [q, $(q)?.value]), katV = $('#kat')?.checked;   // yeniden çizimde yazılanlar kaybolmasın
+  const keep = ['#name', '#code', '#kind', '#mode', '#rounds', '#sec', '#bots'].map((q) => [q, $(q)?.value]), katV = $('#kat')?.checked;   // yeniden çizimde yazılanlar kaybolmasın
   const inRoom = S.lobby;
   let h = S.off ? '<div class="card">Bağlantı koptu, yeniden bağlanılıyor…</div>' : S.waking && !S.me ? '<div class="card">Sunucu uyanıyor… ilk açılışta 30-60 saniye sürebilir, lütfen bekle.</div>' : '';
   h += !S.me || !inRoom ? views.menu() : S.game ? views.table() : views.room(S.lobby);
@@ -758,7 +770,7 @@ function ensureName(then) {
   return true;
 }
 const A = {
-  create() { if (ensureName(() => A.create())) send({ t: 'createRoom', mode: $('#mode').value, katlamali: $('#kat').checked, turnSeconds: +$('#sec').value, bots: +$('#bots').value, rounds: +$('#rounds').value }); },
+  create() { if (ensureName(() => A.create())) send({ t: 'createRoom', kind: $('#kind').value, mode: $('#mode').value, katlamali: $('#kat').checked, turnSeconds: +$('#sec').value, bots: +$('#bots').value, rounds: +$('#rounds').value }); },
   join() { if (ensureName(() => A.join())) send({ t: 'join', code: $('#code').value }); },
   start() { send({ t: 'start' }); }, leave() { send({ t: 'leave' }); }, next() { send({ t: 'nextRound' }); },
   pile() { act({ type: 'draw', source: 'pile' }); },

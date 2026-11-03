@@ -27,6 +27,7 @@ const FILES = {
   '/': ['index.html', 'text/html; charset=utf-8'],
   '/okey101.mjs': ['okey101.mjs', 'text/javascript; charset=utf-8'],
   '/assist.mjs': ['assist.mjs', 'text/javascript; charset=utf-8'],
+  '/okeyrules.mjs': ['okeyrules.mjs', 'text/javascript; charset=utf-8'],
   '/manifest.webmanifest': ['manifest.webmanifest', 'application/manifest+json; charset=utf-8'],
   '/icon-192.png': ['icon-192.png', 'image/png'],
   '/icon-512.png': ['icon-512.png', 'image/png'],

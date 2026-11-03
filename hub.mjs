@@ -100,7 +100,7 @@ export function createHub({ rooms = createRoomManager(), now = Date.now, rtc = n
       switch (m.t) {
         case 'createRoom':
           if (user.room) return err('Zaten bir odadasın.');
-          r = rooms.createRoom(user.id, { mode: m.mode, katlamali: m.katlamali, turnSeconds: m.turnSeconds, bots: m.bots ?? 0, rounds: m.rounds ?? 1 });
+          r = rooms.createRoom(user.id, { mode: m.mode, katlamali: m.katlamali, turnSeconds: m.turnSeconds, bots: m.bots ?? 0, rounds: m.rounds ?? 1, kind: m.kind ?? 'okey101' });
           if (r.ok) user.room = r.code;
           break;
         case 'join': {

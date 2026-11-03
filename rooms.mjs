@@ -1,10 +1,16 @@
 // Oda yöneticisi: aktarım katmanından (WebSocket vb.) bağımsız, test edilebilir.
-import {
-  createGame, startRound, draw, open, lay, addToMeld, discard, cancelDiscardDraw, viewFor,
-  autoPlay, timedOut,
-} from './game101.mjs';
+import * as G101 from './game101.mjs';
+import * as GOKEY from './okey.mjs';
 import { GAME_STAKE } from './wallet.mjs';
-import { botStep, BOT_MISS } from './bot.mjs';
+import { botStep as bot101, BOT_MISS } from './bot.mjs';
+import { botStep as botOkey, BOT_MISS_OKEY } from './okeybot.mjs';
+
+// Oyun türleri: 101 Okey ve klasik Okey aynı oda yöneticisini kullanır
+const ENGINES = {
+  okey101: { ...G101, botStep: bot101, miss: BOT_MISS },
+  okey: { ...GOKEY, botStep: botOkey, miss: BOT_MISS_OKEY },
+};
+const KINDS = Object.keys(ENGINES);
 
 const MODES = ['single', 'pairs']; // tekli / eşli
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -36,14 +42,17 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
 
   // Oda açılırken seçenekler: mode ('single'|'pairs'), katlamali (true|false)
   function createRoom(hostId, options = {}) {
-    const { mode = 'single', katlamali = false, turnSeconds = 45, bots = 0, rounds = 1 } = options;
+    const { mode = 'single', kind = 'okey101', turnSeconds = 45, bots = 0, rounds = 1 } = options;
+    let { katlamali = false } = options;
+    if (!KINDS.includes(kind)) return fail('Geçersiz oyun türü.');
+    if (kind !== 'okey101') katlamali = false;        // katlamalı yalnızca 101'de var
     if (!MODES.includes(mode)) return fail('Geçersiz oyun modu.');
     if (typeof katlamali !== 'boolean') return fail('Katlamalı seçimi true/false olmalı.');
     if (!Number.isInteger(turnSeconds) || turnSeconds < 15 || turnSeconds > 120)
       return fail('Süre 15-120 saniye arasında olmalı.');
     if (!Number.isInteger(bots) || bots < 0 || bots > 3) return fail('Bot sayısı 0-3 olmalı.');
     if (!Number.isInteger(rounds) || rounds < 1 || rounds > 11) return fail('Oyun sayısı 1-11 arasında olmalı.');
-    const room = { code: newCode(), hostId, mode, katlamali, turnSeconds, rounds, seats: [hostId, null, null, null], game: null, ready: new Set(), readyAt: null, botAt: null };
+    const room = { code: newCode(), hostId, kind, mode, katlamali, turnSeconds, rounds, seats: [hostId, null, null, null], game: null, ready: new Set(), readyAt: null, botAt: null };
     for (let i = 1; i <= bots; i++) room.seats[i] = newBot(room);
     rooms.set(room.code, room);
     return { ok: true, code: room.code };
@@ -57,7 +66,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
   function chargeRound(room) {
     room.settled = false; room.lastPayout = null; room.nextAt = null; room.ready = new Set(); room.readyAt = null; room.botAt = null;
     room.practice = hasBots(room);                          // botlu masa: antrenman, jeton yok (tur başında belirlenir)
-    if (!wallet || room.practice) { room.pot = 0; return null; }
+    if (!wallet || room.practice || room.kind !== 'okey101') { room.pot = 0; return null; }   // jeton yalnızca 101'de
     if (!wallet.charge(room.seats, stakeOf(room))) return 'Bir oyuncunun jetonu yetersiz.';
     room.pot = stakeOf(room) * room.seats.length;
     return null;
@@ -67,7 +76,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
   // Eşlide kazanan takım toplam ödülü paylaşır (normal: havuz = 4 bedel, büyük ödül: 6 bedel).
   function settle(room) {
     const o = room.game?.over;
-    if (!wallet || !o || room.settled) return;
+    if (!wallet || !o || room.settled || room.kind !== 'okey101') return;
     room.settled = true;
     if (room.practice) { room.lastPayout = null; return; }
     const n = room.seats.length, st = stakeOf(room), pay = Array(n).fill(0), w = o.rank[0];
@@ -142,8 +151,9 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
 
   // Yeni maç: puanlar sıfırlanır. Botlar biraz zayıflatılmış oynar (BOT_MISS).
   function newGame(room) {
-    const g = createGame({ players: 4, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, clock, rnd });
-    g.botMiss = BOT_MISS;
+    const E = ENGINES[room.kind];
+    const g = E.createGame({ players: 4, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, clock, rnd });
+    g.botMiss = E.miss;
     return g;
   }
   const matchOver = (room) => !!room.game?.over && room.game.roundNo >= room.rounds;   // seçilen oyun sayısı tamamlandı
@@ -165,16 +175,19 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
     if (!room?.game) return fail('Oyun başlamadı.');
     const p = room.seats.indexOf(userId);
     if (p < 0) return fail('Bu odada değilsin.');
-    const g = room.game;
+    const g = room.game, E = ENGINES[room.kind];
     switch (a?.type) {
-      case 'draw': return draw(g, p, a.source);
+      case 'draw': return E.draw(g, p, a.source);
+      case 'discard': return E.discard(g, p, a.tileId);
+    }
+    if (room.kind !== 'okey101') return fail('Bilinmeyen hamle.');       // per açma/işleme yalnızca 101'de
+    switch (a?.type) {
       case 'open':
       case 'lay':
         if (!Array.isArray(a.groups) || !a.groups.every(Array.isArray)) return fail('Geçersiz per listesi.');
-        return (a.type === 'open' ? open : lay)(g, p, a.groups);
-      case 'addToMeld': return addToMeld(g, p, a.ownerSeat, a.meldIndex, a.tileId);
-      case 'discard': return discard(g, p, a.tileId);
-      case 'cancelDiscardDraw': return cancelDiscardDraw(g, p);
+        return (a.type === 'open' ? G101.open : G101.lay)(g, p, a.groups);
+      case 'addToMeld': return G101.addToMeld(g, p, a.ownerSeat, a.meldIndex, a.tileId);
+      case 'cancelDiscardDraw': return G101.cancelDiscardDraw(g, p);
       default: return fail('Bilinmeyen hamle.');
     }
   }
@@ -199,7 +212,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
     const err = chargeRound(room);
     if (err) return fail(err);
     if (matchOver(room)) room.game = newGame(room);      // maç bitti: yeni maç, puanlar sıfırdan
-    else startRound(room.game);                          // sıradaki oyun: puanlar birikir
+    else ENGINES[room.kind].startRound(room.game);       // sıradaki oyun: puanlar birikir
     return { ok: true, started: true };
   }
 
@@ -211,8 +224,8 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
     if (p < 0) return fail('Bu odada değilsin.');
     return {
       ok: true,
-      lobby: { code, host: room.hostId, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, rounds: room.rounds, roundNo: room.game?.roundNo ?? 0, matchOver: matchOver(room), stake: !wallet || (room.game ? room.practice : hasBots(room)) ? 0 : stakeOf(room), practice: wallet ? (room.game ? !!room.practice : hasBots(room)) : false, bots: room.seats.map(isBot), ready: room.seats.map((id) => !!id && (isBot(id) || room.ready.has(id))), readyAt: room.readyAt, readyGrace: READY_GRACE_MS, lastPayout: room.lastPayout ?? null, nextAt: room.nextAt ?? null, balances: wallet ? room.seats.map((id) => (id && !isBot(id) ? wallet.balance(id) : null)) : null, seats: room.seats, started: !!room.game },
-      game: room.game ? viewFor(room.game, p) : null,
+      lobby: { code, host: room.hostId, kind: room.kind, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, rounds: room.rounds, roundNo: room.game?.roundNo ?? 0, matchOver: matchOver(room), stake: !wallet || (room.game ? room.practice : hasBots(room)) ? 0 : stakeOf(room), practice: wallet ? (room.game ? !!room.practice : hasBots(room)) : false, bots: room.seats.map(isBot), ready: room.seats.map((id) => !!id && (isBot(id) || room.ready.has(id))), readyAt: room.readyAt, readyGrace: READY_GRACE_MS, lastPayout: room.lastPayout ?? null, nextAt: room.nextAt ?? null, balances: wallet ? room.seats.map((id) => (id && !isBot(id) ? wallet.balance(id) : null)) : null, seats: room.seats, started: !!room.game },
+      game: room.game ? ENGINES[room.kind].viewFor(room.game, p) : null,
       balance: wallet ? wallet.balance(userId) : null,
     };
   }
@@ -223,8 +236,9 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
     for (const [code, room] of rooms) {
       const g = room.game;
       if (!g) continue;
-      if (timedOut(g)) {
-        const r = autoPlay(g);
+      const E = ENGINES[room.kind];
+      if (E.timedOut(g)) {
+        const r = E.autoPlay(g);
         settle(room); onOver(room);
         if (r.ok) events.push({ kind: 'timeout', code, seat: r.seat, tileId: r.tileId });
       } else if (g.over && room.readyAt != null && clock() >= room.readyAt + READY_GRACE_MS) {
@@ -234,7 +248,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
         if (room.botAt == null) room.botAt = clock() + 900 + Math.floor(rnd() * 900);
         else if (clock() >= room.botAt) {
           room.botAt = null;
-          botStep(g, g.turn);
+          E.botStep(g, g.turn);
           settle(room);
           events.push({ kind: 'bot', code });
         }
