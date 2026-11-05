@@ -70,7 +70,8 @@ function tryRun(real, jokers) {
   const color = real[0].color;
   if (!real.every((t) => t.color === color)) return null;
   // Dizi yalnızca 1..13 arasında kurulur: 13'ten sonra 1 gelmez (12-13-1 geçersiz).
-  for (let s = 1; s + n - 1 <= 13; s++) {
+  // Okeyin yeri birden fazla olabiliyorsa en yüksek yere konur: oyuncu lehine en çok sayı sayılır.
+  for (let s = 13 - n + 1; s >= 1; s--) {
     const e = s + n - 1;
     const used = new Set();
     let ok = true;
@@ -147,7 +148,7 @@ export function layoutMeld(tiles, okey) {
     return { kind: 'set', num, cells: [...sorted, ...jokers].map((tile) => ({ tile, pos: num })) };
   }
   const n = tiles.length;
-  for (let s = 1; s + n - 1 <= 13; s++) {
+  for (let s = 13 - n + 1; s >= 1; s--) {            // tryRun ile aynı: okey en yüksek geçerli yere
     const e = s + n - 1, slots = new Map();
     let fits = true;
     for (const t of real) {
