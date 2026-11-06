@@ -4,6 +4,7 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { WebSocketServer } from 'ws';
 import { createHub } from './hub.mjs';
+import { createStats } from './stats.mjs';
 import { createRtc } from './rtc.mjs';
 import { createRoomManager } from './rooms.mjs';
 import { createWallet } from './wallet.mjs';
@@ -21,7 +22,9 @@ if (!rtc) console.log('LiveKit ayarlanmadı: dahili (eşler arası) görüntül�
 // Bazı ağlarda doğrudan bağlantı kurulamaz; istenirse TURN sunucusu eklenebilir (TURN_URL, TURN_USER, TURN_PASS).
 const iceServers = [{ urls: 'stun:stun.l.google.com:19302' }];
 if (process.env.TURN_URL) iceServers.push({ urls: process.env.TURN_URL, username: process.env.TURN_USER, credential: process.env.TURN_PASS });
-const hub = createHub({ rooms: createRoomManager({ wallet: process.env.JETONLU === '1' ? createWallet() : null }), rtc, iceServers });
+// Günlük istatistikler: STATS_FILE verilirse (örn. /opt/luna101/data/stats.json) yeniden başlatmada kaybolmaz
+const stats = createStats({ file: process.env.STATS_FILE || null });
+const hub = createHub({ rooms: createRoomManager({ wallet: process.env.JETONLU === '1' ? createWallet() : null, onGame: () => stats.gameStarted() }), stats, rtc, iceServers });
 // Arayüz dosyaları (istemci okey101.mjs'yi önizleme doğrulaması için kullanır)
 const FILES = {
   '/': ['index.html', 'text/html; charset=utf-8'],
@@ -34,6 +37,7 @@ const FILES = {
 };
 const server = http.createServer(async (req, res) => {
   if (req.url.split('?')[0] === '/health') { res.writeHead(200, { 'content-type': 'text/plain', 'cache-control': 'no-store' }); return res.end('ok'); }
+  if (req.url.split('?')[0] === '/stats') { res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); return res.end(JSON.stringify(hub.statsSnapshot())); }
   const f = FILES[req.url.split('?')[0]];
   if (!f) { res.writeHead(404); return res.end('Bulunamadı'); }
   try {
@@ -64,5 +68,7 @@ setInterval(() => {
 }, 30000).unref();
 
 setInterval(hub.tick, 500).unref(); // sıra süresi kontrolü
+setInterval(() => stats.save(), 30000).unref();   // istatistikleri dosyaya yaz
+for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => { stats.save(); process.exit(0); });
 
 server.listen(PORT, () => console.log(`Dinleniyor: ${PORT}`));

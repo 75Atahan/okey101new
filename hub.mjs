@@ -2,12 +2,13 @@
 // WebSocket'ten bağımsızdır: connect(send) bir gönderme fonksiyonu alır.
 import { randomUUID } from 'node:crypto';
 import { createRoomManager } from './rooms.mjs';
+import { createStats } from './stats.mjs';
 
 const MAX_MSG = 16384; // SDP sinyalleri 4 KB'ı aşabilir
 const MAX_CHAT = 300;
 const CHAT_LIMIT = { count: 5, windowMs: 5000 };
 
-export function createHub({ rooms = createRoomManager(), now = Date.now, rtc = null, iceServers = [{ urls: 'stun:stun.l.google.com:19302' }] } = {}) {
+export function createHub({ rooms = createRoomManager(), now = Date.now, stats = createStats({ now }), rtc = null, iceServers = [{ urls: 'stun:stun.l.google.com:19302' }] } = {}) {
   const users = new Map();  // userId -> { id, name, token, conns:Set, room, chatTimes }
   const tokens = new Map(); // token -> userId
 
@@ -50,6 +51,7 @@ export function createHub({ rooms = createRoomManager(), now = Date.now, rtc = n
         tokens.set(user.token, user.id);
       }
       user.conns.add(send);
+      stats.seen(user.id);
       send(JSON.stringify({ t: 'welcome', userId: user.id, token: user.token, name: user.name, room: user.room, balance: rooms.balance(user.id) }));
       if (user.room) pushState(user.room); // yeniden bağlanan oyuncu durumu geri alır
     }
@@ -164,5 +166,14 @@ export function createHub({ rooms = createRoomManager(), now = Date.now, rtc = n
     }
   }
 
-  return { connect, rooms, tick };
+  // İstatistik: şu an çevrimiçi / masada oyunda olan insan sayısı ve günlük toplamlar (botlar sayılmaz)
+  function statsSnapshot() {
+    const online = [...users.values()].filter((u) => u.conns.size > 0);
+    const playingNow = online.filter((u) => u.room && rooms.playing(u.room)).length;
+    stats.sample(online.length);
+    const live = rooms.liveStats();
+    return stats.snapshot({ online: online.length, playing: playingNow, tables: live.tables, playingTables: live.playingTables });
+  }
+
+  return { connect, rooms, tick, statsSnapshot, stats };
 }

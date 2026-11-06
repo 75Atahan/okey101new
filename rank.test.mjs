@@ -4,7 +4,7 @@ import { createGame, discard } from './game101.mjs';
 const T = (color, num) => ({ id: Math.floor(Math.random() * 1e9), color, num, fake: false });
 const okey = { color: 1, num: 5 };
 
-// Sıralama taş adedine değil kalan sayıların toplamına göre; çift açanın sayıları 2 katı sayılır
+// Sıralama taş adedine değil o elde alınan puana (cezalar dahil) göre; çift açanın sayıları 2 katı sayılır
 let g = createGame({ clock: () => 0 }); g.okey = okey;
 g.turn = 0; g.phase = 'discard'; g.seats[0].opened = true; g.seats[0].openMode = 'meld';
 const last = T(3, 2); g.seats[0].hand = [last];
@@ -13,7 +13,7 @@ g.seats[2].hand = [T(0, 1), T(1, 1), T(2, 1)];                                  
 g.seats[3].opened = true; g.seats[3].openMode = 'pairs'; g.seats[3].hand = [T(0, 6)];                        // 1 taş, 6 x2 = 12
 assert.ok(discard(g, 0, last.id).finished);
 assert.deepEqual(g.over.left, [0, 13, 3, 12]);
-assert.deepEqual(g.over.rank, [0, 2, 3, 1]);              // bitiren, sonra en az sayı (3), 12, 13
+assert.deepEqual(g.over.rank, [0, 3, 1, 2]);              // bitiren, sonra en az puan: 12, 13, açmayan 202
 assert.equal(g.over.points[3], 12);                         // çift açanın elde kalan sayısı 2 katı (6 x 2)
 assert.equal(g.over.points[1], 13);
 assert.equal(g.over.points[2], 202);                        // açmayan

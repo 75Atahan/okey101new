@@ -204,6 +204,8 @@ body[data-tema=klasik]{--felt:#14532d;--felt2:#0f3d21;--g1:#17592f;--g2:#0b351c;
 .okeytable{border-radius:22px;background:radial-gradient(ellipse at 50% 38%,var(--g2) 0%,var(--g3) 100%);box-shadow:inset 0 0 0 4px #ffffff22,inset 0 0 70px #0008,0 6px 20px #0006;outline:3px solid #ffffff2a;outline-offset:-14px}
 .t.win{box-shadow:0 0 0 3px #ffd54f,0 0 18px 6px #ffb300aa;animation:winpulse 1s ease-in-out infinite alternate}
 @keyframes winpulse{from{box-shadow:0 0 0 3px #ffd54f,0 0 10px 2px #ffb30088}to{box-shadow:0 0 0 3px #fff3b0,0 0 24px 9px #ffb300cc}}
+.statcard{display:flex;gap:8px;justify-content:space-around;text-align:center;flex-wrap:wrap}
+.stc{display:flex;flex-direction:column;gap:2px;min-width:70px}.stc b{font-size:20px}.stc small{opacity:.75;font-size:12px}
 .foot{text-align:center;opacity:.65;font-size:12px;line-height:1.5;padding:16px 8px 24px}
 </style></head><body>
 <div id="vg"></div>
@@ -219,7 +221,7 @@ let plan = null; // Yardımlı: assist.mjs yüklenemezse oyun yine açılır
 import('./assist.mjs').then((m) => { plan = m.plan; }).catch(() => {});
 // Adrese ?test eklenirse her sekme ayrı oyuncu olur (tek bilgisayarda 4 kişilik deneme için).
 const store = (location.search || '').includes('test') ? sessionStorage : localStorage;
-const SURUM = 'Sürüm 2.6';
+const SURUM = 'Sürüm 2.7';
 // Telif koruması: oyun yalnızca resmî adreslerde çalışır; kopyalanıp başka sitede açılırsa uyarı gösterir (ve sunucu da bağlantıyı reddeder).
 const IZINLI = ['luna101.com.tr', 'www.luna101.com.tr', 'okey101new.onrender.com', 'okey101new-iiz3.onrender.com', 'localhost', '127.0.0.1'];
 if (location.protocol !== 'file:' && !IZINLI.includes(location.hostname) && !location.hostname.endsWith('.onrender.com') && !/^\d{1,3}(\.\d{1,3}){3}$/.test(location.hostname)) {
@@ -297,6 +299,19 @@ function on(m) {
   render();
 }
 
+// Canlı oyuncu bilgisi: çevrimiçi / oynayan / bugünkü toplamlar (sunucudaki /stats'tan gelir)
+const statsHtml = () => {
+  const x = S.stats;
+  if (!x) return '<small style="opacity:.7">Oyuncu bilgisi yükleniyor…</small>';
+  const c = (ic, n, t) => `<div class="stc"><b>${ic} ${n}</b><small>${t}</small></div>`;
+  return c('🟢', x.online, 'çevrimiçi') + c('🎲', x.playing, 'şu an oynuyor') + c('👥', x.today.players, 'bugün giren') + c('🃏', x.today.games, 'bugün oynanan oyun');
+};
+async function pollStats() {
+  try {
+    S.stats = await (await fetch('/stats', { cache: 'no-store' })).json();
+    const el = $('#stats'); if (el) el.innerHTML = statsHtml();
+  } catch { /* sunucu uyanıyor ya da çevrimdışı: bir sonraki denemede */ }
+}
 const gt = (L) => (L.kind === 'okey' ? 'Okey' : L.katlamali ? 'Katlamalı' : 'Katlamasız');   // oyun türü / katlamalı etiketi
 const okeyOf = (g) => ({ color: g.indicator.color, num: (g.indicator.num % 13) + 1 });
 const tile = (t, o = {}) => {
@@ -318,6 +333,7 @@ const views = {
     const opts = (n, f) => Array.from({ length: n }, (_, i) => `<option value="${i + 1}">${f(i + 1)}</option>`).join('');
     return `<div class="card"><h2>101 Okey</h2><small>Adın (masada böyle görünürsün)</small>
     <input id="name" placeholder="Adını yaz" maxlength="20" autocomplete="nickname" value="${esc(store.name)}"></div>
+    <div class="card statcard" id="stats">${statsHtml()}</div>
     <div class="card"><h3>Oda kur</h3>
     <select id="kind"><option value="okey101">Oyun: 101 Okey</option><option value="okey">Oyun: Okey (klasik)</option></select>
     <select id="mode"><option value="single">Tekli</option><option value="pairs">Eşli</option></select>
@@ -499,7 +515,7 @@ function overHtml(G, L) {
     const w = o.rank[0];
     const win = noWin ? [] : pairs ? [w, (w + 2) % n] : [w];
     const order = pairs && !noWin ? [...win, ...o.rank.filter((i) => !win.includes(i))] : o.rank;
-    const what = L.kind === 'okey' ? (o.byPairs ? 'çiftle bitirdi' : 'eli bitirdi') : o.finisher != null ? (o.withOkey ? 'eli okeyle bitirdi' : 'eli bitirdi') : 'en az sayı kaldı';
+    const what = L.kind === 'okey' ? (o.byPairs ? 'çiftle bitirdi' : 'eli bitirdi') : o.finisher != null ? (o.withOkey ? 'eli okeyle bitirdi' : 'eli bitirdi') : 'en az puan aldı';
     title = noWin ? 'Yığın bitti, kazanan yok' : L.kind === 'okey' ? `${esc(L.names[w])} ${what}${o.withOkey ? ' · okey attı ×2' : ''}${o.byPairs && o.withOkey ? ' · toplam ×4' : o.byPairs ? ' · ×2' : ''}` : `${esc(L.names[w])} ${what}${o.byPairs ? ' · çift açtı' : ''}${o.withOkey && L.katlamali ? ' · okey ×2' : ''}`;
     if (rounds > 1) head = `OYUN ${L.roundNo}/${rounds} SONUCU`;
     rows = order.map((i, k) => {
@@ -1098,5 +1114,6 @@ setInterval(() => {
 }, 250);
 
 document.body.dataset.tema = store.tema || 'zumrut';
+pollStats(); setInterval(pollStats, 20000);   // menüdeki canlı oyuncu sayıları
 if (store.token) connect(); else render();
 </script></body></html>

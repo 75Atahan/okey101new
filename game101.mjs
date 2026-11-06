@@ -256,11 +256,11 @@ function endRound(g, finisher, withOkey) {
     roundScore({ opened: s.opened, hand: s.hand, finished: i === finisher, factor: factor * (i !== finisher && s.opened && s.openMode === 'pairs' ? 2 : 1) }, g.okey) + s.penalty
   );
   points.forEach((v, i) => (g.scores[i] += v));
-  // Sıralama: elde en az taş kalan kazanır (bitiren 0 taşla birinci); eşitlikte kalan sayı toplamı düşük olan
   const tilesLeft = g.seats.map((s) => s.hand.length);
   // Elde kalan sayıların toplamı sıralamayı belirler (taş adedi değil); çift açanın sayıları 2 katı sayılır
   const left = g.seats.map((s) => handPenalty(s.hand, g.okey) * (s.opened && s.openMode === 'pairs' ? 2 : 1));
-  const rank = [...left.keys()].sort((a, b) => (finisher === a ? -1 : finisher === b ? 1 : 0) || left[a] - left[b] || tilesLeft[a] - tilesLeft[b] || a - b);
+  // Sıralama: bitiren birinci; sonra cezalar dahil o elde alınan puan (en az puan alan üstte); eşitlikte kalan sayı, taş adedi
+  const rank = [...left.keys()].sort((a, b) => (finisher === a ? -1 : finisher === b ? 1 : 0) || points[a] - points[b] || left[a] - left[b] || tilesLeft[a] - tilesLeft[b] || a - b);
   const bonus = finisher !== null || g.seats[rank[0]].openMode === 'pairs'; // bitiren veya çift açan kazanan: büyük ödül
   g.over = { finisher, withOkey, byPairs, factor, points, rank, tilesLeft, left, bonus };
   g.deadline = null;

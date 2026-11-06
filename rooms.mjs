@@ -18,7 +18,7 @@ const READY_GRACE_MS = 20000; // ilk "Yeni oyuna başla"dan sonra bu kadar bekle
 const BOT_NAMES = ['Ali', 'Ayşe', 'Can', 'Deniz', 'Elif', 'Mert', 'Zeynep', 'Kaan'];
 const fail = (error) => ({ ok: false, error });
 
-export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet = null } = {}) {
+export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet = null, onGame = () => {} } = {}) {
   const rooms = new Map();
   const botNames = new Map(); // bot kimliği -> görünen ad
   let botSeq = 0;
@@ -167,6 +167,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
     const err = chargeRound(room);
     if (err) return fail(err);
     room.game = newGame(room);
+    onGame(room);                                        // sayaç: yeni oyun başladı
     return { ok: true };
   }
 
@@ -213,6 +214,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
     if (err) return fail(err);
     if (matchOver(room)) room.game = newGame(room);      // maç bitti: yeni maç, puanlar sıfırdan
     else ENGINES[room.kind].startRound(room.game);       // sıradaki oyun: puanlar birikir
+    onGame(room);
     return { ok: true, started: true };
   }
 
@@ -259,5 +261,8 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
 
   const balance = (id) => (wallet ? wallet.balance(id) : null);
   const botName = (id) => botNames.get(id) ?? null;
-  return { createRoom, join, leave, start, act, nextRound, addBot, removeBot, view, tick, balance, isBot, botName, _room: get };
+  // Canlı durum: açık masa sayısı ve şu an oyunu süren masalar (istatistik ekranı için)
+  const playing = (code) => { const r = rooms.get(code); return !!(r?.game && !r.game.over); };
+  const liveStats = () => { let tables = 0, playingTables = 0; for (const r of rooms.values()) { tables++; if (r.game && !r.game.over) playingTables++; } return { tables, playingTables }; };
+  return { createRoom, join, leave, start, act, nextRound, addBot, removeBot, view, tick, balance, isBot, botName, playing, liveStats, _room: get };
 }
