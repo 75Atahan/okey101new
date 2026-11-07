@@ -72,6 +72,7 @@ function pairsOf(tiles, okey) {
   }
   const groups = [], singles = [];
   for (const L of by.values()) { while (L.length >= 2) groups.push([L.pop(), L.pop()]); singles.push(...L); }
+  singles.sort((a, b) => faceOf(b, okey).num - faceOf(a, okey).num);      // okey önce en yüksek sayılı tek taşa bağlanır
   while (jokers.length && singles.length) groups.push([jokers.pop(), singles.shift()]);
   while (jokers.length >= 2) groups.push([jokers.pop(), jokers.pop()]);
   return groups;

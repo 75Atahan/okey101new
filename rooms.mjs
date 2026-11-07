@@ -94,15 +94,23 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
   function join(code, userId) {
     const room = get(code);
     if (!room) return fail('Oda bulunamadı.');
-    if (room.game) return fail('Oyun başladı.');
     if (room.seats.includes(userId)) return fail('Zaten odadasın.');
-    let free = room.seats.indexOf(null);
-    if (free < 0) {                                         // dolu ama botlu: yeni oyuncu bir botun yerine geçer
-      free = room.seats.map(isBot).lastIndexOf(true);
-      if (free < 0) return fail('Oda dolu.');
+    // Koltuk sırası: önce kurucunun karşısındaki, sonra sırayla diğerleri. Boş koltuk yoksa botlar aynı sırayla yerini verir
+    // (oyun başlamış olsa da); oyuncu botun elini, sırasını ve puanını devralır.
+    const base = Math.max(0, room.seats.indexOf(room.hostId));
+    const order = [2, 1, 3].map((d) => (base + d) % 4);
+    let free = order.find((i) => !room.seats[i]);
+    if (free === undefined) {
+      free = order.find((i) => isBot(room.seats[i]));
+      if (free === undefined) return fail(room.game ? 'Oda dolu, oyun sürüyor.' : 'Oda dolu.');
       botNames.delete(room.seats[free]);
     }
     room.seats[free] = userId;
+    const g = room.game;
+    if (g && !g.over) {
+      room.botAt = null;                                    // bot düşünme sayacı iptal
+      if (g.turn === free && g.turnMs) g.deadline = clock() + g.turnMs;   // sıra bu koltuktaysa yeni oyuncuya tam süre
+    }
     return { ok: true, seat: free };
   }
 

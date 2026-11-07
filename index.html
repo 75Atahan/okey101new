@@ -221,7 +221,7 @@ let plan = null; // Yardımlı: assist.mjs yüklenemezse oyun yine açılır
 import('./assist.mjs').then((m) => { plan = m.plan; }).catch(() => {});
 // Adrese ?test eklenirse her sekme ayrı oyuncu olur (tek bilgisayarda 4 kişilik deneme için).
 const store = (location.search || '').includes('test') ? sessionStorage : localStorage;
-const SURUM = 'Sürüm 2.7';
+const SURUM = 'Sürüm 2.8';
 // Telif koruması: oyun yalnızca resmî adreslerde çalışır; kopyalanıp başka sitede açılırsa uyarı gösterir (ve sunucu da bağlantıyı reddeder).
 const IZINLI = ['luna101.com.tr', 'www.luna101.com.tr', 'okey101new.onrender.com', 'okey101new-iiz3.onrender.com', 'localhost', '127.0.0.1'];
 if (location.protocol !== 'file:' && !IZINLI.includes(location.hostname) && !location.hostname.endsWith('.onrender.com') && !/^\d{1,3}(\.\d{1,3}){3}$/.test(location.hostname)) {
@@ -474,7 +474,7 @@ const views = {
     return `<div id="stage" class="stage ${cmp ? 'cmp' : ''}">
       ${bx(P.info, `<small>Oda ${L.code} · ${gt(L)} · ${SURUM} · © Luna Pazarlama${L.practice ? ' · antrenman (jetonsuz)' : S.balance != null ? ` · 💰 ${fmt(S.balance)} · masa ${fmt(L.stake)}` : ''}</small>`)}
       ${bx(P.chat, '<input id="ci" class="chin" placeholder="Mesaj yaz" maxlength="300" style="flex:1"><button class="tbtn txt" data-act="chat">Gönder</button>', 'flex')}
-      ${bx(P.btns, `${S.call ? '<button class="tbtn on" data-act="mic">🎤</button><button class="tbtn" data-act="endcall">✖</button>' : ''}<button class="tbtn ${S.call && camOn ? 'on' : ''}" data-act="mycam" data-uid="${L.seats[me]}">📷</button><button class="tbtn" data-act="tema">🎨</button><button class="tbtn" data-act="full">⛶</button><button class="tbtn" data-act="mute">${store.mute === '1' ? '🔇' : '🔊'}</button>${G.over ? '' : '<button class="tbtn txt" data-act="quit">Çık</button>'}`, 'tbar')}
+      ${bx(P.btns, `${S.call ? '<button class="tbtn on" data-act="mic">🎤</button><button class="tbtn" data-act="endcall">✖</button>' : ''}<button class="tbtn ${S.call && camOn ? 'on' : ''}" data-act="mycam" data-uid="${L.seats[me]}">📷</button>${L.bots?.some(Boolean) ? '<button class="tbtn txt" data-act="invite">📨 Davet</button>' : ''}<button class="tbtn" data-act="tema">🎨</button><button class="tbtn" data-act="full">⛶</button><button class="tbtn" data-act="mute">${store.mute === '1' ? '🔇' : '🔊'}</button>${G.over ? '' : '<button class="tbtn txt" data-act="quit">Çık</button>'}`, 'tbar')}
       ${plate(rel(3), P.left, 'left')}${plate(rel(1), P.right, 'right')}${plate(rel(2), P.top, 'top')}
       ${pile(rel(2), P.tl, 'tl')}${pile(rel(1), P.tr, 'tr')}${pile(rel(3), P.bl, 'bl')}${pile(me, P.br, 'br')}
       ${camIcon(rel(3), P.ci.left)}${camIcon(rel(1), P.ci.right)}${camIcon(rel(2), P.ci.top)}
@@ -882,9 +882,12 @@ const A = {
     tileFor(S.me).classList.toggle('off', !camOn);
   },
   endcall() { endCall(); },
-  invite() {
-    const u = location.origin + location.pathname + '?oda=' + S.lobby.code;
-    Promise.resolve(navigator.share ? navigator.share({ url: u, title: '101 Okey' }) : navigator.clipboard.writeText(u).then(() => toast('Davet bağlantısı kopyalandı'))).catch(() => {});
+  invite() {   // davet bağlantısı: açan kişi isim yazıp katılır, botlardan birinin yerine oturur
+    const L = S.lobby, u = location.origin + location.pathname + '?oda=' + L.code;
+    const text = `Luna101'de ${L.kind === 'okey' ? 'Okey' : '101 Okey'} oynayalım! Oda kodu: ${L.code}`;
+    const copy = () => navigator.clipboard.writeText(`${text}\n${u}`).then(() => toast('Davet bağlantısı kopyalandı')).catch(() => toast('Oda kodu: ' + L.code));
+    if (navigator.share) navigator.share({ title: 'Luna101', text, url: u }).catch((e) => { if (e?.name !== 'AbortError') copy(); });
+    else copy();
   },
   chat() { const i = $('#ci'); if (i.value.trim()) { send({ t: 'chat', text: i.value }); i.value = ''; } },
 };

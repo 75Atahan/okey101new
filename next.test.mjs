@@ -8,8 +8,8 @@ let c = Date.parse('2026-10-06T10:00:00Z');
 const wallet = createWallet({ now: () => c });
 const rm = createRoomManager({ wallet, clock: () => c });
 const { code } = rm.createRoom('a', {});
-const U = ['a', 'b', 'c', 'd'];
 ['b', 'c', 'd'].forEach((u) => rm.join(code, u));
+const U = rm._room(code).seats;                       // koltuk -> kullanıcı (ilk gelen kurucunun karşısına oturur)
 assert.ok(rm.start(code, 'd').ok);                    // yönetici olmayan da başlatabilir (oturan herkes)
 
 function finishRound(seat) {                          // verilen koltuktaki oyuncu eli bitirir

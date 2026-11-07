@@ -19,6 +19,8 @@ assert.equal(g.deadline, 60001);
 
 // 2) Çekmeden süre dolarsa: yığından çeker ve çekilen taşı atar
 t = 61000;
+const isOkey = (x) => !x.fake && x.color === g.okey.color && x.num === g.okey.num;   // okey otomatik atılmaz: testi rastgele dağıtıma bağımlı bırakma
+if (isOkey(g.pile[0])) { const k = g.pile.findIndex((x) => !isOkey(x)); [g.pile[0], g.pile[k]] = [g.pile[k], g.pile[0]]; }
 const peek = g.pile[0].id;
 r = autoPlay(g);
 assert.equal(r.tileId, peek);

@@ -50,7 +50,7 @@ assert.deepEqual(bal(rm), [35000, 5000, 5000, 10000]);
 
 ({ rm, code } = mk({ mode: 'pairs' }));         // eşli: kazanan takım 15.000'i paylaşır
 rm.start(code, 'a'); finish(rm, code);
-assert.deepEqual(bal(rm), [15000, 7500, 15000, 7500]);
+assert.deepEqual(bal(rm), [15000, 15000, 7500, 7500]);   // a ve b karşılıklı oturur (ilk gelen kurucunun karşısına) = kazanan takım
 
 ({ rm, code } = mk({}));                        // kimse bitirmezse: en az taş kalan 7.500, ikinci 2.500
 rm.start(code, 'a');
@@ -59,7 +59,7 @@ rm.start(code, 'a');
   g.seats[1].hand = [T(0, 1)]; g.seats[3].hand = [T(0, 2), T(1, 2)]; g.seats[2].hand = [T(0, 5), T(1, 5), T(2, 5)];   // sayı toplamı: b=1, d=4, c=15, a>=21
   assert.ok(rm.act(code, 'a', { type: 'discard', tileId: g.seats[0].hand[0].id }).ok);
   assert.deepEqual(g.over.rank.slice(0, 2), [1, 3]); assert.equal(g.over.bonus, false);
-  assert.deepEqual(bal(rm), [7500, 15000, 7500, 10000]);
+  assert.deepEqual(bal(rm), [7500, 7500, 15000, 10000]);   // 1. koltuk artık c (ilk gelen b kurucunun karşısında, 2. koltukta)
 }
 
 ({ rm, code } = mk({}));                        // çift açarak bitirme: aynı büyük ödül, puan 2 katı

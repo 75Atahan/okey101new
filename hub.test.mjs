@@ -34,7 +34,7 @@ assert.equal(s0.game.hand.length, 22);
 assert.equal(s1.game.hand.length, 21);
 assert.ok(!('handCount' in s1.game.others[0]));   // rakibin taş sayısı gizli
 assert.ok(!('hand' in s1.game.others[0]));
-assert.deepEqual(s1.lobby.names, ['Ali', 'Veli', 'Ayşe', 'Fatma']);
+assert.deepEqual(s1.lobby.names, ['Ali', 'Ayşe', 'Veli', 'Fatma']);   // ilk gelen kurucunun karşısına (eşlide takım arkadaşı) oturur, sonra sırayla
 assert.equal(s1.lobby.katlamali, true);
 
 // Sıra kontrolü sunucuda
@@ -53,7 +53,7 @@ assert.equal(c[0].last('chat').text, 'tamam');
 // Bağlantı kopması ve token ile geri dönüş
 const token = c[2].last('welcome').token;
 c[2].conn.close();
-assert.equal(c[0].last('state').lobby.online[2], false);
+assert.equal(c[0].last('state').lobby.online[1], false);   // Ayşe artık 1. koltukta
 const back = client();
 back.send({ t: 'hello', token });
 assert.equal(back.last('welcome').room, code);
