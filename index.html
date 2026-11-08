@@ -175,6 +175,7 @@ body{background-color:var(--g3);background-image:var(--pat),radial-gradient(elli
 .slot.slot-hot{box-shadow:inset 0 0 0 3px #fff,0 0 12px 3px #ffd54f}
 .wm{position:absolute;left:0;top:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font:900 118px/1 system-ui,sans-serif;letter-spacing:6px;color:#fff;opacity:.07;transform:rotate(-8deg);pointer-events:none;-webkit-user-select:none;user-select:none}
 .cmp .wm{font-size:78px}
+.wm2{font-size:62px;letter-spacing:4px;transform:rotate(-90deg)}.cmp .wm2{font-size:40px}
 body[data-tema=safir]{--felt:#244aa8;--felt2:#0a1a55;--g1:#3d7cff;--g2:#1a3fa8;--g3:#0a1a55;--alt:#3a63c9}
 body[data-tema=yakut]{--felt:#9a2142;--felt2:#4a0a1d;--g1:#e8445f;--g2:#a01e3d;--g3:#4a0a1d;--alt:#bd4560}
 body[data-tema=ametist]{--felt:#62309f;--felt2:#2b0f5c;--g1:#a65eff;--g2:#6a2bc2;--g3:#2b0f5c;--alt:#8355d4}
@@ -206,18 +207,38 @@ body[data-tema=klasik]{--felt:#14532d;--felt2:#0f3d21;--g1:#17592f;--g2:#0b351c;
 @keyframes winpulse{from{box-shadow:0 0 0 3px #ffd54f,0 0 10px 2px #ffb30088}to{box-shadow:0 0 0 3px #fff3b0,0 0 24px 9px #ffb300cc}}
 .statcard{display:flex;gap:8px;justify-content:space-around;text-align:center;flex-wrap:wrap}
 .stc{display:flex;flex-direction:column;gap:2px;min-width:70px}.stc b{font-size:20px}.stc small{opacity:.75;font-size:12px}
-/* Açılış ekranı */
-#splash{position:fixed;left:0;top:0;right:0;bottom:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:20px;box-sizing:border-box;
-  background-color:var(--g3);background-image:var(--pat),radial-gradient(ellipse at 50% 38%,var(--g1) 0%,var(--g2) 55%,var(--g3) 100%);background-size:80px 80px,auto;transition:opacity .5s}
+/* Açılış ekranı: ay ışığı, dönen ışınlar, süzülen taşlar, dağıtılan ıstaka, parlayan logo */
+#splash{position:fixed;left:0;top:0;right:0;bottom:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;
+  background-color:var(--g3);background-image:radial-gradient(ellipse at 50% 30%,var(--g1) 0%,var(--g2) 48%,var(--g3) 100%);transition:opacity .6s}
 #splash.off{opacity:0;pointer-events:none}
-#splash .lg{width:min(74vw,540px);height:auto;filter:drop-shadow(0 14px 22px #0009);animation:lgin .9s ease-out both,lgfloat 3.4s ease-in-out .9s infinite}
-@keyframes lgin{from{opacity:0;transform:translateY(24px) scale(.9)}to{opacity:1;transform:none}}
-@keyframes lgfloat{50%{transform:translateY(-8px)}}
-#splash .pg{width:min(74vw,540px);height:18px;border-radius:10px;background:#0006;border:2px solid #ffffff55;overflow:hidden;box-shadow:0 4px 10px #0005}
-#splash .pg i{display:block;height:100%;width:40%;border-radius:10px;background:linear-gradient(#ffe88a,#f0a81c);animation:pgmove 1.4s ease-in-out infinite}
-@keyframes pgmove{0%{margin-left:-40%}100%{margin-left:100%}}
-#splash p{margin:0;font:800 21px/1.3 ui-rounded,"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;color:#fff;text-shadow:0 2px 4px #0009;text-align:center}
-#splash small{font-size:14px;opacity:.85;text-align:center}
+#splash .sbg{position:absolute;left:0;top:0;right:0;bottom:0;background-image:var(--pat);background-size:80px 80px;opacity:.9}
+#splash .rays{position:absolute;left:50%;top:44%;width:170vmax;height:170vmax;margin:-85vmax 0 0 -85vmax;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,#ffffff1c 0 7deg,transparent 7deg 18deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 38%);mask:radial-gradient(circle,#000 0,transparent 38%);animation:sspin 70s linear infinite}
+#splash .moonglow{position:absolute;left:50%;top:40%;width:80vmin;height:80vmin;margin:-40vmin 0 0 -40vmin;border-radius:50%;background:radial-gradient(circle,#fff4b88a 0,#ffd54f33 40%,transparent 70%);animation:sglow 4s ease-in-out infinite}
+#splash #stars i{position:absolute;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px #fff9;opacity:.2;animation:stwinkle 3s ease-in-out infinite}
+#splash #ftiles b{position:absolute;bottom:-90px;display:flex;align-items:center;justify-content:center;width:1.35em;height:1.75em;border-radius:.2em;background:linear-gradient(#fffaf0,#ecd7a4);
+  box-shadow:0 4px 10px #0007;font-weight:900;font-family:ui-rounded,system-ui,sans-serif;opacity:0;animation:sfloat linear infinite}
+#splash .smain{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:20px;width:100%;padding:0 20px;box-sizing:border-box;margin-top:-6vh}
+#splash .lg{width:min(76vw,560px);height:auto;filter:drop-shadow(0 16px 26px #000a) drop-shadow(0 0 30px #ffd54f66);animation:lgin 1s cubic-bezier(.2,.9,.3,1.2) both,lgfloat 3.6s ease-in-out 1s infinite}
+#splash .pg{width:min(70vw,500px);height:20px;border-radius:12px;background:#0007;border:2px solid #ffffff66;overflow:hidden;box-shadow:0 5px 12px #0006,inset 0 2px 4px #0008}
+#splash .pg i{display:block;height:100%;width:42%;border-radius:12px;background:repeating-linear-gradient(45deg,#ffe27a 0 12px,#f0a81c 12px 24px);background-size:34px 34px;box-shadow:0 0 14px #ffd54f;animation:pgmove 1.6s ease-in-out infinite,pgstripe .7s linear infinite}
+#splash p{margin:0;font:800 clamp(18px,3.2vw,26px)/1.3 ui-rounded,"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;color:#fff;text-shadow:0 2px 6px #000a,0 0 16px #ffd54f88;text-align:center;animation:spulse 1.8s ease-in-out infinite}
+#splash small{font-size:14px;color:#fff;opacity:.9;text-align:center;text-shadow:0 1px 3px #000a}
+#splash .srack{position:absolute;z-index:2;bottom:46px;left:50%;transform:translateX(-50%);display:flex;gap:clamp(3px,.7vw,7px);padding:10px 14px;border-radius:14px;max-width:94vw;box-sizing:border-box;
+  background:linear-gradient(#e8b968,#b97b1c);box-shadow:0 10px 20px #000a,inset 0 2px 0 #ffffff77,inset 0 -3px 0 #7a4a0a}
+#splash .srack b{display:flex;align-items:center;justify-content:center;width:clamp(17px,3.7vw,40px);aspect-ratio:3/4;border-radius:.2em;background:linear-gradient(#fffaf0,#ecd7a4);box-shadow:0 3px 0 #b9a36a,0 5px 8px #0006;
+  font:900 clamp(10px,2.3vw,24px)/1 ui-rounded,system-ui,sans-serif;animation:sdeal 5s ease-out infinite;opacity:0}
+#splash .sfoot{position:absolute;z-index:2;bottom:14px;left:0;right:0;text-align:center;font-size:12px;color:#fff;opacity:.75;text-shadow:0 1px 3px #000a}
+@keyframes sspin{to{transform:rotate(360deg)}}
+@keyframes sglow{50%{transform:scale(1.12);opacity:.8}}
+@keyframes stwinkle{0%,100%{opacity:.15;transform:scale(.8)}50%{opacity:1;transform:scale(1.5)}}
+@keyframes sfloat{0%{transform:translateY(0) rotate(-18deg);opacity:0}12%{opacity:.55}88%{opacity:.55}100%{transform:translateY(-118vh) rotate(28deg);opacity:0}}
+@keyframes lgin{from{opacity:0;transform:translateY(40px) scale(.82)}to{opacity:1;transform:none}}
+@keyframes lgfloat{50%{transform:translateY(-9px)}}
+@keyframes pgmove{0%{margin-left:-42%}100%{margin-left:100%}}
+@keyframes pgstripe{to{background-position:34px 0}}
+@keyframes spulse{50%{transform:scale(1.04);opacity:.85}}
+@keyframes sdeal{0%{opacity:0;transform:translateY(-90px) rotate(-14deg)}9%{opacity:1;transform:none}86%{opacity:1;transform:none}100%{opacity:0;transform:translateY(10px)}}
 .mlogo{display:block;width:min(100%,250px);height:auto;margin:0 auto 10px;filter:drop-shadow(0 6px 8px #0006)}
 /* Açma eşiği: gösterge ve yığının tam üstünde, belirgin */
 .thrbox{display:flex;flex-direction:column;gap:6px}
@@ -226,16 +247,21 @@ body[data-tema=klasik]{--felt:#14532d;--felt2:#0f3d21;--g1:#17592f;--g2:#0b351c;
 .thr b{font-size:21px;font-weight:900;color:#ffe27a}
 .thr.c{background:linear-gradient(#e0588a,#a3205a);box-shadow:0 3px 0 #5e0c33,0 6px 10px #0006,inset 0 1px 0 #ffffff66}
 .cmp .thr{font-size:11px;border-width:1px;border-radius:8px}.cmp .thr b{font-size:16px}
-/* Seri diz / Çift diz: ıstaka boyunda, dar, dolgulu, dikey yazılı */
-.stage .side{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;border:0;border-radius:16px;cursor:pointer;
-  font:900 25px/1 ui-rounded,"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;letter-spacing:3px;color:#fff;text-shadow:0 2px 0 #0006;
-  background:linear-gradient(90deg,#5aa4ff,#1f5fd6);box-shadow:0 4px 0 #123a8c,0 8px 14px #0007,inset 0 2px 0 #ffffff70}
-.stage .side.c{background:linear-gradient(90deg,#ffd45e,#f08a12);color:#4a2400;text-shadow:0 1px 0 #fff8;box-shadow:0 4px 0 #9a5200,0 8px 14px #0007,inset 0 2px 0 #fffa}
+/* Seri diz / Çift diz: ıstaka boyunda, dar, dolgulu; kenarında sarı-mavi ışık dolaşır */
+.stage .side{position:relative;overflow:hidden;width:100%;height:100%;padding:0;border:0;border-radius:18px;cursor:pointer;background:#0008;
+  box-shadow:0 0 12px #ffd54f88,0 0 22px #3fa0ff66,0 6px 12px #0008;animation:sidepulse 2.4s ease-in-out var(--d,0s) infinite}
+.stage .side::before{content:"";position:absolute;left:-60%;top:-60%;width:220%;height:220%;
+  background:conic-gradient(from 0deg,transparent 0 48%,#ffd54f 62%,#fff 68%,#3fa0ff 80%,transparent 92%);animation:sidespin 2.4s linear var(--d,0s) infinite}
+.stage .side::after{content:"";position:absolute;left:4px;top:4px;right:4px;bottom:4px;border-radius:14px;background:linear-gradient(180deg,#ffe07a,#f08a12)}
+.stage .side.s::after{background:linear-gradient(180deg,#6db1ff,#1b56cf)}
+.side .in{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.side .in b{display:block;font:900 23px/1.02 ui-rounded,"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;letter-spacing:.3px;color:#4a2400;text-shadow:0 1px 0 #fffb,0 0 10px #fff7}
+.side.s .in b{color:#fff;text-shadow:0 2px 0 #0a2c80,0 0 12px #a9d0ff}
+.stage .side .mcs{margin:0 0 6px}.stage .side .mcs i{width:18px;height:25px;font-size:13px}
 .stage .side:active{transform:translateY(3px)}
-.side .vt{writing-mode:vertical-rl;text-orientation:mixed;white-space:nowrap}
-.side.c .vt{transform:rotate(180deg)}
-.stage .side .mcs{margin:0}.stage .side .mcs i{width:17px;height:24px;font-size:12px}
-.cmp.stage .side,.stage.cmp .side{font-size:18px;letter-spacing:1px}
+@keyframes sidespin{to{transform:rotate(360deg)}}
+@keyframes sidepulse{50%{box-shadow:0 0 20px #ffd54fcc,0 0 34px #3fa0ffaa,0 6px 12px #0008}}
+.cmp .side .in b,.stage.cmp .side .in b{font-size:16px}.stage.cmp .side .mcs i{width:15px;height:21px;font-size:11px}
 .foot{text-align:center;opacity:.65;font-size:12px;line-height:1.5;padding:16px 8px 24px}
 </style></head><body>
 <div id="vg"></div>
@@ -254,7 +280,18 @@ body[data-tema=klasik]{--felt:#14532d;--felt2:#0f3d21;--g1:#17592f;--g2:#0b351c;
  <path d='M326 75L329.3 82.7L337 86L329.3 89.3L326 97L322.7 89.3L315 86L322.7 82.7Z' fill='url(#lgGold)'/><path d='M312 143L314.1 147.9L319 150L314.1 152.1L312 157L309.9 152.1L305 150L309.9 147.9Z' fill='url(#lgGold)'/><path d='M338 116L339.8 120.2L344 122L339.8 123.8L338 128L336.2 123.8L332 122L336.2 120.2Z' fill='url(#lgGold)'/>
  <path d="M20 268 L62 224 Q280 196 498 224 L540 268 L498 312 Q280 284 62 312 Z" fill="url(#lgRib)" stroke="#fff3d6" stroke-width="6" stroke-linejoin="round"/>
  <text x="280" y="283" text-anchor="middle" font-size="70" font-weight="900" letter-spacing="14" fill="#fff" stroke="#5a0b22" stroke-width="6" paint-order="stroke" font-family="ui-rounded,'SF Pro Rounded','Arial Rounded MT Bold','Trebuchet MS',system-ui,sans-serif">LUNA</text>
-</symbol></defs></svg><div id="splash"><svg class="lg" viewBox="0 0 560 340" role="img" aria-label="Luna101"><use href="#lunalogo"/></svg><div class="pg"><i></i></div><p>Bağlanılıyor… Lütfen bekleyiniz!</p><small id="spnote" hidden>Sunucu uyanıyor, ilk açılış 30-60 saniye sürebilir.</small></div><div id="app"></div><div id="toast"></div>
+</symbol>
+<symbol id="lunamask" viewBox="0 0 560 340"><rect x="26" y="22" width="176" height="222" rx="32" fill="#fff"/><rect x="358" y="22" width="176" height="222" rx="32" fill="#fff"/><circle cx="280" cy="128" r="108" fill="#fff"/><path d="M20 268 L62 224 Q280 196 498 224 L540 268 L498 312 Q280 284 62 312 Z" fill="#fff"/></symbol>
+<mask id="lgMaskAll"><use href="#lunamask"/></mask>
+<linearGradient id="lgShine" gradientUnits="userSpaceOnUse" x1="-160" y1="0" x2="-40" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/><animateTransform attributeName="gradientTransform" type="translate" from="0 0" to="820 0" dur="3.6s" repeatCount="indefinite"/></linearGradient>
+</defs></svg><div id="splash"><div class="sbg"><div class="rays"></div><div class="moonglow"></div><div id="stars"></div><div id="ftiles"></div></div>
+<div class="smain"><svg class="lg" viewBox="0 0 560 340" role="img" aria-label="Luna101"><use href="#lunalogo"/><rect x="0" y="0" width="560" height="340" fill="url(#lgShine)" mask="url(#lgMaskAll)"/></svg>
+<div class="pg"><i></i></div><p>Bağlanılıyor… Lütfen bekleyiniz!</p><small id="spnote" hidden>Sunucu uyanıyor, ilk açılış 30-60 saniye sürebilir.</small></div>
+<div class="srack" id="srack"></div><div class="sfoot">© Luna Pazarlama İç ve Dış Ticaret Ltd.Şti. · <span id="spver"></span></div></div>
+<script>(function(){var R=function(a,b){return a+Math.random()*(b-a)},C=['#d4a017','#1f6fe0','#d92d3a','#222'],q=function(i){return document.getElementById(i)};
+var st=q('stars');for(var i=0;i<46;i++){var d=document.createElement('i');d.style.cssText='left:'+R(0,100)+'%;top:'+R(0,72)+'%;width:'+R(2,5)+'px;height:'+R(2,5)+'px;animation-delay:'+R(0,4)+'s;animation-duration:'+R(2,5)+'s';st.appendChild(d)}
+var ft=q('ftiles');for(i=0;i<12;i++){d=document.createElement('b');d.textContent=1+Math.floor(Math.random()*13);d.style.cssText='left:'+R(2,92)+'%;font-size:'+R(20,42)+'px;color:'+C[i%4]+';animation-duration:'+R(10,19)+'s;animation-delay:-'+R(0,16)+'s';ft.appendChild(d)}
+var sr=q('srack'),nums=[1,2,3,4,5,6,7,8,9,10,11,12,13,7];for(i=0;i<14;i++){d=document.createElement('b');d.textContent=nums[i];d.style.cssText='color:'+C[Math.floor(i/4)%4]+';animation-delay:'+(i*0.13)+'s';sr.appendChild(d)}})();</script><div id="app"></div><div id="toast"></div>
 <script>
 function showErr() { document.getElementById('app').innerHTML = '<div class="card"><b>Sayfa yüklenemedi.</b><br>Dosyalar eksik olabilir (özellikle okey101.mjs). Replit\'te tüm dosyaların aynı klasörde olduğundan ve sunucunun yeniden başlatıldığından emin ol, sonra sayfayı yenile.</div>'; }
 setTimeout(() => { if (!document.getElementById('app').innerHTML.trim()) showErr(); }, 4000);
@@ -266,7 +303,7 @@ let plan = null; // Yardımlı: assist.mjs yüklenemezse oyun yine açılır
 import('./assist.mjs').then((m) => { plan = m.plan; }).catch(() => {});
 // Adrese ?test eklenirse her sekme ayrı oyuncu olur (tek bilgisayarda 4 kişilik deneme için).
 const store = (location.search || '').includes('test') ? sessionStorage : localStorage;
-const SURUM = 'Sürüm 2.9';
+const SURUM = 'Sürüm 3.0';
 // Telif koruması: oyun yalnızca resmî adreslerde çalışır; kopyalanıp başka sitede açılırsa uyarı gösterir (ve sunucu da bağlantıyı reddeder).
 const IZINLI = ['luna101.com.tr', 'www.luna101.com.tr', 'okey101new.onrender.com', 'okey101new-iiz3.onrender.com', 'localhost', '127.0.0.1'];
 if (location.protocol !== 'file:' && !IZINLI.includes(location.hostname) && !location.hostname.endsWith('.onrender.com') && !/^\d{1,3}(\.\d{1,3}){3}$/.test(location.hostname)) {
@@ -449,6 +486,7 @@ const views = {
       const ms = G.others.flatMap((o) => o.melds);
       for (const t of G.hand) if (!stagedIds.has(t.id) && !isJoker(t, ok) && ms.some((m) => (m.length >= 3 ? jokerReplaceIndex(m, t, ok) >= 0 || canAddToMeld(m, t, ok) : pairReplaceIndex(m, t, ok) >= 0))) fitSet.add(t.id);
     }
+    const sdPhase = ((performance.now() / 1000) % 2.4).toFixed(2);   // ışık animasyonu yeniden çizimde baştan başlamasın
     if (isOkey) fitSet.clear();                                  // klasik okeyde işlek taş / okey cezası yok
     // Eylem düğmeleri yalnızca uygun olduğunda, ıstakanın hemen üstünde çıkar (At düğmesi kalktı: çift dokun ya da sürükle)
     const canProc = canAct && myO.opened && G.hand.length > 1 && G.hand.some((t) => fitSet.has(t.id) && !isJoker(t, ok) && !stagedIds.has(t.id));
@@ -468,14 +506,14 @@ const views = {
       tl: [28, 32], tr: [1194, 32], bl: [28, meY], br: [1194, meY], pz: [50, 60], pc: 'c2', mz: 'm2',
       b1: [4, 330, 92, 26], b2: [1184, 330, 92, 26], tags: [846, 52, 90, 80], thr: [846, 136, 94, 44], ind: [862, 188, 52, 68], heap: [862, 262, 52, 68],
       by: [230, 262, 294, 326, 358, 390], bh: [28, 28, 28, 28, 28, 24], act: [846, meY - 52, 340, 46], gb: [2, meY - 46, 116, 40],
-      me: [440, meY, 400, meH], tot: [860, meY + 10, 210, 32], rack: [102, rackY, 1076, R], sl: [30, rackY, 66, R], sr: [1184, rackY, 66, R],
+      me: [440, meY, 400, meH], tot: [860, meY + 10, 210, 32], rack: [102, rackY, 1076, R], sl: [24, rackY, 74, R], sr: [1182, rackY, 74, R],
       ci: { left: [12, 362, 40, 40], right: [1228, 362, 40, 40], top: [848, 8, 40, 40] },
     } : {
       info: [40, 10, 430, 28], chat: [100, 654, 336, 44], btns: [560, 4, 712, 46], top: [440, 50, 400, 88], left: [2, 150, 64, 270], right: [1214, 150, 64, 270],
       tl: [28, 61], tr: [1194, 61], bl: [28, 612], br: [1194, 612], pz: [57, 74], pc: 'c', mz: 'm',
       b1: [4, 426, 92, 30], b2: [1184, 426, 92, 30], tags: [846, 136, 90, 104], thr: [846, 250, 94, 72], ind: [858, 330, 66, 86], heap: [858, 432, 66, 86],
       by: [322, 372, 422, 472, 522, 572], bh: [44, 44, 44, 44, 44, 32], act: [846, 560, 340, 94], gb: [2, 558, 116, 46],
-      me: [440, 610, 400, 88], tot: [860, 662, 210, 36], rack: [102, 706, 1076, 182], sl: [30, 706, 66, 182], sr: [1184, 706, 66, 182],
+      me: [440, 610, 400, 88], tot: [860, 662, 210, 36], rack: [102, 706, 1076, 182], sl: [24, 706, 74, 182], sr: [1182, 706, 74, 182],
       ci: { left: [10, 464, 44, 44], right: [1226, 464, 44, 44], top: [848, 56, 44, 44] },
     };
     const turnBar = '<div class="trow"><div class="sb"><div id="bar"></div></div><b id="tl"></b></div>';
@@ -524,7 +562,7 @@ const views = {
       ${pile(rel(2), P.tl, 'tl')}${pile(rel(1), P.tr, 'tr')}${pile(rel(3), P.bl, 'bl')}${pile(me, P.br, 'br')}
       ${camIcon(rel(3), P.ci.left)}${camIcon(rel(1), P.ci.right)}${camIcon(rel(2), P.ci.top)}
       ${isOkey ? '' : bx(P.thr, `<div class="thr"><b>${G.minMeld}</b> sayı</div><div class="thr c"><b>${G.minPairs}</b> çift</div>`, 'thrbox')}
-      ${isOkey ? box(cx, clothY, px + 6 * CW - cx, clothH, '<div class="wm">Luna101</div>', 'okeytable', vars) : `${box(cx, clothY, 2 * sq, clothH, `${sqs(sq, 2)}<div class="wm">Luna101</div>${rows}`, 'cloth', vars)}${box(px, clothY, 6 * CW, clothH, `${sqs(6 * CW, 1)}${prs}`, 'cloth', vars)}`}
+      ${isOkey ? box(cx, clothY, px + 6 * CW - cx, clothH, '<div class="wm">Luna101</div>', 'okeytable', vars) : `${box(cx, clothY, 2 * sq, clothH, `${sqs(sq, 2)}<div class="wm">Luna101</div>${rows}`, 'cloth', vars)}${box(px, clothY, 6 * CW, clothH, `${sqs(6 * CW, 1)}<div class="wm wm2">Luna101</div>${prs}`, 'cloth', vars)}`}
       ${bx(P.tags, isOkey ? `<div class="tag g">Okey</div><div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag">El ${L.roundNo || 1}/${L.rounds || 1}</div>` : `<div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag ${L.katlamali ? 'r' : ''}">${L.katlamali ? 'Katlamalı' : 'Katlamasız'}</div><div class="tag">El ${L.roundNo || 1}/${L.rounds || 1}</div>`)}
       ${bx(P.ind, `<span class="ind">${tile(G.indicator, { okey: ok, z: P.mz })}</span>`)}
       ${bx(P.heap, `<button class="t heap ${canDraw ? 'go' : ''}" data-act="pile" ${canDraw ? '' : 'disabled'}><span>${G.pileCount}</span></button>`)}
@@ -532,8 +570,8 @@ const views = {
       ${myTurn && G.mustUse != null ? bx(P.gb, '<button class="act giveback" data-act="cancel">↩ Geri bırak</button>', 'act-gb') : ''}
       ${hbar(me, P.me, 'myplate', '50% 100%', hint)}
       ${isOkey ? bx(P.tot, `Puan ${L.mode === 'pairs' ? (G.teamScores?.[me % 2] ?? 0) : G.scores[me]}`, 'tot ok') : bx(P.tot, totTxt, `tot ${myO.opened ? '' : enough ? 'ok' : 'bad'}`)}
-      ${bx(P.sl, `<button class="side c" data-act="cift"><span class="vt">ÇİFT DİZ</span></button>`)}
-      ${bx(P.sr, `<button class="side s" data-act="seri"><span class="vt">SERİ DİZ</span></button>`)}
+      ${bx(P.sl, `<button class="side c" data-act="cift" style="--d:-${sdPhase}s"><span class="in"><span class="mcs"><i>5</i><i>5</i></span><b>ÇİFT</b><b>DİZ</b></span></button>`)}
+      ${bx(P.sr, `<button class="side s" data-act="seri" style="--d:-${sdPhase}s"><span class="in"><span class="mcs"><i>1</i><i>2</i><i>3</i></span><b>SERİ</b><b>DİZ</b></span></button>`)}
       ${bx(P.rack, rackHtml + stake, 'rack')}
     </div>${G.over ? overHtml(G, L) : ''}`;
   },
@@ -1165,6 +1203,7 @@ document.body.dataset.tema = store.tema || 'zumrut';
 pollStats(); setInterval(pollStats, 20000);   // menüdeki canlı oyuncu sayıları
 // Açılış ekranı: logo + bekleme çubuğu; sunucuya bağlanınca (ya da bağlanılacak bir şey yoksa) kapanır
 const splashT0 = performance.now();
+const spv = $('#spver'); if (spv) spv.textContent = SURUM;
 let splashOn = true;
 function splashDone() {
   if (!splashOn) return;
