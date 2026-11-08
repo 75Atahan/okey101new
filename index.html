@@ -6,7 +6,7 @@
 <link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icon-192.png">
 <title>101 Okey</title>
 <style>
-:root{--felt:#0d7a57;--felt2:#064534;--g1:#22c58a;--g2:#0c8060;--g3:#04382f;--alt:#1f8a63;--card:#fffaf0;--gold:#f5c542}
+:root{--pat:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2780%27%20height%3D%2780%27%20viewBox%3D%270%200%2080%2080%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271.4%27%3E%3Cpath%20d%3D%27M40%206L74%2040L40%2074L6%2040Z%27%2F%3E%3Cpath%20d%3D%27M40%2018L62%2040L40%2062L18%2040Z%27%2F%3E%3Ccircle%20cx%3D%2740%27%20cy%3D%2740%27%20r%3D%276%27%2F%3E%3Cpath%20d%3D%27M0%200Q10%2010%200%2020M80%200Q70%2010%2080%2020M0%2060Q10%2070%200%2080M80%2060Q70%2070%2080%2080%27%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%27%23fff%27%20fill-opacity%3D%27.12%27%3E%3Ccircle%20cx%3D%2740%27%20cy%3D%2740%27%20r%3D%272.2%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%270%27%20r%3D%273%27%2F%3E%3Ccircle%20cx%3D%2780%27%20cy%3D%270%27%20r%3D%273%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%2780%27%20r%3D%273%27%2F%3E%3Ccircle%20cx%3D%2780%27%20cy%3D%2780%27%20r%3D%273%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");--felt:#0d7a57;--felt2:#064534;--g1:#22c58a;--g2:#0c8060;--g3:#04382f;--alt:#1f8a63;--card:#fffaf0;--gold:#f5c542}
 *{box-sizing:border-box}
 body{margin:0;background:var(--felt2);color:#fff;font:15px system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
 html,body{touch-action:manipulation;overscroll-behavior:none;-webkit-text-size-adjust:100%;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
@@ -133,7 +133,7 @@ body.inGame{overflow:hidden}
 .rot{position:fixed;top:0;left:0;right:0;z-index:80;background:#f5c542;color:#222;text-align:center;padding:6px;font-weight:700}
 .stage .btn.wide{padding:6px 4px;white-space:nowrap;font-size:14px}.stage.cmp .btn.wide{font-size:12px}
 /* v3: koyu desenli yeşil örtü, 3 boyutlu taş ve ıstaka */
-body{background-color:var(--g3);background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2780%27%20height%3D%2780%27%20viewBox%3D%270%200%2080%2080%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-opacity%3D%27.14%27%20stroke-width%3D%271.4%27%3E%3Cpath%20d%3D%27M40%206L74%2040L40%2074L6%2040Z%27%2F%3E%3Cpath%20d%3D%27M40%2018L62%2040L40%2062L18%2040Z%27%2F%3E%3Ccircle%20cx%3D%2740%27%20cy%3D%2740%27%20r%3D%276%27%2F%3E%3Cpath%20d%3D%27M0%200Q10%2010%200%2020M80%200Q70%2010%2080%2020M0%2060Q10%2070%200%2080M80%2060Q70%2070%2080%2080%27%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%27%23fff%27%20fill-opacity%3D%27.12%27%3E%3Ccircle%20cx%3D%2740%27%20cy%3D%2740%27%20r%3D%272.2%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%270%27%20r%3D%273%27%2F%3E%3Ccircle%20cx%3D%2780%27%20cy%3D%270%27%20r%3D%273%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%2780%27%20r%3D%273%27%2F%3E%3Ccircle%20cx%3D%2780%27%20cy%3D%2780%27%20r%3D%273%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"),radial-gradient(ellipse at 50% 35%,var(--g1) 0%,var(--g2) 52%,var(--g3) 100%);background-size:80px 80px,auto;background-attachment:fixed}
+body{background-color:var(--g3);background-image:var(--pat),radial-gradient(ellipse at 50% 35%,var(--g1) 0%,var(--g2) 52%,var(--g3) 100%);background-size:80px 80px,auto;background-attachment:fixed}
 .t{background:linear-gradient(180deg,#fffef9 0%,#f6efd9 65%,#eadfc2 100%);border:1px solid #dcd2b4;border-bottom:4px solid #b8a97f;border-radius:8px;box-shadow:0 3px 4px #0009,inset 0 1px 0 #fff,inset 0 0 7px #e8dcb9;text-shadow:0 1px 0 #fff8}
 .t.xs{border-bottom-width:2px;border-radius:4px;box-shadow:0 1px 2px #0008,inset 0 1px 0 #fff}
 .t.sel{box-shadow:0 10px 10px #000a,inset 0 1px 0 #fff}
@@ -206,10 +206,55 @@ body[data-tema=klasik]{--felt:#14532d;--felt2:#0f3d21;--g1:#17592f;--g2:#0b351c;
 @keyframes winpulse{from{box-shadow:0 0 0 3px #ffd54f,0 0 10px 2px #ffb30088}to{box-shadow:0 0 0 3px #fff3b0,0 0 24px 9px #ffb300cc}}
 .statcard{display:flex;gap:8px;justify-content:space-around;text-align:center;flex-wrap:wrap}
 .stc{display:flex;flex-direction:column;gap:2px;min-width:70px}.stc b{font-size:20px}.stc small{opacity:.75;font-size:12px}
+/* Açılış ekranı */
+#splash{position:fixed;left:0;top:0;right:0;bottom:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:20px;box-sizing:border-box;
+  background-color:var(--g3);background-image:var(--pat),radial-gradient(ellipse at 50% 38%,var(--g1) 0%,var(--g2) 55%,var(--g3) 100%);background-size:80px 80px,auto;transition:opacity .5s}
+#splash.off{opacity:0;pointer-events:none}
+#splash .lg{width:min(74vw,540px);height:auto;filter:drop-shadow(0 14px 22px #0009);animation:lgin .9s ease-out both,lgfloat 3.4s ease-in-out .9s infinite}
+@keyframes lgin{from{opacity:0;transform:translateY(24px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes lgfloat{50%{transform:translateY(-8px)}}
+#splash .pg{width:min(74vw,540px);height:18px;border-radius:10px;background:#0006;border:2px solid #ffffff55;overflow:hidden;box-shadow:0 4px 10px #0005}
+#splash .pg i{display:block;height:100%;width:40%;border-radius:10px;background:linear-gradient(#ffe88a,#f0a81c);animation:pgmove 1.4s ease-in-out infinite}
+@keyframes pgmove{0%{margin-left:-40%}100%{margin-left:100%}}
+#splash p{margin:0;font:800 21px/1.3 ui-rounded,"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;color:#fff;text-shadow:0 2px 4px #0009;text-align:center}
+#splash small{font-size:14px;opacity:.85;text-align:center}
+.mlogo{display:block;width:min(100%,250px);height:auto;margin:0 auto 10px;filter:drop-shadow(0 6px 8px #0006)}
+/* Açma eşiği: gösterge ve yığının tam üstünde, belirgin */
+.thrbox{display:flex;flex-direction:column;gap:6px}
+.thr{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;border-radius:12px;border:2px solid #ffd54f;color:#fff;font:700 13px ui-rounded,"Arial Rounded MT Bold",system-ui,sans-serif;white-space:nowrap;
+  background:linear-gradient(#3f7be0,#1c4aa6);box-shadow:0 3px 0 #0b2a6e,0 6px 10px #0006,inset 0 1px 0 #ffffff66;text-shadow:0 1px 0 #0007}
+.thr b{font-size:21px;font-weight:900;color:#ffe27a}
+.thr.c{background:linear-gradient(#e0588a,#a3205a);box-shadow:0 3px 0 #5e0c33,0 6px 10px #0006,inset 0 1px 0 #ffffff66}
+.cmp .thr{font-size:11px;border-width:1px;border-radius:8px}.cmp .thr b{font-size:16px}
+/* Seri diz / Çift diz: ıstaka boyunda, dar, dolgulu, dikey yazılı */
+.stage .side{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;border:0;border-radius:16px;cursor:pointer;
+  font:900 25px/1 ui-rounded,"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;letter-spacing:3px;color:#fff;text-shadow:0 2px 0 #0006;
+  background:linear-gradient(90deg,#5aa4ff,#1f5fd6);box-shadow:0 4px 0 #123a8c,0 8px 14px #0007,inset 0 2px 0 #ffffff70}
+.stage .side.c{background:linear-gradient(90deg,#ffd45e,#f08a12);color:#4a2400;text-shadow:0 1px 0 #fff8;box-shadow:0 4px 0 #9a5200,0 8px 14px #0007,inset 0 2px 0 #fffa}
+.stage .side:active{transform:translateY(3px)}
+.side .vt{writing-mode:vertical-rl;text-orientation:mixed;white-space:nowrap}
+.side.c .vt{transform:rotate(180deg)}
+.stage .side .mcs{margin:0}.stage .side .mcs i{width:17px;height:24px;font-size:12px}
+.cmp.stage .side,.stage.cmp .side{font-size:18px;letter-spacing:1px}
 .foot{text-align:center;opacity:.65;font-size:12px;line-height:1.5;padding:16px 8px 24px}
 </style></head><body>
 <div id="vg"></div>
-<div id="app"></div><div id="toast"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="lgTile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#ecd7a4"/></linearGradient>
+<linearGradient id="lgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0a3"/><stop offset="1" stop-color="#f0a81c"/></linearGradient>
+<linearGradient id="lgRib" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f25a73"/><stop offset="1" stop-color="#9a1836"/></linearGradient>
+<mask id="lgMoon"><rect width="560" height="340" fill="#fff"/><circle cx="300" cy="118" r="50" fill="#000"/></mask>
+<symbol id="lunalogo" viewBox="0 0 560 340">
+ <rect x="26" y="22" width="176" height="222" rx="32" fill="#3b2314"/><rect x="34" y="30" width="160" height="206" rx="26" fill="url(#lgTile)"/>
+ <text x="114" y="196" text-anchor="middle" font-size="196" font-weight="900" fill="#2d6cdf" font-family="ui-rounded,'SF Pro Rounded','Arial Rounded MT Bold','Trebuchet MS',system-ui,sans-serif">1</text>
+ <rect x="358" y="22" width="176" height="222" rx="32" fill="#3b2314"/><rect x="366" y="30" width="160" height="206" rx="26" fill="url(#lgTile)"/>
+ <text x="446" y="196" text-anchor="middle" font-size="196" font-weight="900" fill="#d92d3a" font-family="ui-rounded,'SF Pro Rounded','Arial Rounded MT Bold','Trebuchet MS',system-ui,sans-serif">1</text>
+ <circle cx="280" cy="128" r="108" fill="#3b2314"/><circle cx="280" cy="128" r="98" fill="url(#lgTile)"/><circle cx="280" cy="128" r="86" fill="none" stroke="url(#lgGold)" stroke-width="6"/>
+ <circle cx="266" cy="136" r="58" fill="url(#lgGold)" mask="url(#lgMoon)"/>
+ <path d='M326 75L329.3 82.7L337 86L329.3 89.3L326 97L322.7 89.3L315 86L322.7 82.7Z' fill='url(#lgGold)'/><path d='M312 143L314.1 147.9L319 150L314.1 152.1L312 157L309.9 152.1L305 150L309.9 147.9Z' fill='url(#lgGold)'/><path d='M338 116L339.8 120.2L344 122L339.8 123.8L338 128L336.2 123.8L332 122L336.2 120.2Z' fill='url(#lgGold)'/>
+ <path d="M20 268 L62 224 Q280 196 498 224 L540 268 L498 312 Q280 284 62 312 Z" fill="url(#lgRib)" stroke="#fff3d6" stroke-width="6" stroke-linejoin="round"/>
+ <text x="280" y="283" text-anchor="middle" font-size="70" font-weight="900" letter-spacing="14" fill="#fff" stroke="#5a0b22" stroke-width="6" paint-order="stroke" font-family="ui-rounded,'SF Pro Rounded','Arial Rounded MT Bold','Trebuchet MS',system-ui,sans-serif">LUNA</text>
+</symbol></defs></svg><div id="splash"><svg class="lg" viewBox="0 0 560 340" role="img" aria-label="Luna101"><use href="#lunalogo"/></svg><div class="pg"><i></i></div><p>Bağlanılıyor… Lütfen bekleyiniz!</p><small id="spnote" hidden>Sunucu uyanıyor, ilk açılış 30-60 saniye sürebilir.</small></div><div id="app"></div><div id="toast"></div>
 <script>
 function showErr() { document.getElementById('app').innerHTML = '<div class="card"><b>Sayfa yüklenemedi.</b><br>Dosyalar eksik olabilir (özellikle okey101.mjs). Replit\'te tüm dosyaların aynı klasörde olduğundan ve sunucunun yeniden başlatıldığından emin ol, sonra sayfayı yenile.</div>'; }
 setTimeout(() => { if (!document.getElementById('app').innerHTML.trim()) showErr(); }, 4000);
@@ -221,7 +266,7 @@ let plan = null; // Yardımlı: assist.mjs yüklenemezse oyun yine açılır
 import('./assist.mjs').then((m) => { plan = m.plan; }).catch(() => {});
 // Adrese ?test eklenirse her sekme ayrı oyuncu olur (tek bilgisayarda 4 kişilik deneme için).
 const store = (location.search || '').includes('test') ? sessionStorage : localStorage;
-const SURUM = 'Sürüm 2.8';
+const SURUM = 'Sürüm 2.9';
 // Telif koruması: oyun yalnızca resmî adreslerde çalışır; kopyalanıp başka sitede açılırsa uyarı gösterir (ve sunucu da bağlantıyı reddeder).
 const IZINLI = ['luna101.com.tr', 'www.luna101.com.tr', 'okey101new.onrender.com', 'okey101new-iiz3.onrender.com', 'localhost', '127.0.0.1'];
 if (location.protocol !== 'file:' && !IZINLI.includes(location.hostname) && !location.hostname.endsWith('.onrender.com') && !/^\d{1,3}(\.\d{1,3}){3}$/.test(location.hostname)) {
@@ -262,7 +307,7 @@ function toast(m) {
 }
 
 function on(m) {
-  if (m.t === 'welcome') { S.waking = false; store.token = m.token; store.name = m.name; S.me = m.userId; S.off = false; S.balance = m.balance; const q = new URLSearchParams(location.search).get('oda'); if (q && !m.room && !S.pending) send({ t: 'join', code: q }); if (S.pending) { const f = S.pending; S.pending = null; setTimeout(f, 0); } }
+  if (m.t === 'welcome') { splashDone(); S.waking = false; store.token = m.token; store.name = m.name; S.me = m.userId; S.off = false; S.balance = m.balance; const q = new URLSearchParams(location.search).get('oda'); if (q && !m.room && !S.pending) send({ t: 'join', code: q }); if (S.pending) { const f = S.pending; S.pending = null; setTimeout(f, 0); } }
   else if (m.t === 'state') {
     const wasOver = S.game ? !!S.game.over : true;   // ilk yükleme/yeniden bağlanmada kutlama yapma
     S.lobby = m.lobby; S.game = m.game; if (m.balance != null) S.balance = m.balance;
@@ -331,7 +376,7 @@ const views = {
   menu: () => {
     const invite = (new URLSearchParams(location.search).get('oda') || '').toUpperCase().slice(0, 6);
     const opts = (n, f) => Array.from({ length: n }, (_, i) => `<option value="${i + 1}">${f(i + 1)}</option>`).join('');
-    return `<div class="card"><h2>101 Okey</h2><small>Adın (masada böyle görünürsün)</small>
+    return `<div class="card"><svg class="mlogo" viewBox="0 0 560 340" role="img" aria-label="Luna101"><use href="#lunalogo"/></svg><small>Adın (masada böyle görünürsün)</small>
     <input id="name" placeholder="Adını yaz" maxlength="20" autocomplete="nickname" value="${esc(store.name)}"></div>
     <div class="card statcard" id="stats">${statsHtml()}</div>
     <div class="card"><h3>Oda kur</h3>
@@ -421,16 +466,16 @@ const views = {
     const P = cmp ? {
       info: [8, 6, 420, 24], chat: [100, meY + 10, 336, 36], btns: [890, 2, 382, 40], top: [440, 2, 400, 54], left: [2, 96, 56, 230], right: [1222, 96, 56, 230],
       tl: [28, 32], tr: [1194, 32], bl: [28, meY], br: [1194, meY], pz: [50, 60], pc: 'c2', mz: 'm2',
-      b1: [4, 330, 92, 26], b2: [1184, 330, 92, 26], tags: [846, 62, 90, 120], ind: [862, 188, 52, 68], heap: [862, 262, 52, 68],
+      b1: [4, 330, 92, 26], b2: [1184, 330, 92, 26], tags: [846, 52, 90, 80], thr: [846, 136, 94, 44], ind: [862, 188, 52, 68], heap: [862, 262, 52, 68],
       by: [230, 262, 294, 326, 358, 390], bh: [28, 28, 28, 28, 28, 24], act: [846, meY - 52, 340, 46], gb: [2, meY - 46, 116, 40],
-      me: [440, meY, 400, meH], tot: [860, meY + 10, 210, 32], rack: [102, rackY, 1076, R], sl: [14, rackY + 8, 80, R - 16], sr: [1186, rackY + 8, 80, R - 16],
+      me: [440, meY, 400, meH], tot: [860, meY + 10, 210, 32], rack: [102, rackY, 1076, R], sl: [30, rackY, 66, R], sr: [1184, rackY, 66, R],
       ci: { left: [12, 362, 40, 40], right: [1228, 362, 40, 40], top: [848, 8, 40, 40] },
     } : {
       info: [40, 10, 430, 28], chat: [100, 654, 336, 44], btns: [560, 4, 712, 46], top: [440, 50, 400, 88], left: [2, 150, 64, 270], right: [1214, 150, 64, 270],
       tl: [28, 61], tr: [1194, 61], bl: [28, 612], br: [1194, 612], pz: [57, 74], pc: 'c', mz: 'm',
-      b1: [4, 426, 92, 30], b2: [1184, 426, 92, 30], tags: [846, 140, 90, 176], ind: [858, 330, 66, 86], heap: [858, 432, 66, 86],
+      b1: [4, 426, 92, 30], b2: [1184, 426, 92, 30], tags: [846, 136, 90, 104], thr: [846, 250, 94, 72], ind: [858, 330, 66, 86], heap: [858, 432, 66, 86],
       by: [322, 372, 422, 472, 522, 572], bh: [44, 44, 44, 44, 44, 32], act: [846, 560, 340, 94], gb: [2, 558, 116, 46],
-      me: [440, 610, 400, 88], tot: [860, 662, 210, 36], rack: [102, 706, 1076, 182], sl: [14, 730, 80, 130], sr: [1186, 730, 80, 130],
+      me: [440, 610, 400, 88], tot: [860, 662, 210, 36], rack: [102, 706, 1076, 182], sl: [30, 706, 66, 182], sr: [1184, 706, 66, 182],
       ci: { left: [10, 464, 44, 44], right: [1226, 464, 44, 44], top: [848, 56, 44, 44] },
     };
     const turnBar = '<div class="trow"><div class="sb"><div id="bar"></div></div><b id="tl"></b></div>';
@@ -478,17 +523,17 @@ const views = {
       ${plate(rel(3), P.left, 'left')}${plate(rel(1), P.right, 'right')}${plate(rel(2), P.top, 'top')}
       ${pile(rel(2), P.tl, 'tl')}${pile(rel(1), P.tr, 'tr')}${pile(rel(3), P.bl, 'bl')}${pile(me, P.br, 'br')}
       ${camIcon(rel(3), P.ci.left)}${camIcon(rel(1), P.ci.right)}${camIcon(rel(2), P.ci.top)}
-      ${isOkey ? '' : `${bx(P.b1, `${G.minMeld}<small> sayı</small>`, 'bdg')}${bx(P.b2, `${G.minPairs}<small> çift</small>`, 'bdg')}`}
+      ${isOkey ? '' : bx(P.thr, `<div class="thr"><b>${G.minMeld}</b> sayı</div><div class="thr c"><b>${G.minPairs}</b> çift</div>`, 'thrbox')}
       ${isOkey ? box(cx, clothY, px + 6 * CW - cx, clothH, '<div class="wm">Luna101</div>', 'okeytable', vars) : `${box(cx, clothY, 2 * sq, clothH, `${sqs(sq, 2)}<div class="wm">Luna101</div>${rows}`, 'cloth', vars)}${box(px, clothY, 6 * CW, clothH, `${sqs(6 * CW, 1)}${prs}`, 'cloth', vars)}`}
-      ${bx(P.tags, isOkey ? `<div class="tag g">Okey</div><div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag">El ${L.roundNo || 1}/${L.rounds || 1}</div>` : `<div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag g">Yardımlı</div><div class="tag ${L.katlamali ? 'r' : ''}">${L.katlamali ? 'Katlamalı' : 'Katlamasız'}</div><div class="tag">El ${L.roundNo || 1}/${L.rounds || 1}</div>`)}
+      ${bx(P.tags, isOkey ? `<div class="tag g">Okey</div><div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag">El ${L.roundNo || 1}/${L.rounds || 1}</div>` : `<div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag ${L.katlamali ? 'r' : ''}">${L.katlamali ? 'Katlamalı' : 'Katlamasız'}</div><div class="tag">El ${L.roundNo || 1}/${L.rounds || 1}</div>`)}
       ${bx(P.ind, `<span class="ind">${tile(G.indicator, { okey: ok, z: P.mz })}</span>`)}
       ${bx(P.heap, `<button class="t heap ${canDraw ? 'go' : ''}" data-act="pile" ${canDraw ? '' : 'disabled'}><span>${G.pileCount}</span></button>`)}
       ${acts.length ? bx(P.act, acts.map(([c, a, t]) => `<button class="act ${c}" data-act="${a}">${t}</button>`).join(''), 'act-row') : ''}
       ${myTurn && G.mustUse != null ? bx(P.gb, '<button class="act giveback" data-act="cancel">↩ Geri bırak</button>', 'act-gb') : ''}
       ${hbar(me, P.me, 'myplate', '50% 100%', hint)}
       ${isOkey ? bx(P.tot, `Puan ${L.mode === 'pairs' ? (G.teamScores?.[me % 2] ?? 0) : G.scores[me]}`, 'tot ok') : bx(P.tot, totTxt, `tot ${myO.opened ? '' : enough ? 'ok' : 'bad'}`)}
-      ${bx(P.sl, `<button class="side" data-act="cift"><span class="mcs"><i>5</i><i>5</i></span>Çift<br>diz</button>`)}
-      ${bx(P.sr, `<button class="side" data-act="seri"><span class="mcs"><i>1</i><i>2</i><i>3</i></span>Seri<br>diz</button>`)}
+      ${bx(P.sl, `<button class="side c" data-act="cift"><span class="vt">ÇİFT DİZ</span></button>`)}
+      ${bx(P.sr, `<button class="side s" data-act="seri"><span class="vt">SERİ DİZ</span></button>`)}
       ${bx(P.rack, rackHtml + stake, 'rack')}
     </div>${G.over ? overHtml(G, L) : ''}`;
   },
@@ -1118,5 +1163,15 @@ setInterval(() => {
 
 document.body.dataset.tema = store.tema || 'zumrut';
 pollStats(); setInterval(pollStats, 20000);   // menüdeki canlı oyuncu sayıları
-if (store.token) connect(); else render();
+// Açılış ekranı: logo + bekleme çubuğu; sunucuya bağlanınca (ya da bağlanılacak bir şey yoksa) kapanır
+const splashT0 = performance.now();
+let splashOn = true;
+function splashDone() {
+  if (!splashOn) return;
+  splashOn = false;
+  setTimeout(() => { const sp = $('#splash'); sp?.classList.add('off'); setTimeout(() => sp?.remove(), 600); }, Math.max(0, 1300 - (performance.now() - splashT0)));
+}
+setTimeout(() => { if (splashOn) { const n = $('#spnote'); if (n) n.hidden = false; } }, 4000);   // uzarsa: sunucu uyanıyor notu
+setTimeout(splashDone, 40000);                                                                    // en kötü durumda menüye geç
+if (store.token) connect(); else { render(); splashDone(); }
 </script></body></html>
