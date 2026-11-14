@@ -262,6 +262,14 @@ body[data-tema=klasik]{--felt:#14532d;--felt2:#0f3d21;--g1:#17592f;--g2:#0b351c;
 @keyframes sidespin{to{transform:rotate(360deg)}}
 @keyframes sidepulse{50%{box-shadow:0 0 20px #ffd54fcc,0 0 34px #3fa0ffaa,0 6px 12px #0008}}
 .cmp .side .in b,.stage.cmp .side .in b{font-size:16px}.stage.cmp .side .mcs i{width:15px;height:21px;font-size:11px}
+.wmlogo{position:absolute;top:50%;height:auto;transform:translateY(-50%) rotate(-5deg);opacity:.08;filter:grayscale(1) brightness(2.3);pointer-events:none}
+.a.thrbox{z-index:3}
+/* Rakip plakaları: ahşap ıstaka, içi koyu gözlü tepsi */
+.seat.vbar{padding:9px 7px;background:repeating-linear-gradient(180deg,#0000 0 27px,#ffffff10 27px 28px) content-box,linear-gradient(90deg,#26150a,#46280f 50%,#26150a) content-box,repeating-linear-gradient(90deg,#00000018 0 1px,transparent 1px 9px) border-box,linear-gradient(180deg,#c08a50,#8f5c2b 22%,#9d6834 78%,#5a3517) border-box;
+  border:2px solid #3a200c;border-radius:12px;box-shadow:0 8px 16px #0009,inset 0 3px 6px #ffffff3a,inset 0 -6px 10px #0006;color:#fff3dc;text-shadow:0 2px 3px #000b}
+.seat.np.top{padding:10px 14px;background:repeating-linear-gradient(90deg,#0000 0 31px,#ffffff10 31px 32px) content-box,linear-gradient(180deg,#26150a,#46280f 50%,#26150a) content-box,repeating-linear-gradient(0deg,#00000018 0 1px,transparent 1px 9px) border-box,linear-gradient(180deg,#c08a50,#8f5c2b 22%,#9d6834 78%,#5a3517) border-box;
+  border:2px solid #3a200c;border-radius:12px;box-shadow:0 8px 16px #0009,inset 0 3px 6px #ffffff3a,inset 0 -6px 10px #0006;color:#fff3dc;text-shadow:0 2px 3px #000b}
+.cmp .seat.np.top{padding:5px 9px}.cmp .seat.vbar{padding:6px 5px}
 .foot{text-align:center;opacity:.65;font-size:12px;line-height:1.5;padding:16px 8px 24px}
 </style></head><body>
 <div id="vg"></div>
@@ -303,7 +311,7 @@ let plan = null; // Yardımlı: assist.mjs yüklenemezse oyun yine açılır
 import('./assist.mjs').then((m) => { plan = m.plan; }).catch(() => {});
 // Adrese ?test eklenirse her sekme ayrı oyuncu olur (tek bilgisayarda 4 kişilik deneme için).
 const store = (location.search || '').includes('test') ? sessionStorage : localStorage;
-const SURUM = 'Sürüm 3.1';
+const SURUM = 'Sürüm 3.2';
 // Telif koruması: oyun yalnızca resmî adreslerde çalışır; kopyalanıp başka sitede açılırsa uyarı gösterir (ve sunucu da bağlantıyı reddeder).
 const IZINLI = ['luna101.com.tr', 'www.luna101.com.tr', 'okey101new.onrender.com', 'okey101new-iiz3.onrender.com', 'localhost', '127.0.0.1'];
 if (location.protocol !== 'file:' && !IZINLI.includes(location.hostname) && !location.hostname.endsWith('.onrender.com') && !/^\d{1,3}(\.\d{1,3}){3}$/.test(location.hostname)) {
@@ -542,8 +550,12 @@ const views = {
       return box(xy[0], xy[1], P.pz[0], P.pz[1], d ? `<span class="${S.fresh[i] ? 'new' : ''}">${tile(d, { okey: ok, z: P.pc, act: take ? 'take' : '' })}</span>` : '', `pile ${corner}`);
     };
     // Masa: iki adet 13x13 kare; seri perler sayılarına göre hizalanır, çiftler sağdaki alana dizilir
-    const place = lanePlacement(G, ok, CW, CH, clothH);
-    const rows = place.map((p) => `<div class="meld-row" data-act="meld" data-owner="${p.s}" data-idx="${p.k}" style="left:${p.left}px;top:${p.top}px">${p.cells.map((c) => tile(c.tile, { z: 'xs', okey: ok })).join('')}</div>`).join('');
+    const place = tablePlacement(G, ok);
+    const rows = place.filter((p) => !p.pair).map((p) => `<div class="meld-row" data-act="meld" data-owner="${p.s}" data-idx="${p.k}" style="left:${cx - 96 + (p.row >= 13 ? sq : 0) + (p.cols[0] - 1) * CW}px;top:${(p.row % 13) * CH}px">${p.cells.map((c) => tile(c.tile, { z: 'xs', okey: ok })).join('')}</div>`).join('');
+    const prs = place.filter((p) => p.pair).map((p) => `<div class="meld-row" data-act="meld" data-owner="${p.s}" data-idx="${p.k}" style="left:${px - 96 + p.col * CW}px;top:${p.row * CH}px">${p.m.map((t) => tile(t, { z: 'xs', okey: ok })).join('')}</div>`).join('');
+    // Luna101 logosu: masanın ortasında soluk silüet
+    const wmW = isOkey ? 540 : Math.min(2 * sq * 0.74, 540), wmL = isOkey ? (1020 - wmW) / 2 : cx - 96 + (2 * sq - wmW) / 2;
+    const wmLogo = `<svg class="wmlogo" style="left:${wmL}px;width:${wmW}px" viewBox="0 0 560 340"><use href="#lunalogo"/></svg>`;
     const btn = (k, cls, a, label, on) => box(1136, P.by[k], 127, P.bh[k], `<button class="btn ${cls} wide" data-act="${a}" ${on ? '' : 'disabled'}>${label}</button>`);
     const rackHtml = S.slots.map((id, k) => {
       const t = id != null && !stagedIds.has(id) ? byId.get(id) : null;
@@ -560,7 +572,7 @@ const views = {
       ${pile(rel(2), P.tl, 'tl')}${pile(rel(1), P.tr, 'tr')}${pile(rel(3), P.bl, 'bl')}${pile(me, P.br, 'br')}
       ${camIcon(rel(3), P.ci.left)}${camIcon(rel(1), P.ci.right)}${camIcon(rel(2), P.ci.top)}
       ${isOkey ? '' : bx(P.thr, `<div class="thr"><b>${G.minMeld}</b> sayı</div><div class="thr c"><b>${G.minPairs}</b> çift</div>`, 'thrbox')}
-      ${box(96, clothY, 1020, clothH, `<div class="wm">Luna101</div>${isOkey ? '' : rows}`, 'okeytable', vars)}
+      ${box(96, clothY, 1020, clothH, `${wmLogo}${isOkey ? '' : rows + prs}`, 'okeytable', vars)}
       ${bx(P.tags, isOkey ? `<div class="tag g">Okey</div><div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag">El ${L.roundNo || 1}/${L.rounds || 1}</div>` : `<div class="tag">${L.mode === 'pairs' ? 'Eşli' : 'Tek'}</div><div class="tag ${L.katlamali ? 'r' : ''}">${L.katlamali ? 'Katlamalı' : 'Katlamasız'}</div><div class="tag">El ${L.roundNo || 1}/${L.rounds || 1}</div>`)}
       ${bx(P.ind, `<span class="ind">${tile(G.indicator, { okey: ok, z: P.mz })}</span>`)}
       ${bx(P.heap, `<button class="t heap ${canDraw ? 'go' : ''}" data-act="pile" ${canDraw ? '' : 'disabled'}><span>${G.pileCount}</span></button>`)}
@@ -754,31 +766,6 @@ function colsOf(L) {
   if (L.kind === 'set') { const end = Math.max(L.num, n); return L.cells.map((_, i) => end - n + 1 + i); }
   if (L.kind === 'run') { const max = Math.max(...L.cells.map((c) => c.pos)), sh = max > 13 ? max - 13 : 0; return L.cells.map((c) => c.pos - sh); }
   return L.cells.map((_, i) => i + 1);
-}
-// Perler oyuncunun kendi yanında açılır: üstte karşıdaki, solda/sağda yandakiler, altta sen. Satır dolunca bir alt satıra geçer.
-function lanePlacement(G, ok, CW, CH, H) {
-  const me = G.you, n = G.others.length, rowH = CH * 1.14, gap = CW * 0.45;
-  const lanes = {                                      // r: oyuncunun bana göre yeri (0 ben, 1 sağ, 2 karşı, 3 sol); koordinatlar zemin içi
-    2: { x0: 14, x1: 736, y: H * 0.025, dir: 1 },
-    3: { x0: 14, x1: 340, y: H * 0.245, dir: 1 },
-    1: { x0: 866, x1: 1012, y: H * 0.245, dir: 1 },
-    0: { x0: 14, x1: 736, y: H * 0.975 - rowH, dir: -1 },
-  };
-  const items = [];
-  G.others.forEach((o, s) => o.melds.forEach((m, k) => items.push({ s, k, m, seq: o.meldSeq?.[k] ?? 0 })));
-  items.sort((a, b) => a.seq - b.seq);
-  const cur = {};
-  return items.map((it) => {
-    const r = (it.s - me + n) % n, lane = lanes[r] ?? lanes[0];
-    const pair = it.m.length === 2;
-    const cells = pair ? it.m.map((t) => ({ tile: t })) : layoutMeld(it.m, ok).cells;
-    const w = cells.length * CW, st = (cur[r] ??= { x: lane.x0, y: lane.y });
-    if (r === 1) { const o = { ...it, pair, cells, left: lane.x1 - w, top: st.y }; st.y += lane.dir * rowH; return o; }   // sağdaki: her per ayrı satır, sağa yaslı
-    if (st.x > lane.x0 && st.x + w > lane.x1) { st.x = lane.x0; st.y += lane.dir * rowH; }
-    const o = { ...it, pair, cells, left: st.x, top: st.y };
-    st.x += w + gap;
-    return o;
-  });
 }
 function tablePlacement(G, ok) {
   const items = [];
