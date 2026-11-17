@@ -18,7 +18,7 @@ const READY_GRACE_MS = 20000; // ilk "Yeni oyuna başla"dan sonra bu kadar bekle
 const BOT_NAMES = ['Ali', 'Ayşe', 'Can', 'Deniz', 'Elif', 'Mert', 'Zeynep', 'Kaan'];
 const fail = (error) => ({ ok: false, error });
 
-export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet = null, onGame = () => {} } = {}) {
+export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet = null, onGame = () => {}, randomStart = false } = {}) {
   const rooms = new Map();
   const botNames = new Map(); // bot kimliği -> görünen ad
   let botSeq = 0;
@@ -27,7 +27,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
   const humansOf = (room) => room.seats.filter((id) => id && !isBot(id));
   function newBot(room) {                                  // odada kullanılmayan bir ad seçer
     const used = new Set(room.seats.filter(isBot).map((id) => botNames.get(id)));
-    const name = '🤖 ' + (BOT_NAMES.find((n) => !used.has('🤖 ' + n)) ?? 'Bot ' + (botSeq + 1));
+    const name = BOT_NAMES.find((n) => !used.has(n)) ?? 'Bot ' + (botSeq + 1);   // simge yok: arayüz baş harfi gösterir
     const id = 'bot-' + ++botSeq;
     botNames.set(id, name);
     return id;
@@ -160,7 +160,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
   // Yeni maç: puanlar sıfırlanır. Botlar biraz zayıflatılmış oynar (BOT_MISS).
   function newGame(room) {
     const E = ENGINES[room.kind];
-    const g = E.createGame({ players: 4, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, clock, rnd });
+    const g = E.createGame({ players: 4, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, clock, rnd, startSeat: randomStart ? Math.floor(rnd() * 4) : 0 });
     g.botMiss = E.miss;
     return g;
   }

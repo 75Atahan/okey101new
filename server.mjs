@@ -24,7 +24,7 @@ const iceServers = [{ urls: 'stun:stun.l.google.com:19302' }];
 if (process.env.TURN_URL) iceServers.push({ urls: process.env.TURN_URL, username: process.env.TURN_USER, credential: process.env.TURN_PASS });
 // Günlük istatistikler: STATS_FILE verilirse (örn. /opt/luna101/data/stats.json) yeniden başlatmada kaybolmaz
 const stats = createStats({ file: process.env.STATS_FILE || null });
-const hub = createHub({ rooms: createRoomManager({ wallet: process.env.JETONLU === '1' ? createWallet() : null, onGame: () => stats.gameStarted() }), stats, rtc, iceServers });
+const hub = createHub({ rooms: createRoomManager({ wallet: process.env.JETONLU === '1' ? createWallet() : null, onGame: () => stats.gameStarted(), randomStart: true }), stats, rtc, iceServers });
 // Arayüz dosyaları (istemci okey101.mjs'yi önizleme doğrulaması için kullanır)
 const FILES = {
   '/': ['index.html', 'text/html; charset=utf-8'],

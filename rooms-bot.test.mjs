@@ -44,7 +44,7 @@ const inbox = []; const conn = hub.connect((d) => inbox.push(JSON.parse(d)));
 const send = (o) => conn.message(JSON.stringify(o));
 send({ t: 'hello', name: 'Ali' }); send({ t: 'createRoom', bots: 2 });
 const lobby = inbox.findLast((m) => m.t === 'state').lobby;
-assert.ok(lobby.names[1].startsWith('🤖') && lobby.online.every(Boolean) === false && lobby.online[1]);
+assert.ok(!lobby.names[1].includes('🤖') && lobby.bots[1] && lobby.online.every(Boolean) === false && lobby.online[1]);   // botun adında simge yok
 send({ t: 'addBot' });
 assert.ok(inbox.findLast((m) => m.t === 'state').lobby.bots.filter(Boolean).length === 3);
 send({ t: 'removeBot', seat: 3 });

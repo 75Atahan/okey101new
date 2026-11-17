@@ -17,8 +17,8 @@ function deal(n, rnd) {
   return { indicator, okey, hands, pile: deck };
 }
 
-export function createGame({ players = 4, mode = 'single', turnSeconds = 45, clock = Date.now, rnd } = {}) {
-  const g = { kind: 'okey', players, mode, katlamali: false, rnd, clock, turnMs: turnSeconds * 1000, roundNo: 0, scores: Array(players).fill(0) };
+export function createGame({ players = 4, mode = 'single', turnSeconds = 45, clock = Date.now, rnd, startSeat = 0 } = {}) {
+  const g = { kind: 'okey', players, mode, katlamali: false, rnd, clock, startSeat, turnMs: turnSeconds * 1000, roundNo: 0, scores: Array(players).fill(0) };
   startRound(g);
   return g;
 }
@@ -26,7 +26,8 @@ export function createGame({ players = 4, mode = 'single', turnSeconds = 45, clo
 export function startRound(g) {
   const n = g.players;
   const r = deal(n, g.rnd);
-  const starter = g.roundNo % n;
+  const starter = ((g.startSeat ?? 0) + g.roundNo) % n;
+  g.starter = starter;
   g.roundNo++;
   g.indicator = r.indicator;
   g.okey = r.okey;
@@ -111,6 +112,7 @@ export function viewFor(g, p) {
   return {
     kind: 'okey',
     you: p,
+    starter: g.starter,
     turn: g.turn,
     phase: g.phase,
     katlamali: false,

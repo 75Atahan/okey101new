@@ -5,8 +5,8 @@ import { newRound, checkOpen, canAddToMeld, isJoker, roundScore, validateMeld, i
 const fail = (error) => ({ ok: false, error });
 const OK = { ok: true };
 
-export function createGame({ players = 4, mode = 'single', katlamali = false, turnSeconds = 45, clock = Date.now, rnd } = {}) {
-  const g = { players, mode, katlamali, rnd, clock, turnMs: turnSeconds * 1000, roundNo: 0, scores: Array(players).fill(0) };
+export function createGame({ players = 4, mode = 'single', katlamali = false, turnSeconds = 45, clock = Date.now, rnd, startSeat = 0 } = {}) {
+  const g = { players, mode, katlamali, rnd, clock, startSeat, turnMs: turnSeconds * 1000, roundNo: 0, scores: Array(players).fill(0) };
   startRound(g);
   return g;
 }
@@ -14,7 +14,8 @@ export function createGame({ players = 4, mode = 'single', katlamali = false, tu
 export function startRound(g) {
   const n = g.players;
   const r = newRound(n, g.rnd);
-  const starter = g.roundNo % n; // her elde başlayan bir sonraki oyuncu
+  const starter = ((g.startSeat ?? 0) + g.roundNo) % n; // ilk el startSeat'te başlar, sonraki ellerde bir sonraki oyuncu
+  g.starter = starter;
   g.roundNo++;
   g.indicator = r.indicator;
   g.okey = r.okey;
@@ -275,6 +276,7 @@ function endRound(g, finisher, withOkey) {
 export function viewFor(g, p) {
   return {
     you: p,
+    starter: g.starter,
     turn: g.turn,
     phase: g.phase,
     katlamali: g.katlamali,

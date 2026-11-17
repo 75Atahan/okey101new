@@ -61,7 +61,7 @@ function bestSeries(cnt0, jk0) {
 }
 
 // Aynı taşlar çift olur; okey tek kalan bir taşla (veya okeyle) çift olur.
-function pairsOf(tiles, okey) {
+export function pairsOf(tiles, okey) {
   const jokers = tiles.filter((t) => isJoker(t, okey));
   const by = new Map();
   for (const t of tiles) {
