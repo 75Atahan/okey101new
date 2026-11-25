@@ -35,8 +35,12 @@ assert.equal(jokerReplaceIndex([T(0, 8), J2, T(1, 8), T(2, 8)], T(0, 8), okey), 
 g = setup([T(0, 8), J2, T(1, 8), T(2, 8)], [T(0, 8), extra]);
 assert.ok(!addToMeld(g, 0, 0, 0, g.seats[0].hand[0].id).ok);
 
-// Okey değişiminde elde tek taş olsa bile yapılabilir (el sayısı değişmez)
+// Okey değişiminde elde tek taş olsa bile yapılabilir (el sayısı değişmez): 4-5-OKEY'de okey 6 yerindedir
 const six = T(0, 6), J3 = T(1, 5);
+g = setup([T(0, 4), T(0, 5), J3], [six]);
+r = addToMeld(g, 0, 0, 0, six.id);
+assert.ok(r.ok && r.swapped);
+// 3 gelirse okey alınmaz, başa işlenir; elde tek taş kaldığından işlenemez
 g = setup([T(0, 4), T(0, 5), J3], [T(0, 3)]);
-assert.ok(addToMeld(g, 0, 0, 0, g.seats[0].hand[0].id).ok);          // 3 sona/başa eklenmez: elde tek taş kalır
+assert.ok(!addToMeld(g, 0, 0, 0, g.seats[0].hand[0].id).ok);
 console.log('Okey değişimi testleri geçti');

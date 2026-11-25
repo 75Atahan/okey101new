@@ -16,6 +16,8 @@ const MODES = ['single', 'pairs']; // tekli / eşli
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const READY_GRACE_MS = 20000; // ilk "Yeni oyuna başla"dan sonra bu kadar beklenir, basmayanlar hazır sayılır
 const BOT_NAMES = ['Ali', 'Ayşe', 'Can', 'Deniz', 'Elif', 'Mert', 'Zeynep', 'Kaan'];
+// Yalnızca botlarda isminin yanında görünür: simgenin adı botun baş harfiyle başlar (Ali=Aslan, Ayşe=Ay ...)
+export const BOT_ICONS = { Ali: ['🦁', 'Aslan'], Ayşe: ['🌙', 'Ay'], Can: ['🐥', 'Civciv'], Deniz: ['🐪', 'Deve'], Elif: ['🍎', 'Elma'], Mert: ['🍌', 'Muz'], Zeynep: ['🦒', 'Zürafa'], Kaan: ['🐱', 'Kedi'] };
 const fail = (error) => ({ ok: false, error });
 
 export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet = null, onGame = () => {}, randomStart = false } = {}) {
@@ -25,6 +27,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
   const isBot = (id) => typeof id === 'string' && id.startsWith('bot-');
   const hasBots = (room) => room.seats.some(isBot);
   const humansOf = (room) => room.seats.filter((id) => id && !isBot(id));
+  const botIcon = (id) => BOT_ICONS[botNames.get(id)]?.[0] ?? '🤖';
   function newBot(room) {                                  // odada kullanılmayan bir ad seçer
     const used = new Set(room.seats.filter(isBot).map((id) => botNames.get(id)));
     const name = BOT_NAMES.find((n) => !used.has(n)) ?? 'Bot ' + (botSeq + 1);   // simge yok: arayüz baş harfi gösterir
@@ -234,7 +237,7 @@ export function createRoomManager({ rnd = Math.random, clock = Date.now, wallet 
     if (p < 0) return fail('Bu odada değilsin.');
     return {
       ok: true,
-      lobby: { code, host: room.hostId, kind: room.kind, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, rounds: room.rounds, roundNo: room.game?.roundNo ?? 0, matchOver: matchOver(room), stake: !wallet || (room.game ? room.practice : hasBots(room)) ? 0 : stakeOf(room), practice: wallet ? (room.game ? !!room.practice : hasBots(room)) : false, bots: room.seats.map(isBot), ready: room.seats.map((id) => !!id && (isBot(id) || room.ready.has(id))), readyAt: room.readyAt, readyGrace: READY_GRACE_MS, lastPayout: room.lastPayout ?? null, nextAt: room.nextAt ?? null, balances: wallet ? room.seats.map((id) => (id && !isBot(id) ? wallet.balance(id) : null)) : null, seats: room.seats, started: !!room.game },
+      lobby: { code, host: room.hostId, botIcons: room.seats.map((id) => (isBot(id) ? botIcon(id) : null)), kind: room.kind, mode: room.mode, katlamali: room.katlamali, turnSeconds: room.turnSeconds, rounds: room.rounds, roundNo: room.game?.roundNo ?? 0, matchOver: matchOver(room), stake: !wallet || (room.game ? room.practice : hasBots(room)) ? 0 : stakeOf(room), practice: wallet ? (room.game ? !!room.practice : hasBots(room)) : false, bots: room.seats.map(isBot), ready: room.seats.map((id) => !!id && (isBot(id) || room.ready.has(id))), readyAt: room.readyAt, readyGrace: READY_GRACE_MS, lastPayout: room.lastPayout ?? null, nextAt: room.nextAt ?? null, balances: wallet ? room.seats.map((id) => (id && !isBot(id) ? wallet.balance(id) : null)) : null, seats: room.seats, started: !!room.game },
       game: room.game ? ENGINES[room.kind].viewFor(room.game, p) : null,
       balance: wallet ? wallet.balance(userId) : null,
     };

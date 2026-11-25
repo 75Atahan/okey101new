@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { WebSocketServer } from 'ws';
 import { createHub } from './hub.mjs';
 import { createStats } from './stats.mjs';
+import { createMembers, createSender } from './members.mjs';
 import { createRtc } from './rtc.mjs';
 import { createRoomManager } from './rooms.mjs';
 import { createWallet } from './wallet.mjs';
@@ -24,7 +25,9 @@ const iceServers = [{ urls: 'stun:stun.l.google.com:19302' }];
 if (process.env.TURN_URL) iceServers.push({ urls: process.env.TURN_URL, username: process.env.TURN_USER, credential: process.env.TURN_PASS });
 // Günlük istatistikler: STATS_FILE verilirse (örn. /opt/luna101/data/stats.json) yeniden başlatmada kaybolmaz
 const stats = createStats({ file: process.env.STATS_FILE || null });
-const hub = createHub({ rooms: createRoomManager({ wallet: process.env.JETONLU === '1' ? createWallet() : null, onGame: () => stats.gameStarted(), randomStart: true }), stats, rtc, iceServers });
+// Üyelik: MEMBERS_FILE (varsayılan data/members.json), SMS için NETGSM_USERCODE / NETGSM_PASSWORD / NETGSM_HEADER; OTP_TEST=1 ise kod ekranda gösterilir (yalnızca deneme için)
+const memberStore = createMembers({ file: process.env.MEMBERS_FILE || 'data/members.json', sender: createSender(), testMode: process.env.OTP_TEST === '1' });
+const hub = createHub({ memberStore, rooms: createRoomManager({ wallet: process.env.JETONLU === '1' ? createWallet() : null, onGame: () => stats.gameStarted(), randomStart: true }), stats, rtc, iceServers });
 // Arayüz dosyaları (istemci okey101.mjs'yi önizleme doğrulaması için kullanır)
 const FILES = {
   '/': ['index.html', 'text/html; charset=utf-8'],
@@ -52,7 +55,8 @@ wss.on('connection', (ws, req) => {
   if (!originOk(req.headers.origin, req.headers.host, ALLOWED)) return ws.close(1008, 'origin');   // başka sitedeki kopya arayüz bağlanamaz
   ws.isAlive = true;
   ws.on('pong', () => (ws.isAlive = true));
-  const conn = hub.connect((data) => ws.readyState === ws.OPEN && ws.send(data));
+  const ip = String(req.headers['x-forwarded-for'] ?? req.socket.remoteAddress ?? 'x').split(',')[0].trim();
+  const conn = hub.connect((data) => ws.readyState === ws.OPEN && ws.send(data), ip);
   ws.on('message', (d) => conn.message(d.toString()));
   ws.on('close', conn.close);
   ws.on('error', () => ws.terminate());

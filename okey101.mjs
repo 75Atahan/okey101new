@@ -171,9 +171,13 @@ export function layoutMeld(tiles, okey) {
 // 4 taşlıda eksik renk belli olduğundan alınabilir. Seride okeyin yeri her zaman belli olduğu için alınabilir.
 export function jokerReplaceIndex(meld, tile, okey) {
   if (isJoker(tile, okey)) return -1;
-  if (meld.length === 3 && validateMeld(meld, okey).type === 'set') return -1;
+  const v = validateMeld(meld, okey);
+  if (meld.length === 3 && v.type === 'set') return -1;
+  // Seride okey, perde göründüğü yerin sayısıyla alınır (örn. 11-12-OKEY: okey 13'tür, 10 gelirse okey alınmaz, 10 başa işlenir)
+  const lay = v.valid && v.type !== 'set' ? layoutMeld(meld, okey) : null;
   for (let i = 0; i < meld.length; i++) {
     if (!isJoker(meld[i], okey)) continue;
+    if (lay) { const cell = lay.cells.find((c) => c.tile === meld[i]); if (!cell || face(tile, okey).num !== cell.pos) continue; }
     const next = [...meld];
     next[i] = tile;
     if (validateMeld(next, okey).valid) return i;

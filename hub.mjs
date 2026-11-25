@@ -3,12 +3,13 @@
 import { randomUUID } from 'node:crypto';
 import { createRoomManager } from './rooms.mjs';
 import { createStats } from './stats.mjs';
+import { createMembers } from './members.mjs';
 
 const MAX_MSG = 16384; // SDP sinyalleri 4 KB'ı aşabilir
 const MAX_CHAT = 300;
 const CHAT_LIMIT = { count: 5, windowMs: 5000 };
 
-export function createHub({ rooms = createRoomManager(), now = Date.now, stats = createStats({ now }), rtc = null, iceServers = [{ urls: 'stun:stun.l.google.com:19302' }] } = {}) {
+export function createHub({ rooms = createRoomManager(), now = Date.now, stats = createStats({ now }), memberStore = createMembers({ now }), rtc = null, iceServers = [{ urls: 'stun:stun.l.google.com:19302' }] } = {}) {
   const users = new Map();  // userId -> { id, name, token, conns:Set, room, chatTimes }
   const tokens = new Map(); // token -> userId
 
@@ -36,7 +37,7 @@ export function createHub({ rooms = createRoomManager(), now = Date.now, stats =
     }
   }
 
-  function connect(send) {
+  function connect(send, ip = 'x') {
     let user = null;
     const err = (error) => send(JSON.stringify({ t: 'error', error }));
 
@@ -50,9 +51,11 @@ export function createHub({ rooms = createRoomManager(), now = Date.now, stats =
         users.set(user.id, user);
         tokens.set(user.token, user.id);
       }
+      const mem = typeof m.mtoken === 'string' ? memberStore.byToken(m.mtoken) : null;   // kayıtlı üye oturumu
+      if (mem) { user.member = mem; user.name = mem.name; }
       user.conns.add(send);
       stats.seen(user.id);
-      send(JSON.stringify({ t: 'welcome', userId: user.id, token: user.token, name: user.name, room: user.room, balance: rooms.balance(user.id) }));
+      send(JSON.stringify({ t: 'welcome', userId: user.id, token: user.token, name: user.name, member: user.member ?? null, room: user.room, balance: rooms.balance(user.id) }));
       if (user.room) pushState(user.room); // yeniden bağlanan oyuncu durumu geri alır
     }
 
@@ -90,10 +93,28 @@ export function createHub({ rooms = createRoomManager(), now = Date.now, stats =
         return sendTo(to, { t: 'sig', from: user.id, data: m.data });
       }
 
+      // Üyelik: kod iste (kayıt / giriş), kodu doğrula, çıkış
+      if (m.t === 'register' || m.t === 'login') {
+        memberStore.begin({ kind: m.t, name: m.name, surname: m.surname, phone: m.phone, email: m.email, consent: m.consent === true, ip })
+          .then((r) => send(JSON.stringify({ t: 'otp', kind: m.t, ...r })))
+          .catch(() => err('Üyelik işlemi şu an yapılamıyor.'));
+        return;
+      }
+      if (m.t === 'verify') {
+        const r = memberStore.verify({ phone: m.phone, code: m.code });
+        if (!r.ok) return send(JSON.stringify({ t: 'otp_error', error: r.error }));
+        user.member = r.member; user.name = r.member.name;
+        send(JSON.stringify({ t: 'member', member: r.member, token: r.token }));
+        if (user.room) pushState(user.room);
+        return;
+      }
+      if (m.t === 'logout') { memberStore.logout(m.mtoken); user.member = null; return send(JSON.stringify({ t: 'member', member: null })); }
+
       if (m.t === 'ping') return;                              // istemci kalp atışı: Render'ın boşta uyku sayacını sıfırlar
 
       if (m.t === 'rename') {                                  // isim masa kurulan/katılınan ekranda girilir
         const name = String(m.name ?? '').trim().slice(0, 20);
+        if (user.member) return;                               // üyenin adı kayıtlı adıdır
         if (name) { user.name = name; if (user.room) pushState(user.room); }
         return;
       }
