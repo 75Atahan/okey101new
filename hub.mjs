@@ -193,7 +193,7 @@ export function createHub({ rooms = createRoomManager(), now = Date.now, stats =
     const playingNow = online.filter((u) => u.room && rooms.playing(u.room)).length;
     stats.sample(online.length);
     const live = rooms.liveStats();
-    return stats.snapshot({ online: online.length, playing: playingNow, tables: live.tables, playingTables: live.playingTables });
+    return stats.snapshot({ online: online.length, playing: playingNow, tables: live.tables, playingTables: live.playingTables, members: memberStore.mode() });
   }
 
   return { connect, rooms, tick, statsSnapshot, stats };

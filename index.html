@@ -291,6 +291,7 @@ body[data-tema=klasik]{--felt:#14532d;--felt2:#0f3d21;--g1:#17592f;--g2:#0b351c;
 .memdet summary{list-style:none;cursor:pointer}.memdet summary::-webkit-details-marker{display:none}.memdet summary h3{margin:0 0 8px}
 .tabs{display:flex;gap:6px;margin-bottom:6px}.tab{flex:1;border:0;border-radius:10px;padding:8px;font:700 14px system-ui,sans-serif;background:#00000030;color:#fff;cursor:pointer}.tab.on{background:#ffd54f;color:#3a2400}
 .kvkk{display:flex;gap:6px;align-items:flex-start;font-size:12px;line-height:1.3;margin:4px 0 8px}.kvkk input{width:auto;margin:2px 0 0}
+.regerr{background:#d9304f40;border:1px solid #ff8a9b;border-radius:10px;padding:6px 10px;margin:6px 0;font-size:13px;line-height:1.35}
 .testcode{background:#ffd54f33;border:1px dashed #ffd54f;border-radius:10px;padding:6px 10px;margin:6px 0;font-size:13px}.testcode b{font-size:18px;letter-spacing:3px}
 .mem{display:flex;flex-direction:column;gap:2px;margin-bottom:8px}.mem b{font-size:17px}
 @media (max-width:1000px){.menu{grid-template-columns:1fr 1fr}.menu .m1,.menu .m2,.menu .m4{grid-column:1}.menu .m1{grid-row:1}.menu .m2{grid-row:2}.menu .m4{grid-row:3}.menu .m3{grid-column:2;grid-row:1}.menu .m5{grid-column:2;grid-row:2 / span 2}}
@@ -356,7 +357,7 @@ let plan = null, pairsOfFn = null; // Yardımlı: assist.mjs yüklenemezse oyun 
 import('./assist.mjs').then((m) => { plan = m.plan; pairsOfFn = m.pairsOf; }).catch(() => {});
 // Adrese ?test eklenirse her sekme ayrı oyuncu olur (tek bilgisayarda 4 kişilik deneme için).
 const store = (location.search || '').includes('test') ? sessionStorage : localStorage;
-const SURUM = 'Sürüm 3.7';
+const SURUM = 'Sürüm 3.8';
 // Telif koruması: oyun yalnızca resmî adreslerde çalışır; kopyalanıp başka sitede açılırsa uyarı gösterir (ve sunucu da bağlantıyı reddeder).
 const IZINLI = ['luna101.com.tr', 'www.luna101.com.tr', 'okey101new.onrender.com', 'okey101new-iiz3.onrender.com', 'localhost', '127.0.0.1'];
 if (location.protocol !== 'file:' && !IZINLI.includes(location.hostname) && !location.hostname.endsWith('.onrender.com') && !/^\d{1,3}(\.\d{1,3}){3}$/.test(location.hostname)) {
@@ -430,7 +431,7 @@ function on(m) {
   else if (m.t === 'sig') onSig(m);
   else if (m.t === 'callLeft') dropPeer(m.id);
   else if (m.t === 'timeout') toast(`${S.lobby?.names[m.seat] ?? 'Oyuncu'} süreyi aştı, taş otomatik atıldı.`);
-  else if (m.t === 'otp') { S.reg = m.ok ? { step: 'code', phone: S.regPhone, masked: m.phone, test: m.test } : null; if (!m.ok) toast(m.error); render(); }
+  else if (m.t === 'otp') { S.reg = m.ok ? { step: 'code', phone: S.regPhone, masked: m.phone, test: m.test } : null; S.regErr = m.ok ? '' : m.error; if (!m.ok) toast(m.error); render(); }
   else if (m.t === 'otp_error') { toast(m.error); if (/Önce kod|süresi|Çok fazla/.test(m.error)) S.reg = null; render(); }
   else if (m.t === 'member') { S.member = m.member; S.reg = null; if (m.token) store.mtoken = m.token; if (m.member) { store.name = m.member.name; toast('Hoş geldin ' + m.member.name + '!'); } else store.removeItem('mtoken'); render(); }
   else if (m.t === 'error') { toast(m.error); S.pendingSlot = null; if (/Hatalı/.test(m.error)) { S.staged = []; S.sel.clear(); } }
@@ -452,7 +453,7 @@ async function pollStats() {
 }
 // Üyelik kartı: yeni kayıt / giriş (telefona gelen kodla doğrulama)
 function memberCard() {
-  const M = S.member, R = S.reg || {}, open = innerWidth > 760 || R.step === 'code' ? ' open' : '';
+  const M = S.member, R = S.reg || {}, off = S.stats?.members === 'off', open = innerWidth > 760 || R.step === 'code' ? ' open' : '';
   let body;
   if (M) body = `<div class="mem"><b>✅ ${esc(M.name)} ${esc(M.surname)}</b><small>${esc(M.phone)}<br>${esc(M.email)}</small></div><button class="btn alt" data-act="logout" style="width:100%">Üyelikten çık</button>`;
   else if (R.step === 'code') body = `<small>${esc(R.masked || '')} numarasına 6 haneli kod gönderildi (5 dk geçerli).</small>${R.test ? `<div class="testcode">Test kodu: <b>${esc(R.test)}</b></div>` : ''}<input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6 haneli kod"><div class="row2"><button class="btn" data-act="verify">Doğrula</button><button class="btn alt" data-act="regback">Geri</button></div>`;
@@ -462,7 +463,8 @@ function memberCard() {
       + (mode === 'register'
         ? `<div class="g2"><input id="rn" placeholder="Ad" maxlength="30" autocomplete="given-name"><input id="rs" placeholder="Soyad" maxlength="30" autocomplete="family-name"></div><input id="rp" type="tel" placeholder="Cep telefonu (05xx ...)" maxlength="18" autocomplete="tel"><input id="re" type="email" placeholder="E-posta" maxlength="120" autocomplete="email"><label class="kvkk"><input type="checkbox" id="rc"> Aydınlatma metnini okudum, kişisel verilerimin işlenmesini kabul ediyorum.</label>`
         : `<input id="rp" type="tel" placeholder="Kayıtlı cep telefonun" maxlength="18" autocomplete="tel">`)
-      + `<button class="btn" data-act="sendcode" style="width:100%" ${R.busy ? 'disabled' : ''}>${R.busy ? 'Gönderiliyor…' : 'Kod gönder'}</button>`;
+      + (off ? '<div class="regerr">Üyelik şimdilik kapalı: SMS doğrulama servisi henüz bağlı değil.</div>' : '') + (S.regErr ? `<div class="regerr">${esc(S.regErr)}</div>` : '')
+      + `<button class="btn" data-act="sendcode" style="width:100%" ${R.busy || off ? 'disabled' : ''}>${R.busy ? 'Gönderiliyor…' : 'Kod gönder'}</button>`;
   }
   return `<details class="card m5 memdet"${open}><summary><h3>Üyelik</h3></summary>${body}</details>`;
 }
@@ -572,7 +574,7 @@ const views = {
     // Yerleşim (sahne 1280 x H): normal (iPad) ve sıkışık (telefon yan / geniş ekran)
     const R = cmp ? 150 : 182, rackY = cmp ? H - R - 2 : 706, meH = cmp ? 54 : 96, meY = cmp ? rackY - meH - 4 : 606;
     const clothY = cmp ? 62 : 140, clothH = cmp ? meY - clothY - 4 : 463;
-    const CH = clothH / 13, CW = cmp ? Math.min(28.46, CH * 0.8) : 28.46, sq = 13 * CW, cx = cmp ? 96 + (740 - 2 * sq) / 2 : 96;
+    const PY = 14, PX = 14, CH = (clothH - 2 * PY) / 13, CW = cmp ? Math.min(28.46, CH * 0.8) : 28.46, sq = 13 * CW, cx = cmp ? 96 + (740 - 2 * sq) / 2 : 96;
     const px = cmp ? 946 + (170 - 6 * CW) / 2 : 946, vars = `--cw:${CW}px;--ch:${CH}px`;
     const P = cmp ? {
       info: [8, 6, 420, 24], chat: [100, meY + 10, 336, 36], btns: [780, 5, 498, 46], top: [505, 4, 270, 48], left: [2, 96, 56, 230], right: [1222, 96, 56, 230],
@@ -624,8 +626,8 @@ const views = {
     };
     // Masa: iki adet 13x13 kare; seri perler sayılarına göre hizalanır, çiftler sağdaki alana dizilir
     const place = tablePlacement(G, ok);
-    const rows = place.filter((p) => !p.pair).map((p) => `<div class="meld-row" data-act="meld" data-owner="${p.s}" data-idx="${p.k}" style="left:${cx - 96 + (p.row >= 13 ? sq : 0) + (p.cols[0] - 1) * CW}px;top:${(p.row % 13) * CH}px">${p.cells.map((c) => tile(c.tile, { z: 'xs', okey: ok })).join('')}</div>`).join('');
-    const prs = place.filter((p) => p.pair).map((p) => `<div class="meld-row" data-act="meld" data-owner="${p.s}" data-idx="${p.k}" style="left:${px - 96 + p.col * CW}px;top:${p.row * CH}px">${p.m.map((t) => tile(t, { z: 'xs', okey: ok })).join('')}</div>`).join('');
+    const rows = place.filter((p) => !p.pair).map((p) => `<div class="meld-row" data-act="meld" data-owner="${p.s}" data-idx="${p.k}" style="left:${cx - 96 + PX + (p.row >= 13 ? sq : 0) + (p.cols[0] - 1) * CW}px;top:${PY + (p.row % 13) * CH}px">${p.cells.map((c) => tile(c.tile, { z: 'xs', okey: ok })).join('')}</div>`).join('');
+    const prs = place.filter((p) => p.pair).map((p) => `<div class="meld-row" data-act="meld" data-owner="${p.s}" data-idx="${p.k}" style="left:${px - 96 + p.col * CW}px;top:${PY + p.row * CH}px">${p.m.map((t) => tile(t, { z: 'xs', okey: ok })).join('')}</div>`).join('');
     // Luna101 logosu: masanın ortasında soluk silüet
     const wmW = isOkey ? 540 : Math.min(2 * sq * 0.74, 540), wmL = isOkey ? (1020 - wmW) / 2 : cx - 96 + (2 * sq - wmW) / 2;
     const wmLogo = `<svg class="wmlogo" style="left:${wmL}px;width:${wmW}px" viewBox="0 0 560 340"><use href="#lunalogo"/></svg>`;
@@ -995,7 +997,7 @@ const A = {
     const mode = S.regMode || 'register', phone = ($('#rp')?.value || '').trim();
     if (!phone) return toast('Telefon numaranı yaz.');
     const body = mode === 'register' ? { t: 'register', name: $('#rn').value, surname: $('#rs').value, phone, email: $('#re').value, consent: $('#rc').checked } : { t: 'login', phone };
-    const go = () => { S.regPhone = phone; S.reg = { busy: true }; send(body); render(); };
+    const go = () => { S.regPhone = phone; S.reg = { busy: true }; S.regErr = ''; send(body); render(); };
     if (!S.me) { S.pending = go; if (!ws || ws.readyState > 1) connect(); toast('Bağlanılıyor…'); return; }
     go();
   },

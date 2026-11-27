@@ -94,5 +94,6 @@ export function createMembers({ now = Date.now, file = null, sender = null, test
 
   const byToken = (token) => { const id = typeof token === 'string' && db.sessions[H(token)]; return id && db.members[id] ? pub(db.members[id]) : null; };
   const logout = (token) => { if (typeof token === 'string' && db.sessions[H(token)]) { delete db.sessions[H(token)]; save(); } };
-  return { begin, verify, byToken, logout, count: () => Object.keys(db.members).length };
+  const mode = () => (sender ? 'sms' : testMode ? 'test' : 'off');   // 'off': doğrulama servisi bağlı değil, kayıt kapalı
+  return { begin, verify, byToken, logout, mode, count: () => Object.keys(db.members).length };
 }
